@@ -144,6 +144,82 @@ lamp_lsoa_lookup <- function() {
   })
 }
 
+#' Small-area deprivation indices for England and Wales
+#'
+#' The English Indices of Deprivation 2025 (IoD2025, 33,755 LSOAs) and the
+#' Welsh Index of Multiple Deprivation 2025 (WIMD2025, 1,917 LSOAs), both on
+#' 2021 LSOAs, as a compact table for covariates and heterogeneity analysis.
+#' The two indices are separate national rankings built from different
+#' indicators, so ranks and deciles are comparable only within a country;
+#' `rank / n_lsoas` gives a within-country percentile. Domain deciles cover
+#' the seven domains the two indices share; Wales's community safety domain
+#' is held in `decile_crime` and its physical environment domain in
+#' `decile_environment`. England's domain deciles are as published; Wales's
+#' are formed within Wales from the published domain ranks, with the same
+#' thresholds as its published overall decile.
+#'
+#' Sources: MHCLG, English indices of deprivation 2025, File 7 (published 30
+#' October 2025, corrected 19 November 2025); Welsh Government, WIMD 2025
+#' index and domain ranks by small area (published 27 November 2025). Both
+#' Open Government Licence v3.0; retrieved 2026-09-16.
+#'
+#' @return A tibble with columns `lsoa21`, `country`, `index`, `score` (IMD
+#'   score, England only), `rank`, `decile` (1 is most deprived),
+#'   `decile_income`, `decile_employment`, `decile_education`,
+#'   `decile_health`, `decile_crime`, `decile_housing`, `decile_environment`
+#'   and `n_lsoas`.
+#' @family bundled data
+#' @export
+#' @examples
+#' dep <- lamp_deprivation()
+#' table(dep$country, dep$decile)[, 1:3]
+lamp_deprivation <- function() {
+  lamp_bundled("deprivation", function() {
+    tibble::as_tibble(readRDS(lamp_extdata("deprivation.rds")))
+  })
+}
+
+#' The bundled sample panel and boundaries
+#'
+#' A ready-made [lamp_panel()] for West Yorkshire and Dyfed-Powys: every 2021
+#' LSOA in the two police force areas over the 24 most recent complete months
+#' in the July 2026 archive snapshot (August 2024 to July 2026), with crime by
+#' type, anti-social behaviour, stops and Section 60 stops assigned by
+#' location, Census 2021 population, stop rate, and deprivation deciles as
+#' covariates. Its contract records the archive versions, coverage, geography
+#' and adjacency it was built with. `lamp_sample_boundaries()` returns the
+#' matching ONS generalised boundaries, simplified to 50 m for bundling, as an
+#' `sf` layer in British National Grid.
+#'
+#' The panel is aggregated counts, not records, and is meant for examples,
+#' tests and the vignettes. Data: data.police.uk, Office for National
+#' Statistics and NOMIS, Open Government Licence v3.0; see
+#' `inst/extdata/README.md`.
+#'
+#' @return `lamp_sample_panel()` returns a `lamp_panel`; `lamp_sample_boundaries()`
+#'   an `sf` object with columns `area`, `name` and `geometry`.
+#' @family bundled data
+#' @export
+#' @examples
+#' panel <- lamp_sample_panel()
+#' panel
+#' lamp_coverage(panel)
+#' bnd <- lamp_sample_boundaries()
+#' nrow(bnd)
+lamp_sample_panel <- function() {
+  lamp_bundled("sample_panel", function() {
+    readRDS(lamp_extdata("sample_panel.rds"))
+  })
+}
+
+#' @rdname lamp_sample_panel
+#' @export
+lamp_sample_boundaries <- function() {
+  lamp_bundled("sample_boundaries", function() {
+    readRDS(lamp_extdata("sample_boundaries.rds"))
+  })
+}
+
 #' @rdname lamp_lsoa_lookup
 #' @export
 lamp_lsoa_codes <- function(vintage = c("lsoa21", "lsoa11")) {

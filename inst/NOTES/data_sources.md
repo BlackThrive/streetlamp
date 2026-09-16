@@ -285,8 +285,86 @@ literally named "Best Fit" has no indicator; the "Exact Fit" product has it.
 The package bundles the exact-fit table with a `best_fit` flag marking the
 best-fit choice, which serves both purposes (decision 3 in `decisions.md`).
 
-`TODO(source)` (M2): LSOA 2011 and 2021 boundary products (generalised,
-BGC or BSC), the LSOA to MSOA to LAD to PFA lookups, and their item ids.
+### 3.1 Boundaries (verified 2026-09-16)
+
+Generalised, clipped boundaries (BGC, 20 m; the item descriptions read
+"Generalised (20m) - clipped to the coastline") read from the ArcGIS
+FeatureServer page by page (`f=geojson`, `outSR=27700`, `resultRecordCount=2000`;
+pages carry `exceededTransferLimit: true` until the last), which works for
+every layer; the Hub download API has no entry for the MSOA layer and only a
+file geodatabase for the 2021 LSOAs. ONS guidance (Boundary Dataset Guidance
+2021 Onwards) recommends full-resolution boundaries for point-in-polygon
+allocation and generalised ones for mapping and "non-demanding" analysis; the
+package uses BGC and documents that points within a few metres of a boundary
+can be misallocated.
+
+| Product | Item | Service | Features |
+|---|---|---|---|
+| Lower layer Super Output Areas (December 2021) Boundaries EW BGC (V5) | `68515293204e43ca8ab56fa13ae8a547` | `Lower_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V5` | 35,672 |
+| Lower layer Super Output Areas (December 2011) Boundaries EW BGC (V3) | `02e8d336d6804fbeabe6c972e5a27b16` | `LSOA_Dec_2011_Boundaries_Generalised_Clipped_BGC_EW_V3` | 34,753 |
+| Middle layer Super Output Areas (December 2021) Boundaries EW BGC (V3) | `6b282db29762450881ed5159259a6e4e` | `Middle_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V3` | 7,264 |
+| Local Authority Districts (December 2022) Boundaries UK BGC | `995533eee7e44848bf4e663498634849` | `Local_Authority_Districts_December_2022_UK_BGC_V2` | 374 (331 in England and Wales) |
+| Police Force Areas (December 2023) Boundaries EW BGC | `4b6a51a4fc8a40ad89d24dd895808e89` | `Police_Force_Areas_December_2023_EW_BGC` | 43 |
+
+Fields: `<CODE>`, `<NAME>`, Welsh name, BNG_E, BNG_N, LAT, LONG, Shape area
+and length. All layers are natively EPSG:27700. The licences page requires
+"Source: Office for National Statistics licensed under the Open Government
+Licence v.3.0" and "Contains OS data © Crown copyright and database right
+[year]" for boundaries.
+
+### 3.2 Area hierarchy (bundled as `inst/extdata/area_lookup.rds`)
+
+No LSOA-level ONS product links 2021 LSOAs to 2021 MSOAs, so the hierarchy
+is derived from the Output Area (2021) to LSOA to MSOA to LAD (December
+2021) Exact Fit Lookup in EW (V3), item `b9ca90c10aaa4b8d9791e9859a38ca67`
+(188,880 OA rows; 35,672 distinct LSOAs, each in one MSOA and one LAD;
+7,264 MSOAs; 331 LADs), joined to the Local Authority District to Community
+Safety Partnership to PFA (December 2022) Lookup in EW, item
+`4206337e432b45f686e29ac31d731765` (341 rows because five unitary districts
+still map to several legacy partnerships; every district has exactly one
+police force area; 43 areas). Police force area codes are the same set as
+the December 2025 names and codes used in `forces.csv`. Built by
+`data-raw/area_lookup.R`.
+
+### 3.3 Population, NOMIS (verified 2026-09-16)
+
+- Dataset `NM_2021_1` ("TS001 - Number of usual residents in households and
+  communal establishments"), dimensions GEOGRAPHY, C2021_RESTYPE_3 (0 = all
+  usual residents), MEASURES (20100 = value). Geography types: 151 (2021
+  LSOAs, 35,672), 152 (2021 MSOAs, 7,264), 154 (2022 districts, 331), 499
+  (countries). No police force area type.
+- Query used: `https://www.nomisweb.co.uk/api/v01/dataset/NM_2021_1.data.csv?geography=TYPE151&c2021_restype_3=0&measures=20100&select=geography_code,geography_name,obs_value,record_offset,record_count&RecordLimit=25000&RecordOffset=<n>`.
+- Anonymous requests are capped at 25,000 rows and truncated silently (HTTP
+  200, no warning header); the `RECORD_COUNT` column gives the full count and
+  `RecordLimit`/`RecordOffset` page through it. Verified sums: LSOAs
+  59,597,601; MSOAs 59,597,664; countries 59,597,542 (England 56,490,048,
+  Wales 3,107,494). Small-area totals exceed the national total by 59 and
+  122 because of ONS cell-key perturbation; the API values equal NOMIS's bulk
+  TS001 file cell for cell.
+- Licence: NOMIS copyright page (Crown copyright, reusable under the Open
+  Government Licence with the accreditation "Source: Office for National
+  Statistics"). No user-agent requirement; unpublished concurrency limit.
+- Census 2011 equivalent, not used: `NM_144_1` (KS101EW), geography type 298
+  for 2011 LSOAs.
+
+### 3.4 Deprivation (bundled as `inst/extdata/deprivation.rds`)
+
+- England: English indices of deprivation 2025, File 7 (all ranks, scores,
+  deciles and population denominators), published 30 October 2025, files
+  corrected 19 November 2025 (LSOA E01027305 re-allocated to West
+  Northamptonshire "with no change to the data"):
+  <https://assets.publishing.service.gov.uk/media/691ded56d140bbbaa59a2a7d/File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv>.
+  33,755 rows on 2021 LSOAs (codes up to E01035762); IMD rank 1 to 33,755;
+  Open Government Licence v3.0.
+- Wales: WIMD 2025, published 27 November 2025 on 2021 LSOAs (1,917 areas):
+  <https://www.gov.wales/sites/default/files/statistics-and-research/2025-11/wimd-2025-index-and-domain-ranks-by-small-area.ods>
+  (sheets "WIMD 2025 ranks" and "Deciles quintiles quartiles"); identical
+  ranks are served by the StatsWales API
+  (`https://api.stats.gov.wales/v1/9706edd9-73ad-4902-bb12-7ccd7038626e/download/csv`).
+  Overall deciles are as published; domain deciles are formed within Wales as
+  `ceiling(10 * rank / 1917)`, a rule that reproduces the published overall
+  decile for all but 4 of 1,917 areas. Open Government Licence v3.0.
+- Both indices are on 2021 LSOAs, so no re-vintaging is needed.
 
 ## 3a. Police forces (bundled as `inst/extdata/forces.csv`)
 

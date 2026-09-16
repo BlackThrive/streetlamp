@@ -26,10 +26,14 @@ Imports:
     cli,
     digest,
     dplyr,
+    ggplot2,
     httr2,
     rlang (>= 1.1.0),
     sf,
+    spdep,
+    stats,
     tibble,
+    tidyr,
     tools,
     utils
 Suggests:
