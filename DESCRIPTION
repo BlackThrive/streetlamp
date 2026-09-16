@@ -1,0 +1,44 @@
+Package: streetlamp
+Title: Panel Econometrics for the Effect of Police Stop and Search on
+    Recorded Crime
+Version: 0.1.0
+Authors@R: c(
+    person("Mustapha", "Wasseja", , "muswaseja@gmail.com", role = c("aut", "cre")),
+    person("Black Thrive Global", role = c("cph", "fnd"))
+  )
+Description: Builds an area-by-month panel of recorded crime in England and
+    Wales from the data.police.uk bulk archive, attaches stop and search
+    intensity as a treatment variable, and provides a panel-econometrics
+    toolkit for evaluating policing interventions: two-way fixed effects,
+    event studies, difference-in-differences with staggered adoption,
+    synthetic control, spatial spillover and displacement models, and
+    stop-crime elasticities by offence type. Every panel carries a contract
+    recording provenance, coverage, geography vintage and treatment
+    definition; every estimator names its identifying assumption and ships
+    with a placebo or pre-trend diagnostic.
+License: MIT + file LICENSE
+URL: https://github.com/black-thrive-global/streetlamp,
+    https://black-thrive-global.github.io/streetlamp/
+BugReports: https://github.com/black-thrive-global/streetlamp/issues
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    rlang (>= 1.1.0),
+    tibble,
+    tools,
+    utils
+Suggests:
+    knitr,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0),
+    withr
+VignetteBuilder:
+    knitr
+Config/testthat/edition: 3
+Config/Needs/website: rmarkdown
+Encoding: UTF-8
+Language: en-GB
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

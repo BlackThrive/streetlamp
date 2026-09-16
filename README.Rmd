@@ -1,0 +1,93 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# streetlamp
+
+`streetlamp` is an R package for estimating the effects of police stop and
+search activity on recorded crime in England and Wales, published by Black
+Thrive Global. It builds an area-by-month panel of recorded crime from the
+data.police.uk archive, attaches stop and search intensity as a treatment
+variable, and provides a panel-econometrics toolkit for evaluating policing
+interventions: event studies, difference-in-differences with staggered
+adoption, synthetic control, spatial spillover and displacement models, and
+stop-crime elasticities by offence type.
+
+`streetlamp` is about what stops achieve, not who is stopped. It never
+computes an ethnic disparity measure and reads stop and search files only to
+count stops by area and month.
+
+## Installation
+
+The package is under development and not yet on CRAN.
+
+``` r
+# install.packages("pak")
+pak::pak("black-thrive-global/streetlamp")
+```
+
+## Status
+
+Milestone M0 (skeleton) is complete: package infrastructure, continuous
+integration, and the bundled reference tables below. Ingestion of the
+data.police.uk archive (M1), panel construction and coverage audit (M2),
+treatment definitions and estimators (M3 and M4) and reporting (M5) follow.
+
+## Bundled reference tables
+
+Everything in the package runs without network access at check time. The
+reference tables shipped with it are verified against their sources, as
+recorded in `inst/NOTES/data_sources.md`.
+
+```{r}
+library(streetlamp)
+
+# The fourteen data.police.uk categories with package groupings
+lamp_crime_types()
+
+# Dated national shocks for use as default intervention definitions
+shocks <- lamp_shocks()
+shocks[shocks$kind == "stop_search_policy", c("name", "start", "end", "scope")]
+
+# Bank holidays in England and Wales, for seasonality controls
+range(lamp_bank_holidays()$date)
+
+# ONS LSOA code lists and the 2011 to 2021 lookup
+length(lamp_lsoa_codes("lsoa11"))
+length(lamp_lsoa_codes("lsoa21"))
+table(lamp_lsoa_lookup()$change)
+```
+
+## Design principles
+
+* Every panel carries a **panel contract** recording provenance, coverage,
+  LSOA vintage and treatment definition. Estimators read it and refuse or
+  warn when their assumptions are violated.
+* "Force did not submit" is never a zero.
+* Anti-social behaviour is not a crime: it is kept in a separate series and
+  excluded from crime totals by default.
+* Every estimator names its identifying assumption in its output and ships
+  with a placebo or pre-trend diagnostic.
+
+## Data attribution
+
+Contains public sector information licensed under the Open Government Licence
+v3.0: recorded crime, outcomes and stop and search data from
+[data.police.uk](https://data.police.uk/), geography from the
+[Office for National Statistics](https://geoportal.statistics.gov.uk/), and
+bank holidays from [GOV.UK](https://www.gov.uk/bank-holidays).
+
+## Licence
+
+MIT, copyright Black Thrive Global.
