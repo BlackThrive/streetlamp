@@ -50,6 +50,13 @@ lamp_as_months <- function(x, arg = rlang::caller_arg(x), call = rlang::caller_e
 
 lamp_month_id <- function(month) format(month, "%Y-%m")
 
+# Number of calendar months from `from` to `to` inclusive.
+lamp_months_between <- function(from, to) {
+  years <- as.integer(format(to, "%Y")) - as.integer(format(from, "%Y"))
+  months <- as.integer(format(to, "%m")) - as.integer(format(from, "%m"))
+  as.integer(12L * years + months + 1L)
+}
+
 # Split archive member names into month, force and file type.
 lamp_parse_members <- function(member) {
   pat <- "^([0-9]{4}-[0-9]{2})/\\1-(.+)-(street|outcomes|stop-and-search)\\.csv$"
@@ -151,12 +158,7 @@ lamp_parse_archive_index <- function(html, call = rlang::caller_env()) {
   md5_pat <- "<p class=\"md5sum\">([0-9a-f]{32})</p>"
   mm <- regmatches(blocks, regexec(md5_pat, blocks))
   md5 <- pick(mm, 2L, 2L)
-  year_of <- function(d) as.integer(format(d, "%Y"))
-  month_of <- function(d) as.integer(format(d, "%m"))
-  n_months <- ifelse(
-    is.na(from) | is.na(to), NA_integer_,
-    12L * (year_of(to) - year_of(from)) + month_of(to) - month_of(from) + 1L
-  )
+  n_months <- ifelse(is.na(from) | is.na(to), NA_integer_, lamp_months_between(from, to))
   out <- tibble::tibble(
     archive = archive, label = label, url = lamp_archive_zip_url(archive),
     from = from, to = to, n_months = n_months, size_gb = size_gb, md5 = md5

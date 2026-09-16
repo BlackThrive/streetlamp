@@ -8,7 +8,7 @@ lamp_contract(x)
 }
 \arguments{
 \item{x}{A table produced by a \verb{lamp_read_*()} function or by
-\code{lamp_panel()}, or a contract.}
+\code{\link[=lamp_panel]{lamp_panel()}}, or a contract.}
 }
 \value{
 A list of class \code{lamp_contract} with elements \code{source},

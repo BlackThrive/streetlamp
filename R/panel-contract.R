@@ -66,7 +66,7 @@ validate_lamp_contract <- function(x, arg = rlang::caller_arg(x), call = rlang::
 #' returns it; the contract survives subsetting with `[` and dplyr verbs.
 #'
 #' @param x A table produced by a `lamp_read_*()` function or by
-#'   `lamp_panel()`, or a contract.
+#'   [lamp_panel()], or a contract.
 #'
 #' @return A list of class `lamp_contract` with elements `source`,
 #'   `snapshots`, `versions`, `coverage`, `geography`, `population`,
@@ -107,18 +107,27 @@ print.lamp_contract <- function(x, ...) {
     cli::cli_text("Archives: {.val {x$snapshots$archive}}")
   }
   if (!is.null(x$coverage) && nrow(x$coverage) > 0L) {
-    st <- table(x$coverage$status)
-    parts <- paste0(names(st), " ", as.integer(st))
-    cli::cli_text("Coverage (force-month files): {paste(parts, collapse = ', ')}")
+    for (ft in unique(x$coverage$file_type)) {
+      st <- table(x$coverage$status[x$coverage$file_type == ft])
+      parts <- paste0(names(st), " ", as.integer(st))
+      cli::cli_text("Coverage, {ft} force-months: {paste(parts, collapse = ', ')}")
+    }
   }
   if (!is.null(x$geography)) {
     g <- x$geography
-    if (!is.null(g$lsoa_vintage)) {
-      cli::cli_text("LSOA vintage: {.val {unique(g$lsoa_vintage)}}")
-    }
     if (!is.null(g$area)) {
       cli::cli_text("Area: {.val {g$area}}")
     }
+    if (!is.null(g$lsoa_vintage)) {
+      cli::cli_text("Source LSOA vintage: {.val {unique(g$lsoa_vintage)}}")
+    }
+    if (!is.null(g$adjacency)) {
+      cli::cli_text("Adjacency: {g$adjacency$method}, {g$adjacency$n_islands} island{?s}")
+    }
+  }
+  if (!is.null(x$population)) {
+    p <- x$population
+    cli::cli_text("Population: {if (is.list(p)) p$source else p}")
   }
   if (!is.null(x$crime_scope)) {
     cs <- x$crime_scope
@@ -126,7 +135,7 @@ print.lamp_contract <- function(x, ...) {
       cli::cli_text("Crime category sets: {.val {unique(cs$category_sets$category_set)}}")
     }
     if (!is.null(cs$include_asb)) {
-      cli::cli_text("ASB in crime total: {cs$include_asb}")
+      cli::cli_text("ASB in crime total: {cs$include_asb}; attribution: {cs$attribution}")
     }
   }
   if (!is.null(x$stops)) {
@@ -146,39 +155,70 @@ summary.lamp_contract <- function(object, ...) {
 }
 
 # Contract-bearing tibbles ---------------------------------------------------
+#
+# Reader outputs (class lamp_records) and panels (class lamp_panel) are
+# tibbles with the contract as an attribute. The attribute and class are
+# restored after `[` and after dplyr verbs through dplyr_reconstruct().
 
-new_lamp_records <- function(x, contract) {
+new_lamp_tbl <- function(x, contract, class) {
   x <- tibble::as_tibble(x)
   attr(x, "contract") <- contract
-  class(x) <- c("lamp_records", class(x))
+  class(x) <- c(class, class(x))
   x
 }
 
-lamp_restore_records <- function(x, template) {
+new_lamp_records <- function(x, contract) new_lamp_tbl(x, contract, "lamp_records")
+
+new_lamp_panel <- function(x, contract) new_lamp_tbl(x, contract, "lamp_panel")
+
+lamp_restore_tbl <- function(x, template, class) {
   contract <- attr(template, "contract", exact = TRUE)
   if (is.null(contract)) {
     return(x)
   }
   x <- tibble::as_tibble(x)
   attr(x, "contract") <- contract
-  class(x) <- unique(c("lamp_records", class(x)))
+  class(x) <- unique(c(class, class(x)))
   x
 }
 
 #' @export
 `[.lamp_records` <- function(x, i, j, ..., drop = FALSE) {
   out <- NextMethod()
-  if (is.data.frame(out)) lamp_restore_records(out, x) else out
+  if (is.data.frame(out)) lamp_restore_tbl(out, x, "lamp_records") else out
+}
+
+#' @export
+`[.lamp_panel` <- function(x, i, j, ..., drop = FALSE) {
+  out <- NextMethod()
+  if (is.data.frame(out)) lamp_restore_tbl(out, x, "lamp_panel") else out
 }
 
 #' @exportS3Method dplyr::dplyr_reconstruct
 dplyr_reconstruct.lamp_records <- function(data, template) {
-  lamp_restore_records(data, template)
+  lamp_restore_tbl(data, template, "lamp_records")
+}
+
+#' @exportS3Method dplyr::dplyr_reconstruct
+dplyr_reconstruct.lamp_panel <- function(data, template) {
+  lamp_restore_tbl(data, template, "lamp_panel")
 }
 
 #' @export
 print.lamp_records <- function(x, ...) {
-  contract <- attr(x, "contract", exact = TRUE)
   cli::cli_text("{.strong streetlamp records} with a contract; see {.fn lamp_contract}.")
+  NextMethod()
+}
+
+#' @export
+print.lamp_panel <- function(x, ...) {
+  contract <- attr(x, "contract", exact = TRUE)
+  area <- contract$geography$area %||% "area"
+  n_area <- length(unique(x$area))
+  n_month <- length(unique(x$month))
+  cli::cli_text(
+    "{.strong streetlamp panel}: {n_area} {area} area{?s} x {n_month} month{?s}; ",
+    "see {.fn lamp_contract} and {.fn lamp_coverage}."
+  )
   NextMethod()
 }
