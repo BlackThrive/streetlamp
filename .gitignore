@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+docs/
+inst/doc
+/doc/
+/Meta/
+*.Rcheck/
+.DS_Store
+Thumbs.db
+
+# raw downloads used by data-raw scripts
+data-raw/downloads/
