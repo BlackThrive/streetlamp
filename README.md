@@ -28,13 +28,74 @@ pak::pak("black-thrive-global/streetlamp")
 
 ## Status
 
-Milestones M0 (skeleton) and M1 (ingestion and versioning) are complete:
-package infrastructure, continuous integration, the bundled reference
-tables, selective download from the data.police.uk archive,
-one-version-per-file selection with the alternatives recorded, and
-readers for crime, outcomes and stop counts that carry a panel contract.
-Panel construction and the coverage audit (M2), treatment definitions
-and estimators (M3 and M4) and reporting (M5) follow.
+Milestones M0 to M2 are complete: package infrastructure and continuous
+integration; selective download from the data.police.uk archive with
+one-version-per-file selection and readers that carry a panel contract;
+ONS boundaries, adjacency, Census 2021 population, deprivation deciles,
+the balanced area-by-month panel and the coverage audit. Treatment
+definitions and estimators (M3 and M4) and reporting (M5) follow.
+
+## Quick start on the bundled panel
+
+The package ships a ready-made panel: every 2021 LSOA in West Yorkshire
+and Dyfed-Powys over August 2024 to July 2026, with crime by type,
+anti-social behaviour, stops, population and deprivation deciles, and a
+contract that records where every number came from.
+
+``` r
+library(streetlamp)
+
+panel <- lamp_sample_panel()
+panel
+#> streetlamp panel: 1710 lsoa21 area x 24 months; see `lamp_contract()` and
+#> `lamp_coverage()`.
+#> # A tibble: 41,040 × 27
+#>    area  month      force_id bicycle_theft burglary criminal_damage_and_…¹ drugs
+#>    <chr> <date>     <chr>            <int>    <int>                  <int> <int>
+#>  1 E010… 2024-08-01 west-yo…             0        0                      2     0
+#>  2 E010… 2024-09-01 west-yo…             0        0                      0     0
+#>  3 E010… 2024-10-01 west-yo…             0        0                      1     0
+#>  4 E010… 2024-11-01 west-yo…             0        4                      2     0
+#>  5 E010… 2024-12-01 west-yo…             0        0                      1     0
+#>  6 E010… 2025-01-01 west-yo…             0        2                      1     0
+#>  7 E010… 2025-02-01 west-yo…             0        1                      1     0
+#>  8 E010… 2025-03-01 west-yo…             0        2                      0     0
+#>  9 E010… 2025-04-01 west-yo…             0        2                      0     0
+#> 10 E010… 2025-05-01 west-yo…             0        0                      0     0
+#> # ℹ 41,030 more rows
+#> # ℹ abbreviated name: ¹​criminal_damage_and_arson
+#> # ℹ 20 more variables: other_crime <int>, other_theft <int>,
+#> #   possession_of_weapons <int>, public_order <int>, robbery <int>,
+#> #   shoplifting <int>, theft_from_the_person <int>, vehicle_crime <int>,
+#> #   violence_and_sexual_offences <int>, crime_total <int>, asb <int>,
+#> #   stops <int>, stops_s60 <int>, population <dbl>, stop_rate <dbl>, …
+lamp_contract(panel)
+
+# Coverage: which force-months exist, and where stop files are missing while
+# crime files are present
+cov <- lamp_coverage(panel)
+table(cov$file_type, cov$status)
+#>                  
+#>                   missing submitted
+#>   stop-and-search       8        40
+#>   street                0        48
+lamp_coverage_compare(cov, c("2024-08", "2025-07"), c("2025-08", "2026-07"))
+#> # A tibble: 2 × 12
+#>   force_id   n_months_a n_usable_a n_months_b n_usable_b n_partial_a n_partial_b
+#>   <chr>           <int>      <int>      <int>      <int>       <int>       <int>
+#> 1 dyfed-pow…         12         12         12         12           0           0
+#> 2 west-york…         12         12         12         12           0           0
+#> # ℹ 5 more variables: n_refreshed_a <int>, n_refreshed_b <int>,
+#> #   n_mismatch_a <int>, n_mismatch_b <int>, comparable <lgl>
+
+# Spatial structure for the spillover estimators
+adj <- lamp_adjacency(lamp_sample_boundaries())
+adj
+#> streetlamp adjacency: 1710 areas, queen contiguity, 8214 links, 0 islands.
+```
+
+The plot methods draw force-month totals with missing months shaded
+(`plot(panel)`) and the coverage grid as a heat map (`plot(cov)`).
 
 ## Reading the archive
 
@@ -47,8 +108,6 @@ Yorkshire and Dyfed-Powys neighbourhoods, May to July 2026), so
 everything below runs offline.
 
 ``` r
-library(streetlamp)
-
 cache <- tempfile("streetlamp-cache-")
 zips <- list.files(
   system.file("extdata", "archive", package = "streetlamp"),
@@ -56,15 +115,15 @@ zips <- list.files(
 )
 for (z in zips) lamp_archive_register(z, dir = cache)
 #> Registered archive "2026-06" from
-#> 'C:/Users/musta/AppData/Local/Temp/RtmpCUPbRv/temp_libpathd86c1868634e/streetlamp/extdata/archive/2026-06.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmpmaw43m/temp_libpathaa14126d2041/streetlamp/extdata/archive/2026-06.zip'.
 #> Registered archive "2026-07" from
-#> 'C:/Users/musta/AppData/Local/Temp/RtmpCUPbRv/temp_libpathd86c1868634e/streetlamp/extdata/archive/2026-07.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmpmaw43m/temp_libpathaa14126d2041/streetlamp/extdata/archive/2026-07.zip'.
 snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\RtmpcjYpNR\streetlamp-cache-921028483bac'
+#> 'C:\Users\musta\AppData\Local\Temp\RtmpSkJak7\streetlamp-cache-9a6446bb7b41'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.
@@ -134,7 +193,9 @@ stops
 ```
 
 With network access, `lamp_archive_download()` fetches force-month files
-from the live archive into the cache:
+from the live archive into the cache, `lamp_boundaries()` and
+`lamp_population()` fetch ONS boundaries and Census 2021 population
+once, and `lamp_panel()` builds the balanced panel:
 
 ``` r
 snap <- lamp_archive_download(
@@ -142,6 +203,9 @@ snap <- lamp_archive_download(
   months = c("2026-05", "2026-06", "2026-07"),
   forces = c("west-yorkshire", "dyfed-powys")
 )
+crime <- lamp_read_crime(snap)
+stops <- lamp_read_stop_counts(snap, area = "lsoa21", boundaries = lamp_boundaries("lsoa21"))
+panel <- lamp_panel(crime, stops = stops, population = lamp_population("lsoa21"))
 ```
 
 ## Bundled reference tables

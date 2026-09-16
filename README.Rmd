@@ -39,13 +39,40 @@ pak::pak("black-thrive-global/streetlamp")
 
 ## Status
 
-Milestones M0 (skeleton) and M1 (ingestion and versioning) are complete:
-package infrastructure, continuous integration, the bundled reference tables,
-selective download from the data.police.uk archive, one-version-per-file
-selection with the alternatives recorded, and readers for crime, outcomes and
-stop counts that carry a panel contract. Panel construction and the coverage
-audit (M2), treatment definitions and estimators (M3 and M4) and reporting
-(M5) follow.
+Milestones M0 to M2 are complete: package infrastructure and continuous
+integration; selective download from the data.police.uk archive with
+one-version-per-file selection and readers that carry a panel contract; ONS
+boundaries, adjacency, Census 2021 population, deprivation deciles, the
+balanced area-by-month panel and the coverage audit. Treatment definitions and
+estimators (M3 and M4) and reporting (M5) follow.
+
+## Quick start on the bundled panel
+
+The package ships a ready-made panel: every 2021 LSOA in West Yorkshire and
+Dyfed-Powys over August 2024 to July 2026, with crime by type, anti-social
+behaviour, stops, population and deprivation deciles, and a contract that
+records where every number came from.
+
+```{r}
+library(streetlamp)
+
+panel <- lamp_sample_panel()
+panel
+lamp_contract(panel)
+
+# Coverage: which force-months exist, and where stop files are missing while
+# crime files are present
+cov <- lamp_coverage(panel)
+table(cov$file_type, cov$status)
+lamp_coverage_compare(cov, c("2024-08", "2025-07"), c("2025-08", "2026-07"))
+
+# Spatial structure for the spillover estimators
+adj <- lamp_adjacency(lamp_sample_boundaries())
+adj
+```
+
+The plot methods draw force-month totals with missing months shaded
+(`plot(panel)`) and the coverage grid as a heat map (`plot(cov)`).
 
 ## Reading the archive
 
@@ -57,8 +84,6 @@ snapshots (real records for a subset of West Yorkshire and Dyfed-Powys
 neighbourhoods, May to July 2026), so everything below runs offline.
 
 ```{r}
-library(streetlamp)
-
 cache <- tempfile("streetlamp-cache-")
 zips <- list.files(
   system.file("extdata", "archive", package = "streetlamp"),
@@ -83,7 +108,9 @@ stops
 ```
 
 With network access, `lamp_archive_download()` fetches force-month files from
-the live archive into the cache:
+the live archive into the cache, `lamp_boundaries()` and `lamp_population()`
+fetch ONS boundaries and Census 2021 population once, and `lamp_panel()`
+builds the balanced panel:
 
 ``` r
 snap <- lamp_archive_download(
@@ -91,6 +118,9 @@ snap <- lamp_archive_download(
   months = c("2026-05", "2026-06", "2026-07"),
   forces = c("west-yorkshire", "dyfed-powys")
 )
+crime <- lamp_read_crime(snap)
+stops <- lamp_read_stop_counts(snap, area = "lsoa21", boundaries = lamp_boundaries("lsoa21"))
+panel <- lamp_panel(crime, stops = stops, population = lamp_population("lsoa21"))
 ```
 
 ## Bundled reference tables

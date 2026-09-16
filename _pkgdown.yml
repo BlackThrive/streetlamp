@@ -12,6 +12,12 @@ reference:
     crime, outcome and stop-count tables that carry a panel contract.
   contents:
   - has_concept("ingest")
+- title: Panel and coverage
+  desc: >
+    Geography, population, the balanced area-by-month panel and the coverage
+    audit.
+  contents:
+  - has_concept("panel")
 - title: Contract
   contents:
   - has_concept("contract")

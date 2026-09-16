@@ -28,3 +28,26 @@ lamp_forces <- function() {
     lamp_read_bundled_csv("forces.csv")
   })
 }
+
+# Reduce a force name to a comparable stem: lower case, "&" to "and", no
+# hyphens or punctuation, and no organisational suffix. "Devon and Cornwall
+# Police", "Dyfed Powys Police" and "Metropolitan Police" then match the
+# police.uk names.
+lamp_force_stem <- function(x) {
+  x <- tolower(x)
+  x <- gsub("&", " and ", x, fixed = TRUE)
+  x <- gsub("[-']", " ", x)
+  x <- gsub("[^a-z ]", "", x)
+  x <- gsub("\\b(police service|constabulary|police|service)\\b", " ", x)
+  x <- gsub("\\s+", " ", x)
+  trimws(x)
+}
+
+# Map force names as written in archive files or the changelog to police.uk
+# identifiers; NA when no stem matches.
+lamp_force_id_from_name <- function(x) {
+  f <- lamp_forces()
+  stems <- lamp_force_stem(f$name)
+  stems[f$force_id == "metropolitan"] <- "metropolitan"
+  f$force_id[match(lamp_force_stem(x), stems)]
+}

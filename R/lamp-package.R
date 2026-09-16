@@ -35,7 +35,14 @@
 #' @importFrom rlang %||%
 #' @importFrom rlang .data
 ## usethis namespace: end
+#' @importFrom tibble tibble
+#' @importFrom sf st_crs
 NULL
+
+# The tibble and sf imports above are deliberate: they load those namespaces
+# with the package, so that the print methods of contract-bearing tibbles and
+# of bundled sf layers dispatch to tibble and sf even in a fresh session that
+# has not yet called either package.
 
 # Package-level environment for lazily loaded bundled tables.
 the <- new.env(parent = emptyenv())

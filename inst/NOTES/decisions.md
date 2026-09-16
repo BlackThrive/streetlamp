@@ -4,6 +4,45 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-16, milestone M2
+
+32. **Boundaries are the ONS generalised clipped (BGC) layers, read from the
+    FeatureServer in pages.** BGC is a tenth the size of full resolution and
+    the only form obtainable for every layer; the misallocation of points
+    within a few metres of a boundary is documented and users can pass
+    full-resolution polygons to `lamp_read_stop_counts()` themselves.
+33. **Area hierarchy is derived from the OA-level ONS lookup** because no
+    LSOA-to-MSOA product exists; the district-to-force lookup is deduplicated
+    on district (every district has one police force area). 2022 districts
+    are used throughout because the LSOA lookups are on that vintage.
+34. **Population comes from NOMIS TS001 at 2021 LSOA level only** and is
+    summed to coarser levels, accepting the small cell-key perturbation
+    differences from published totals, so that one cached download serves
+    every level. 2011 LSOAs receive equal shares of merged 2021 LSOAs.
+35. **Deprivation is bundled as deciles**, not ranks, for the seven shared
+    domains (ranks compressed to 658 KB; deciles to 277 KB) with the overall
+    rank, decile and (England) score kept. Welsh domain deciles are formed by
+    the package from published ranks.
+36. **Panel universe is the whole police force area** of every force in the
+    records, so areas with no recorded crime in a submitted month are zeros;
+    `areas` restricts the panel when the records cover a subset (as the
+    bundled fixtures do).
+37. **Force level counts by the attributed force** (`Falls within` by
+    default), so records without a location are included there; every finer
+    level places records by LSOA code. Cross-border records (attributed force
+    differs from the area's force) are counted in the contract.
+38. **Coverage statuses:** `partial_suspected` uses the specification's 20
+    percent of the trailing 12-month median with at least three prior
+    submitted months; `refreshed` comes only from the publisher's changelog
+    (`lamp_changelog()`), because checksums differ between snapshots for
+    almost every street file. `not_read` marks listed files that were not
+    read.
+39. **Re-vintaging to 2011 LSOAs maps a merged 2021 LSOA to its first parent
+    in code order**; `lsoa21` is the recommended target and the default.
+40. **Sample panel spans August 2024 to July 2026** (the 24 most recent
+    complete months in the July 2026 snapshot) for the whole of West Yorkshire
+    and Dyfed-Powys, with boundaries simplified to 50 m for bundling.
+
 ## 2026-09-16, milestone M1
 
 19. **Selective download by HTTP byte range.** Archive zips are 1 to 2.6 GB

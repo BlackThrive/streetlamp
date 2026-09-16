@@ -46,10 +46,13 @@ lamp_crime_types()
 \code{\link[=lamp_outcome_types]{lamp_outcome_types()}}
 
 Other bundled data: 
+\code{\link{lamp_area_lookup}()},
 \code{\link{lamp_bank_holidays}()},
+\code{\link{lamp_deprivation}()},
 \code{\link{lamp_forces}()},
 \code{\link{lamp_lsoa_lookup}()},
 \code{\link{lamp_outcome_types}()},
+\code{\link{lamp_sample_panel}()},
 \code{\link{lamp_shocks}()}
 }
 \concept{bundled data}

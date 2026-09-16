@@ -112,6 +112,49 @@ test_that("LSOA lookup and code lists are complete and internally consistent", {
   expect_gt(length(setdiff(c21, c11)), 0L)
 })
 
+test_that("the area hierarchy covers every 2021 LSOA once", {
+  lk <- lamp_area_lookup()
+  expect_named(lk, c(
+    "lsoa21", "lsoa21_name", "msoa21", "msoa21_name", "lad22", "lad22_name",
+    "pfa", "pfa_name", "force_id"
+  ))
+  expect_equal(nrow(lk), 35672L)
+  expect_false(anyDuplicated(lk$lsoa21) > 0L)
+  expect_setequal(lk$lsoa21, lamp_lsoa_codes("lsoa21"))
+  expect_equal(length(unique(lk$msoa21)), 7264L)
+  expect_equal(length(unique(lk$lad22)), 331L)
+  expect_equal(length(unique(lk$pfa)), 43L)
+  expect_false(anyNA(lk$force_id))
+  expect_true(all(lk$pfa %in% lamp_forces()$pfa_code))
+  expect_equal(unique(lk$force_id[lk$pfa_name == "Dyfed-Powys"]), "dyfed-powys")
+  # every MSOA sits in one district and every district in one force area
+  expect_equal(nrow(unique(lk[, c("msoa21", "lad22")])), 7264L)
+  expect_equal(nrow(unique(lk[, c("lad22", "pfa")])), 331L)
+  expect_equal(lamp_map_area("E01000001", "pfa"), "E23000034")
+  expect_true(is.na(lamp_map_area("E01999999", "lad")))
+})
+
+test_that("the deprivation table covers England and Wales on 2021 LSOAs", {
+  dep <- lamp_deprivation()
+  expect_named(dep, c(
+    "lsoa21", "country", "index", "score", "rank", "decile", "decile_income",
+    "decile_employment", "decile_education", "decile_health", "decile_crime",
+    "decile_housing", "decile_environment", "n_lsoas"
+  ))
+  expect_equal(nrow(dep), 35672L)
+  expect_setequal(dep$lsoa21, lamp_lsoa_codes("lsoa21"))
+  expect_equal(sum(dep$country == "england"), 33755L)
+  expect_equal(sum(dep$country == "wales"), 1917L)
+  expect_setequal(unique(dep$index), c("IoD2025", "WIMD2025"))
+  expect_true(all(dep$decile %in% 1:10))
+  expect_true(all(is.na(dep$score[dep$country == "wales"])))
+  expect_false(anyNA(dep$score[dep$country == "england"]))
+  expect_setequal(dep$rank[dep$country == "wales"], 1:1917)
+  expect_equal(unique(dep$n_lsoas[dep$country == "england"]), 33755L)
+  expect_true(all(as.matrix(dep[, grep("^decile_", names(dep))]) %in% 1:10))
+  expect_equal(dep$decile[dep$lsoa21 == "E01000001"], 8L)
+})
+
 test_that("default vintage for lamp_lsoa_codes() is lsoa21", {
   expect_identical(lamp_lsoa_codes(), lamp_lsoa_codes("lsoa21"))
   expect_error(lamp_lsoa_codes("lsoa01"), class = "rlang_error")
