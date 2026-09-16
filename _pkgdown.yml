@@ -5,6 +5,16 @@ template:
     primary: "#1f2a44"
 
 reference:
+- title: Ingest
+  desc: >
+    Acquire force-month files from the data.police.uk archive without
+    downloading whole snapshots, choose one version per force-month, and read
+    crime, outcome and stop-count tables that carry a panel contract.
+  contents:
+  - has_concept("ingest")
+- title: Contract
+  contents:
+  - has_concept("contract")
 - title: Bundled reference tables
   desc: >
     Curated tables shipped with the package: crime and outcome

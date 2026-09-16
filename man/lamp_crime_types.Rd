@@ -22,13 +22,16 @@ Anti-social behaviour (ASB) is not a crime: ASB incidents carry no Crime ID
 and no outcome, so \code{is_asb} is \code{TRUE} and \code{in_crime_total} is \code{FALSE} for
 that row and \code{lamp_panel()} keeps ASB in its own series.
 
-The category set was verified against the police.uk API on 2026-09-16 and
-has been stable since June 2013, when data.police.uk introduced bicycle
-theft and theft from the person (previously within other theft), split
-public disorder and weapons into possession of weapons and public order,
-and renamed violent crime to violence and sexual offences. Earlier archive
-files therefore use a smaller legacy set; \code{lamp_read_crime()} maps legacy
-labels where the mapping is one to one and flags the rest.
+The category set was verified against the police.uk API and archive files
+on 2026-09-16. It has been stable since the May 2013 data, when
+data.police.uk introduced bicycle theft and theft from the person
+(previously within other theft), split public disorder and weapons into
+possession of weapons and public order, and renamed violent crime to
+violence and sexual offences. Files for September 2011 to April 2013 use
+eleven categories and files for December 2010 to August 2011 only six, with
+a very broad other crime. \code{since} gives the first data month of each
+current category; \code{\link[=lamp_read_crime]{lamp_read_crime()}} maps legacy labels where the mapping
+is one to one and keeps \verb{Public disorder and weapons} as its own level.
 
 \code{group} follows the Home Office offence groups with the six theft
 categories combined; \code{broad_group} collapses further into \code{violent},
@@ -44,6 +47,7 @@ lamp_crime_types()
 
 Other bundled data: 
 \code{\link{lamp_bank_holidays}()},
+\code{\link{lamp_forces}()},
 \code{\link{lamp_lsoa_lookup}()},
 \code{\link{lamp_outcome_types}()},
 \code{\link{lamp_shocks}()}
