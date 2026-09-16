@@ -7,8 +7,8 @@
 lamp_outcome_types()
 }
 \value{
-A tibble with columns \code{outcome_type}, \code{code}, \code{group} (factor with
-the six levels above) and \code{is_court_outcome}.
+A tibble with columns \code{outcome_type}, \code{api_name}, \code{code}, \code{group}
+(factor with the six levels above) and \code{is_court_outcome}.
 }
 \description{
 The outcome categories that appear in the \verb{Outcome type} column of the
@@ -35,8 +35,11 @@ than from the police. data.police.uk reports that court outcomes from June
 2019 onwards are unavailable, so these categories are sparse after that
 date and \code{charged_or_summonsed} should be read as the charge stage.
 
-The category list was verified against the police.uk API documentation on
-2026-09-16.
+The category list was verified against the police.uk API documentation and
+against archive files on 2026-09-16. \code{outcome_type} is the string written
+in the archive CSV files; where the API documentation names a category
+differently (\verb{Offender given penalty notice} appears there as \verb{Offender given a penalty notice}) the API name is kept in \code{api_name} and
+\code{\link[=lamp_read_outcomes]{lamp_read_outcomes()}} accepts either.
 }
 \examples{
 lamp_outcome_types()
@@ -47,6 +50,7 @@ lamp_outcome_types()
 Other bundled data: 
 \code{\link{lamp_bank_holidays}()},
 \code{\link{lamp_crime_types}()},
+\code{\link{lamp_forces}()},
 \code{\link{lamp_lsoa_lookup}()},
 \code{\link{lamp_shocks}()}
 }

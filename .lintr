@@ -7,5 +7,6 @@ exclusions: list(
     "data-raw",
     "inst/scripts",
     "tests/testthat/_snaps",
-    "vignettes"
+    "vignettes",
+    "tests/testthat" = list(line_length_linter = Inf)
   )

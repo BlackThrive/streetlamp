@@ -27,6 +27,7 @@ bh[format(bh$date, "\%Y") == "2023", c("date", "title")]
 \seealso{
 Other bundled data: 
 \code{\link{lamp_crime_types}()},
+\code{\link{lamp_forces}()},
 \code{\link{lamp_lsoa_lookup}()},
 \code{\link{lamp_outcome_types}()},
 \code{\link{lamp_shocks}()}

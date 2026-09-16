@@ -59,17 +59,36 @@ not expose the pre-June-2013 category set, which the changelog describes:
 > to 'violent crime and sexual offences', for clarity. Introduction of CSV
 > bulk-download functionality.
 
-`TODO(source)` (M1): verify the exact legacy label strings and the first data
-month using the new set by reading 2011 to 2013 archive files. The internal
-mapping in `R/classifications.R` assumes "Violent crime", "Public disorder and
-weapons" and "Other theft".
+Verified against Dyfed-Powys street files in the 2017-04 and 2013-12
+archives (2026-09-16): three category sets in the archive.
+
+| Data months | Categories | Labels |
+|---|---|---|
+| 2010-12 to 2011-08 | six | Anti-social behaviour, Burglary, Other crime, Robbery, Vehicle crime, Violent crime |
+| 2011-09 to 2013-04 | eleven | the six plus Criminal damage and arson, Drugs, Other theft, Public disorder and weapons, Shoplifting |
+| 2013-05 onwards | fourteen | the current set |
+
+The June 2013 changelog entry therefore applies from the May 2013 data month.
+`lamp_read_crime()` renames "Violent crime" to "Violence and sexual offences",
+keeps "Public disorder and weapons" as its own level, and records each file's
+category set in the contract. The switch months were checked for one force
+only; other forces are assumed to have changed at the same time because the
+categories are assigned centrally from Home Office offence codes.
 
 ### 1.3 Outcome categories, <https://data.police.uk/docs/method/outcomes-for-crime/> (verified 2026-09-16)
 
-Fetched the raw HTML. The documented code and name pairs (28) are exactly those
-in `lamp_outcome_types()`. The grouping into six classes is the package's own
-and is documented in that help page. The note "Outcomes are not available for
-the Police Service of Northern Ireland" appears on the page.
+Fetched the raw HTML. The documented code and name pairs (28) are those in
+`lamp_outcome_types()`, with one discrepancy found in the archive files
+(West Yorkshire and Dyfed-Powys outcomes, May to July 2026, 76,000 rows): the
+CSV writes `Offender given penalty notice` where the documentation says
+`Offender given a penalty notice`. The table uses the CSV string and keeps
+the API name as `api_name`. Ten of the 28 categories were seen in those
+files; the court-outcome categories were absent, consistent with the
+changelog note that court outcomes are unavailable from June 2019. Every
+`Last outcome category` string in the street files matched the table. The
+grouping into six classes is the package's own and is documented in that help
+page. The note "Outcomes are not available for the Police Service of Northern
+Ireland" appears on the page.
 
 ### 1.4 Changelog, <https://data.police.uk/changelog/> (verified 2026-09-16)
 
@@ -91,9 +110,16 @@ Entries run from January 2013 to July 2026. Verbatim entries used:
   example "British Transport Police: Crime data refresh from December 2021 to
   October 2023."
 
-`TODO(source)` (M1): whether archives generated after June 2023 carry 2021
-LSOA codes for all months in their window, or only for months first published
-after the switch. This decides whether `lamp_lsoa_vintage()` must run per file.
+Verified 2026-09-16 by matching codes in Dyfed-Powys street files against the
+bundled code lists: archives keep each month at the vintage it was first
+published with. In the 2023-12 archive, the 2021-01 file uses 2011 codes
+(11 codes found only in the 2011 list, none only in 2021) and the 2023-06 file
+uses 2021 codes; in the 2026-07 archive every month (2023-08 onwards) uses
+2021 codes. One archive can therefore mix vintages, and `lamp_lsoa_vintage()`
+runs per file. Very small files can lack any vintage-specific code (City of
+London, July 2026: 26 distinct codes, none decisive); the reader then falls
+back to the data month, with 2023-06 as the first 2021-vintage month, and
+records `vintage_basis = "month"`.
 
 ### 1.5 Archive index, <https://data.police.uk/data/archive/> (verified 2026-09-16)
 
@@ -110,9 +136,102 @@ after the switch. This decides whether `lamp_lsoa_vintage()` must run per file.
   version differences; the panel contract records which archive supplied
   each force-month.
 
-`TODO(source)` (M1): the exact zip at which the rolling window begins; the
-folder and file layout inside a zip; street, outcomes and stop-and-search
-column headers; the earliest month with stop-and-search files.
+Verified 2026-09-16 by reading the zip central directories over HTTP byte
+ranges (the zips redirect to `https://policeuk-data.s3.amazonaws.com/archive/`,
+which honours `Range` requests with 206 responses):
+
+- Layout: every member is `YYYY-MM/YYYY-MM-<force>-<type>.csv` with type
+  `street`, `outcomes` or `stop-and-search`; no other members. All members are
+  DEFLATE-compressed; no ZIP64 structures (the largest zip, 2017-04, is
+  2.56 GB).
+- Window: `2017-04.zip` holds 77 months (2010-12 to 2017-04); `2017-05.zip`
+  holds 36 months (2014-06 to 2017-05). The rolling 36-month window therefore
+  begins with the May 2017 snapshot. `2013-12.zip` holds 37 months.
+- File types by month: street files from 2010-12; outcomes files from 2012-01;
+  stop-and-search files from 2014-04 (Hampshire first, then others). The
+  2013-12 archive has no stop-and-search files at all.
+- Forces: 45 identifiers in older archives (43 territorial forces, `btp`,
+  `northern-ireland`); 44 in the 2026-07 archive because `greater-manchester`
+  is absent. Northern Ireland street files begin in 2011-09 (44 street files
+  per month before, 45 after).
+- Street columns: Crime ID, Month, Reported by, Falls within, Longitude,
+  Latitude, Location, LSOA code, LSOA name, Crime type, Last outcome category,
+  Context (as the specification expected). Outcomes columns: Crime ID, Month,
+  Reported by, Falls within, Longitude, Latitude, Location, LSOA code, LSOA
+  name, Outcome type.
+- Sizes: the 2026-07 archive is 1.73 GB with 4,485 members; a West Yorkshire
+  street file is about 6 MB uncompressed (26,000 rows), Dyfed-Powys about
+  1 MB (4,400 rows).
+
+### 1.6 Stop-and-search files (verified 2026-09-16)
+
+Columns: Type, Date, Part of a policing operation, Policing operation,
+Latitude, Longitude, Gender, Age range, Self-defined ethnicity,
+Officer-defined ethnicity, Legislation, Object of search, Outcome, Outcome
+linked to object of search, Removal of more than just outer clothing.
+streetlamp reads only Date, Latitude, Longitude and Legislation.
+
+- `Date` is ISO 8601 with offset, for example `2026-07-01T00:40:00+00:00`.
+  The offset is always `+00:00`, including in summer, yet a few rows in each
+  summer-month file are dated between 23:00 and 23:59 on the last day of the
+  previous month (West Yorkshire May 2026: 6 of 1,659; June 2026: 5 of
+  1,466; July 2026: none), which is what local British Summer Time stored as
+  UTC looks like at the month boundary. `lamp_read_stop_counts()` therefore
+  dates every stop by its file's month and reports the count of such rows.
+- Legislation values seen: `Police and Criminal Evidence Act 1984 (section
+  1)`, `Misuse of Drugs Act 1971 (section 23)`, `Firearms Act 1968 (section
+  47)`, `Psychoactive Substances Act 2016 (s36(2))`, `Criminal Justice and
+  Public Order Act 1994 (section 60)` (Metropolitan Police, July 2026: 17
+  rows), and empty. The Section 60 string is bundled as
+  `lamp_s60_legislation()`. Dyfed-Powys November 2025 had Legislation empty
+  on every row.
+- About 4 to 5 percent of searches have no coordinates (West Yorkshire July
+  2026: 58 of 1,532) and cannot be assigned to an area; they are counted as
+  `stops_no_location`.
+- Dyfed-Powys submitted no stop-and-search file for December 2025 to July
+  2026 although its street and outcomes files are present; this is the
+  mismatched-file-type case the coverage audit must flag.
+
+### 1.7 Force attribution: British Transport Police (discrepancy)
+
+The specification says BTP records fall within territorial force areas. In
+the archive (BTP street file for January 2025, 3,304 rows) every row has
+`British Transport Police` in both `Reported by` and `Falls within`, so
+counting by `Falls within` attributes BTP records to BTP, not to territorial
+forces. Location-based assignment (LSOA code) is the way to place them
+geographically. BTP street files also stop at January 2025 in the 2026-07
+archive (18 months present of 36), and 103 of 3,304 rows have no LSOA.
+Records can also sit outside the submitting force's area: Dyfed-Powys July
+2026 includes crimes located in Barnet and Birmingham LSOAs.
+
+### 1.8 Version differences between archive snapshots (verified 2026-09-16)
+
+The same force-month file differs between consecutive snapshots:
+
+| File | 2026-06 snapshot | 2026-07 snapshot | Difference |
+|---|---|---|---|
+| Dyfed-Powys 2026-05 street | 4,053 rows | 4,053 rows | 459 rows changed Last outcome category |
+| West Yorkshire 2026-05 street | 26,103 rows | 26,103 rows | 2,275 outcome changes |
+| West Yorkshire 2026-05 outcomes | 20,811 rows | 20,801 rows | 10 crime ids only in the older snapshot |
+| West Yorkshire 2026-06 outcomes | 21,955 rows | 21,945 rows | 10 crime ids only in the older snapshot |
+| West Yorkshire 2026-05 stop-and-search | identical | identical | same CRC |
+
+Street files therefore differ almost always (outcome updates), so checksums
+alone do not indicate a re-supplied month; `lamp_version_diff()` compares
+row counts and crime-id sets. Outcomes files can lose rows in later
+snapshots.
+
+### 1.9 Other field facts (Dyfed-Powys July 2026 street and outcomes files)
+
+- Every anti-social behaviour row (609) has an empty Crime ID and empty Last
+  outcome category; no non-ASB row lacks an id; no duplicated ids in a street
+  file.
+- Rows without coordinates (166) are exactly the rows without an LSOA code.
+- `Context` was empty on every row.
+- An outcomes file lists outcomes recorded in that month: only 1,591 of 3,688
+  crime ids also appear in the same month's street file, and a crime id can
+  repeat (several outcomes).
+- `Month` equals the folder month in every file read.
 
 ## 2. GOV.UK bank holidays (Crown copyright, Open Government Licence v3.0)
 
@@ -168,6 +287,17 @@ best-fit choice, which serves both purposes (decision 3 in `decisions.md`).
 
 `TODO(source)` (M2): LSOA 2011 and 2021 boundary products (generalised,
 BGC or BSC), the LSOA to MSOA to LAD to PFA lookups, and their item ids.
+
+## 3a. Police forces (bundled as `inst/extdata/forces.csv`)
+
+Built by `data-raw/forces.R` on 2026-09-16 from
+<https://data.police.uk/api/forces> (44 forces; British Transport Police is
+absent from the API but present in the archive and added by hand) joined to
+the ONS Police Force Areas (December 2025) Names and Codes in the UK (item
+`ff7c3ac78cc647f6b103166a65e31c44`, FeatureServer `PFA_DEC_2025_UK_NC`; the
+Hub CSV download returned 404). Name matching: strip " Police",
+" Constabulary" or " Police Service"; City of London maps to "London, City
+of", the Metropolitan Police Service to "Metropolitan Police".
 
 ## 4. Policy shocks (bundled as `inst/extdata/shocks.csv`)
 
@@ -284,9 +414,9 @@ research record kept with the M0 session.
   type codes, rate limits.
 - `TODO(source)` (M2): English Indices of Deprivation 2025 file layout and the
   Welsh Index of Multiple Deprivation 2019 layout.
-- `TODO(source)` (M1): data.police.uk stop-and-search CSV columns (Date,
-  Latitude, Longitude, Legislation) and the exact Section 60 legislation
-  string.
+- `TODO(source)` (M2): whether the `Falls within` and `Reported by` strings of
+  every force equal the police.uk API names in `lamp_forces()` (verified for
+  Dyfed-Powys, West Yorkshire and British Transport Police only).
 - `TODO(source)` (M3): UK daylight saving transition dates (statutory rule:
   last Sunday in March and October, 1am GMT; confirmed on the archived
   Directgov page for 2010 and 2011).

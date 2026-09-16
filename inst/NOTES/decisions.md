@@ -4,6 +4,66 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-16, milestone M1
+
+19. **Selective download by HTTP byte range.** Archive zips are 1 to 2.6 GB
+    and redirect to S3, which honours `Range` requests. `lamp_archive_download()`
+    reads a zip's central directory from its tail, then fetches and inflates
+    only the wanted force-month members, in pure R (a gzip envelope around the
+    DEFLATE stream and `memDecompress()`, which also verifies the CRC). A
+    36-month, two-force pull is about 40 MB instead of 1.7 GB. Whole zips
+    downloaded by other means are used in place through
+    `lamp_archive_register()`.
+20. **Cache layout.** `<cache>/archive/<archive>/` holds `archive.rds`
+    (source, size, ETag, published MD5, listing time), `members.rds` (the full
+    central directory) and `manifest.csv` (fetched members with CRC32,
+    SHA-256 and time), with fetched CSVs under `<month>/`. The published MD5
+    of the whole zip is recorded but cannot be checked without a full
+    download; per-member CRC32 and SHA-256 are the integrity record.
+21. **Base R CSV reading.** `utils::read.csv()` with `colClasses =
+    "character"` reads a 26,000-row street file in 0.36 s; readr's first call
+    costs 5 s on this machine and would break the example time limit. The
+    stop-and-search reader skips every column except Date, Latitude,
+    Longitude and Legislation through `colClasses = "NULL"`, which satisfies
+    the scope boundary at parse time.
+22. **Version selection default is `latest`** (the newest snapshot holding
+    the file): later snapshots carry updated outcomes and any re-supplied
+    data. `earliest` and `prefer` are offered. Rows are never merged across
+    versions; the alternatives are kept in the contract.
+23. **Coverage statuses in M1 are `submitted` and `missing`.** `refreshed`
+    and `partial_suspected` need cross-version reading or the force's trailing
+    median and are assigned by `lamp_coverage()` in M2; the reader contract
+    already carries `n_versions` and `versions_differ` per force-month.
+24. **Crime type harmonisation.** `Violent crime` is renamed to `Violence and
+    sexual offences` (a documented rename); `Public disorder and weapons` is
+    kept as a fifteenth factor level because it was split and cannot be
+    mapped; the raw label is retained and each file's category set (`six`,
+    `eleven`, `fourteen`) is recorded in the contract.
+25. **Records carry contracts too.** Reader outputs have class `lamp_records`
+    with the contract as an attribute, preserved through `[` and dplyr verbs
+    (`dplyr_reconstruct` registered lazily), so that `lamp_panel()` can build
+    on them and users can subset without losing provenance.
+26. **British Transport Police is attributed to itself**, because its files
+    carry `British Transport Police` in `Falls within` (contrary to the
+    specification's expectation). Geographic placement of BTP records uses
+    the LSOA code, as for any other force.
+27. **Stop counts at force level need no boundaries**; area-level counts take
+    an `sf` layer with an `area` column, so `lamp_read_stop_counts()` works
+    before `lamp_boundaries()` exists (M2) and with any user polygons.
+28. **Forces table bundled** (`lamp_forces()`): 45 forces with ONS police
+    force area codes, which the panel needs for the `pfa` area level.
+29. **Readers never fetch by default.** `fetch = FALSE` reads the files held
+    locally and says how many selected files were skipped; nothing is
+    available raises an error. A first draft that fetched on demand started
+    downloading every force in the archive when called without filters.
+30. **Stops are dated by their file's month.** The publisher stores local
+    time as UTC, so a few searches after 23:00 on the first night of a
+    summer-time month carry the previous month's date; the count of such rows
+    is kept in the diagnostics.
+31. **Line-length lint applies to package sources only.** Test files are
+    exempt (`.lintr` exclusion) because they hold long literal file names and
+    expectation strings; every other linter still runs on them.
+
 ## 2026-09-16, milestone M0
 
 1. **Imports grow with milestones.** `DESCRIPTION` lists only the packages

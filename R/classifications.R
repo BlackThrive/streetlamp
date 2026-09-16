@@ -11,13 +11,16 @@
 #' and no outcome, so `is_asb` is `TRUE` and `in_crime_total` is `FALSE` for
 #' that row and `lamp_panel()` keeps ASB in its own series.
 #'
-#' The category set was verified against the police.uk API on 2026-09-16 and
-#' has been stable since June 2013, when data.police.uk introduced bicycle
-#' theft and theft from the person (previously within other theft), split
-#' public disorder and weapons into possession of weapons and public order,
-#' and renamed violent crime to violence and sexual offences. Earlier archive
-#' files therefore use a smaller legacy set; `lamp_read_crime()` maps legacy
-#' labels where the mapping is one to one and flags the rest.
+#' The category set was verified against the police.uk API and archive files
+#' on 2026-09-16. It has been stable since the May 2013 data, when
+#' data.police.uk introduced bicycle theft and theft from the person
+#' (previously within other theft), split public disorder and weapons into
+#' possession of weapons and public order, and renamed violent crime to
+#' violence and sexual offences. Files for September 2011 to April 2013 use
+#' eleven categories and files for December 2010 to August 2011 only six, with
+#' a very broad other crime. `since` gives the first data month of each
+#' current category; [lamp_read_crime()] maps legacy labels where the mapping
+#' is one to one and keeps `Public disorder and weapons` as its own level.
 #'
 #' `group` follows the Home Office offence groups with the six theft
 #' categories combined; `broad_group` collapses further into `violent`,
@@ -65,27 +68,38 @@ lamp_crime_types <- function() {
       "asb", "acquisitive", "acquisitive", "damage", "drugs", "other",
       "acquisitive", "violent", "violent", "violent", "acquisitive",
       "acquisitive", "acquisitive", "violent"
-    )
+    ),
+    since = as.Date(c(
+      "2010-12-01", "2013-05-01", "2010-12-01", "2011-09-01", "2011-09-01",
+      "2010-12-01", "2011-09-01", "2013-05-01", "2013-05-01", "2010-12-01",
+      "2011-09-01", "2013-05-01", "2010-12-01", "2013-05-01"
+    ))
   )
 }
 
-# Legacy labels used in street files before the June 2013 category change.
-# One-to-one mappings are resolved by the reader; NA marks a category that was
-# later split and cannot be mapped forward.
-# TODO(source): verify the exact legacy strings against 2011 to 2013 archive
-# files when the archive reader lands in M1.
+# Legacy labels used in street files before the May 2013 category change,
+# verified against archive files on 2026-09-16: six categories from December
+# 2010 to August 2011, eleven from September 2011 to April 2013. One-to-one
+# renames are resolved by the reader; NA marks a category that was later
+# split and cannot be mapped forward.
 lamp_legacy_crime_types <- function() {
   tibble::tibble(
     legacy_label = c(
-      "Violent crime", "Public disorder and weapons", "Other theft"
+      "Violent crime", "Public disorder and weapons", "Other theft", "Other crime"
     ),
     crime_type = c(
-      "Violence and sexual offences", NA_character_, "Other theft"
+      "Violence and sexual offences", NA_character_, "Other theft", "Other crime"
     ),
+    from = as.Date(c("2010-12-01", "2011-09-01", "2011-09-01", "2010-12-01")),
+    to = as.Date(c("2013-04-01", "2013-04-01", "2013-04-01", "2011-08-01")),
     note = c(
-      "renamed June 2013",
-      "split into possession of weapons and public order in June 2013",
-      "included bicycle theft and theft from the person before June 2013"
+      "renamed Violence and sexual offences in May 2013",
+      "split into Possession of weapons and Public order in May 2013",
+      "included Bicycle theft and Theft from the person until April 2013",
+      paste(
+        "until August 2011 also held Criminal damage and arson, Drugs,",
+        "Other theft, Shoplifting, Public disorder and weapons"
+      )
     )
   )
 }
@@ -115,11 +129,15 @@ lamp_legacy_crime_types <- function() {
 #' 2019 onwards are unavailable, so these categories are sparse after that
 #' date and `charged_or_summonsed` should be read as the charge stage.
 #'
-#' The category list was verified against the police.uk API documentation on
-#' 2026-09-16.
+#' The category list was verified against the police.uk API documentation and
+#' against archive files on 2026-09-16. `outcome_type` is the string written
+#' in the archive CSV files; where the API documentation names a category
+#' differently (`Offender given penalty notice` appears there as `Offender
+#' given a penalty notice`) the API name is kept in `api_name` and
+#' [lamp_read_outcomes()] accepts either.
 #'
-#' @return A tibble with columns `outcome_type`, `code`, `group` (factor with
-#'   the six levels above) and `is_court_outcome`.
+#' @return A tibble with columns `outcome_type`, `api_name`, `code`, `group`
+#'   (factor with the six levels above) and `is_court_outcome`.
 #' @family bundled data
 #' @seealso [lamp_crime_types()]
 #' @export
@@ -148,7 +166,7 @@ lamp_outcome_types <- function() {
     "out_of_court", FALSE,
     "Offender given a drugs possession warning", "drugs-possession-warning",
     "out_of_court", FALSE,
-    "Offender given a penalty notice", "penalty-notice-issued",
+    "Offender given penalty notice", "penalty-notice-issued",
     "out_of_court", FALSE,
     "Offender given community sentence", "community-penalty",
     "charged_or_summonsed", TRUE,
@@ -186,7 +204,11 @@ lamp_outcome_types <- function() {
     "unknown", FALSE
   )
   x$group <- factor(x$group, levels = lamp_outcome_groups())
-  x
+  # Name used by the police.uk API documentation where it differs from the
+  # string written in the archive CSV files (verified 2026-09-16).
+  x$api_name <- x$outcome_type
+  x$api_name[x$outcome_type == "Offender given penalty notice"] <- "Offender given a penalty notice"
+  x[, c("outcome_type", "api_name", "code", "group", "is_court_outcome")]
 }
 
 lamp_outcome_groups <- function() {

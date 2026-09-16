@@ -5,9 +5,13 @@ test_that("crime types are the fourteen data.police.uk categories", {
     ct,
     c(
       "crime_type", "key", "api_slug", "is_asb", "in_crime_total", "group",
-      "broad_group"
+      "broad_group", "since"
     )
   )
+  expect_s3_class(ct$since, "Date")
+  expect_equal(ct$since[ct$crime_type == "Bicycle theft"], as.Date("2013-05-01"))
+  expect_equal(ct$since[ct$crime_type == "Drugs"], as.Date("2011-09-01"))
+  expect_equal(ct$since[ct$crime_type == "Burglary"], as.Date("2010-12-01"))
   expect_equal(nrow(ct), 14L)
   expect_setequal(
     ct$crime_type,
@@ -58,7 +62,8 @@ test_that("crime type groupings are complete and consistent", {
 
 test_that("legacy labels map to a current category or NA", {
   lg <- lamp_legacy_crime_types()
-  expect_named(lg, c("legacy_label", "crime_type", "note"))
+  expect_named(lg, c("legacy_label", "crime_type", "from", "to", "note"))
+  expect_true(all(lg$to >= lg$from))
   mapped <- lg$crime_type[!is.na(lg$crime_type)]
   expect_true(all(mapped %in% lamp_crime_types()$crime_type))
   split_label <- lg$legacy_label == "Public disorder and weapons"
@@ -72,7 +77,9 @@ test_that("legacy labels map to a current category or NA", {
 test_that("outcome types cover the 28 police.uk categories with six groups", {
   ot <- lamp_outcome_types()
   expect_s3_class(ot, "tbl_df")
-  expect_named(ot, c("outcome_type", "code", "group", "is_court_outcome"))
+  expect_named(ot, c("outcome_type", "api_name", "code", "group", "is_court_outcome"))
+  expect_equal(sum(ot$api_name != ot$outcome_type), 1L)
+  expect_true("Offender given penalty notice" %in% ot$outcome_type)
   expect_equal(nrow(ot), 28L)
   expect_false(anyDuplicated(ot$outcome_type) > 0L)
   expect_false(anyDuplicated(ot$code) > 0L)

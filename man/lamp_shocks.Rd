@@ -32,6 +32,7 @@ shocks[shocks$kind == "stop_search_policy", c("name", "start", "end")]
 Other bundled data: 
 \code{\link{lamp_bank_holidays}()},
 \code{\link{lamp_crime_types}()},
+\code{\link{lamp_forces}()},
 \code{\link{lamp_lsoa_lookup}()},
 \code{\link{lamp_outcome_types}()}
 }
