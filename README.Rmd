@@ -39,10 +39,59 @@ pak::pak("black-thrive-global/streetlamp")
 
 ## Status
 
-Milestone M0 (skeleton) is complete: package infrastructure, continuous
-integration, and the bundled reference tables below. Ingestion of the
-data.police.uk archive (M1), panel construction and coverage audit (M2),
-treatment definitions and estimators (M3 and M4) and reporting (M5) follow.
+Milestones M0 (skeleton) and M1 (ingestion and versioning) are complete:
+package infrastructure, continuous integration, the bundled reference tables,
+selective download from the data.police.uk archive, one-version-per-file
+selection with the alternatives recorded, and readers for crime, outcomes and
+stop counts that carry a panel contract. Panel construction and the coverage
+audit (M2), treatment definitions and estimators (M3 and M4) and reporting
+(M5) follow.
+
+## Reading the archive
+
+The data.police.uk archive publishes one zip per month, each 1 to 2.6 GB.
+`streetlamp` reads a zip's table of contents with an HTTP byte-range request
+and fetches only the force-month files you ask for, so a three-year pull for
+two forces is tens of megabytes. The package ships two miniature archive
+snapshots (real records for a subset of West Yorkshire and Dyfed-Powys
+neighbourhoods, May to July 2026), so everything below runs offline.
+
+```{r}
+library(streetlamp)
+
+cache <- tempfile("streetlamp-cache-")
+zips <- list.files(
+  system.file("extdata", "archive", package = "streetlamp"),
+  pattern = "zip$", full.names = TRUE
+)
+for (z in zips) lamp_archive_register(z, dir = cache)
+snap <- lamp_archive_snapshot(cache)
+snap
+
+# The same force-month can appear in several snapshots with different content
+versions <- lamp_list_versions(snap)
+versions[versions$differs, c("force_id", "month", "file_type", "n_versions")]
+lamp_version_diff(snap, "west-yorkshire", "2026-05", "outcomes")
+
+# Readers return tibbles with a fixed schema and a contract
+crime <- lamp_read_crime(snap, forces = "dyfed-powys")
+table(crime$crime_type)
+lamp_contract(crime)$coverage
+
+stops <- lamp_read_stop_counts(snap)
+stops
+```
+
+With network access, `lamp_archive_download()` fetches force-month files from
+the live archive into the cache:
+
+``` r
+snap <- lamp_archive_download(
+  archives = "latest",
+  months = c("2026-05", "2026-06", "2026-07"),
+  forces = c("west-yorkshire", "dyfed-powys")
+)
+```
 
 ## Bundled reference tables
 

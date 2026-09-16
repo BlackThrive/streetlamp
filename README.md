@@ -28,11 +28,121 @@ pak::pak("black-thrive-global/streetlamp")
 
 ## Status
 
-Milestone M0 (skeleton) is complete: package infrastructure, continuous
-integration, and the bundled reference tables below. Ingestion of the
-data.police.uk archive (M1), panel construction and coverage audit (M2),
-treatment definitions and estimators (M3 and M4) and reporting (M5)
-follow.
+Milestones M0 (skeleton) and M1 (ingestion and versioning) are complete:
+package infrastructure, continuous integration, the bundled reference
+tables, selective download from the data.police.uk archive,
+one-version-per-file selection with the alternatives recorded, and
+readers for crime, outcomes and stop counts that carry a panel contract.
+Panel construction and the coverage audit (M2), treatment definitions
+and estimators (M3 and M4) and reporting (M5) follow.
+
+## Reading the archive
+
+The data.police.uk archive publishes one zip per month, each 1 to 2.6
+GB. `streetlamp` reads a zip’s table of contents with an HTTP byte-range
+request and fetches only the force-month files you ask for, so a
+three-year pull for two forces is tens of megabytes. The package ships
+two miniature archive snapshots (real records for a subset of West
+Yorkshire and Dyfed-Powys neighbourhoods, May to July 2026), so
+everything below runs offline.
+
+``` r
+library(streetlamp)
+
+cache <- tempfile("streetlamp-cache-")
+zips <- list.files(
+  system.file("extdata", "archive", package = "streetlamp"),
+  pattern = "zip$", full.names = TRUE
+)
+for (z in zips) lamp_archive_register(z, dir = cache)
+#> Registered archive "2026-06" from
+#> 'C:/Users/musta/AppData/Local/Temp/RtmpCUPbRv/temp_libpathd86c1868634e/streetlamp/extdata/archive/2026-06.zip'.
+#> Registered archive "2026-07" from
+#> 'C:/Users/musta/AppData/Local/Temp/RtmpCUPbRv/temp_libpathd86c1868634e/streetlamp/extdata/archive/2026-07.zip'.
+snap <- lamp_archive_snapshot(cache)
+snap
+#> 
+#> ── streetlamp archive snapshot 
+#> Cache:
+#> 'C:\Users\musta\AppData\Local\Temp\RtmpcjYpNR\streetlamp-cache-921028483bac'
+#> 2 archives: "2026-06" and "2026-07"
+#> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
+#> locally.
+#>   outcomes: 10 of 10 available
+#>   stop-and-search: 5 of 5 available
+#>   street: 10 of 10 available
+
+# The same force-month can appear in several snapshots with different content
+versions <- lamp_list_versions(snap)
+versions[versions$differs, c("force_id", "month", "file_type", "n_versions")]
+#> # A tibble: 7 × 4
+#>   force_id       month      file_type n_versions
+#>   <chr>          <date>     <chr>          <int>
+#> 1 dyfed-powys    2026-05-01 outcomes           2
+#> 2 dyfed-powys    2026-05-01 street             2
+#> 3 dyfed-powys    2026-06-01 outcomes           2
+#> 4 dyfed-powys    2026-06-01 street             2
+#> 5 west-yorkshire 2026-05-01 outcomes           2
+#> 6 west-yorkshire 2026-05-01 street             2
+#> 7 west-yorkshire 2026-06-01 street             2
+lamp_version_diff(snap, "west-yorkshire", "2026-05", "outcomes")
+#> # A tibble: 2 × 5
+#>   archive n_rows n_ids ids_not_in_others crc32   
+#>   <chr>    <int> <int>             <int> <chr>   
+#> 1 2026-06   1761  1728                 3 efe93414
+#> 2 2026-07   1756  1725                 0 34133345
+
+# Readers return tibbles with a fixed schema and a contract
+crime <- lamp_read_crime(snap, forces = "dyfed-powys")
+table(crime$crime_type)
+#> 
+#>        Anti-social behaviour                Bicycle theft 
+#>                          317                           16 
+#>                     Burglary    Criminal damage and arson 
+#>                           99                          286 
+#>                        Drugs                  Other crime 
+#>                           77                           71 
+#>                  Other theft        Possession of weapons 
+#>                          170                           29 
+#>                 Public order                      Robbery 
+#>                          227                            8 
+#>                  Shoplifting        Theft from the person 
+#>                          169                           14 
+#>                Vehicle crime Violence and sexual offences 
+#>                           47                         1342 
+#>  Public disorder and weapons 
+#>                            0
+lamp_contract(crime)$coverage
+#> # A tibble: 3 × 8
+#>   force_id    month      file_type status    archive n_records n_versions
+#>   <chr>       <date>     <chr>     <chr>     <chr>       <int>      <int>
+#> 1 dyfed-powys 2026-05-01 street    submitted 2026-07       968          2
+#> 2 dyfed-powys 2026-06-01 street    submitted 2026-07       925          2
+#> 3 dyfed-powys 2026-07-01 street    submitted 2026-07       979          1
+#> # ℹ 1 more variable: versions_differ <lgl>
+
+stops <- lamp_read_stop_counts(snap)
+stops
+#> streetlamp records with a contract; see `lamp_contract()`.
+#> # A tibble: 3 × 8
+#>   area           force_id   month      archive stops stops_s60 stops_no_location
+#>   <chr>          <chr>      <date>     <chr>   <int>     <int>             <int>
+#> 1 west-yorkshire west-york… 2026-05-01 2026-07  1254         0                10
+#> 2 west-yorkshire west-york… 2026-06-01 2026-07  1095         0                10
+#> 3 west-yorkshire west-york… 2026-07-01 2026-07  1130         0                10
+#> # ℹ 1 more variable: stops_no_legislation <int>
+```
+
+With network access, `lamp_archive_download()` fetches force-month files
+from the live archive into the cache:
+
+``` r
+snap <- lamp_archive_download(
+  archives = "latest",
+  months = c("2026-05", "2026-06", "2026-07"),
+  forces = c("west-yorkshire", "dyfed-powys")
+)
+```
 
 ## Bundled reference tables
 
@@ -45,23 +155,23 @@ library(streetlamp)
 
 # The fourteen data.police.uk categories with package groupings
 lamp_crime_types()
-#> # A tibble: 14 × 7
-#>    crime_type             key   api_slug is_asb in_crime_total group broad_group
-#>    <chr>                  <chr> <chr>    <lgl>  <lgl>          <chr> <chr>      
-#>  1 Anti-social behaviour  anti… anti-so… TRUE   FALSE          asb   asb        
-#>  2 Bicycle theft          bicy… bicycle… FALSE  TRUE           theft acquisitive
-#>  3 Burglary               burg… burglary FALSE  TRUE           theft acquisitive
-#>  4 Criminal damage and a… crim… crimina… FALSE  TRUE           crim… damage     
-#>  5 Drugs                  drugs drugs    FALSE  TRUE           drugs drugs      
-#>  6 Other crime            othe… other-c… FALSE  TRUE           other other      
-#>  7 Other theft            othe… other-t… FALSE  TRUE           theft acquisitive
-#>  8 Possession of weapons  poss… possess… FALSE  TRUE           poss… violent    
-#>  9 Public order           publ… public-… FALSE  TRUE           publ… violent    
-#> 10 Robbery                robb… robbery  FALSE  TRUE           robb… violent    
-#> 11 Shoplifting            shop… shoplif… FALSE  TRUE           theft acquisitive
-#> 12 Theft from the person  thef… theft-f… FALSE  TRUE           theft acquisitive
-#> 13 Vehicle crime          vehi… vehicle… FALSE  TRUE           theft acquisitive
-#> 14 Violence and sexual o… viol… violent… FALSE  TRUE           viol… violent
+#> # A tibble: 14 × 8
+#>    crime_type  key   api_slug is_asb in_crime_total group broad_group since     
+#>    <chr>       <chr> <chr>    <lgl>  <lgl>          <chr> <chr>       <date>    
+#>  1 Anti-socia… anti… anti-so… TRUE   FALSE          asb   asb         2010-12-01
+#>  2 Bicycle th… bicy… bicycle… FALSE  TRUE           theft acquisitive 2013-05-01
+#>  3 Burglary    burg… burglary FALSE  TRUE           theft acquisitive 2010-12-01
+#>  4 Criminal d… crim… crimina… FALSE  TRUE           crim… damage      2011-09-01
+#>  5 Drugs       drugs drugs    FALSE  TRUE           drugs drugs       2011-09-01
+#>  6 Other crime othe… other-c… FALSE  TRUE           other other       2010-12-01
+#>  7 Other theft othe… other-t… FALSE  TRUE           theft acquisitive 2011-09-01
+#>  8 Possession… poss… possess… FALSE  TRUE           poss… violent     2013-05-01
+#>  9 Public ord… publ… public-… FALSE  TRUE           publ… violent     2013-05-01
+#> 10 Robbery     robb… robbery  FALSE  TRUE           robb… violent     2010-12-01
+#> 11 Shoplifting shop… shoplif… FALSE  TRUE           theft acquisitive 2011-09-01
+#> 12 Theft from… thef… theft-f… FALSE  TRUE           theft acquisitive 2013-05-01
+#> 13 Vehicle cr… vehi… vehicle… FALSE  TRUE           theft acquisitive 2010-12-01
+#> 14 Violence a… viol… violent… FALSE  TRUE           viol… violent     2013-05-01
 
 # Dated national shocks for use as default intervention definitions
 shocks <- lamp_shocks()
