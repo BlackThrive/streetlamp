@@ -1,0 +1,20 @@
+url: https://black-thrive-global.github.io/streetlamp/
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#1f2a44"
+
+reference:
+- title: Bundled reference tables
+  desc: >
+    Curated tables shipped with the package: crime and outcome
+    classifications, national policy shocks, bank holidays and the ONS
+    LSOA code lists and 2011 to 2021 best-fit lookup.
+  contents:
+  - has_concept("bundled data")
+- title: Cache
+  contents:
+  - has_concept("cache")
+- title: Package
+  contents:
+  - streetlamp-package
