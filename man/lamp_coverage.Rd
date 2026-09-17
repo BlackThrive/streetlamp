@@ -64,6 +64,7 @@ lamp_coverage_compare(cov, c("2024-08", "2025-07"), c("2025-08", "2026-07"),
 \seealso{
 Other panel: 
 \code{\link{lamp_adjacency}()},
+\code{\link{lamp_adjacency_from_nb}()},
 \code{\link{lamp_boundaries}()},
 \code{\link{lamp_changelog}()},
 \code{\link{lamp_panel}()},

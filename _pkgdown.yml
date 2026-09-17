@@ -18,6 +18,30 @@ reference:
     audit.
   contents:
   - has_concept("panel")
+- title: Treatment
+  desc: >
+    Define what is being evaluated: a continuous stop intensity, an
+    intervention in named areas, staggered adoption dates, or a dated shock.
+  contents:
+  - has_concept("treatment")
+- title: Estimators
+  desc: >
+    Panel estimators, each reporting its identifying assumption, clustered
+    standard errors and the force-months it excluded.
+  contents:
+  - has_concept("estimators")
+- title: Diagnostics
+  desc: >
+    What the estimates are worth: pre-trend testing with power, and placebo
+    tests in time, space and outcome.
+  contents:
+  - has_concept("diagnostics")
+- title: Simulation
+  contents:
+  - has_concept("simulation")
+- title: Reporting
+  contents:
+  - has_concept("reporting")
 - title: Contract
   contents:
   - has_concept("contract")
