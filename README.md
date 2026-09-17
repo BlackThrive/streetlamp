@@ -28,12 +28,25 @@ pak::pak("black-thrive-global/streetlamp")
 
 ## Status
 
-Milestones M0 to M2 are complete: package infrastructure and continuous
-integration; selective download from the data.police.uk archive with
-one-version-per-file selection and readers that carry a panel contract;
-ONS boundaries, adjacency, Census 2021 population, deprivation deciles,
-the balanced area-by-month panel and the coverage audit. Treatment
-definitions and estimators (M3 and M4) and reporting (M5) follow.
+All milestones are complete: acquisition and versioning, geography and
+population, the panel and its coverage audit, treatment definitions, the
+estimators and their diagnostics, and reporting. `R CMD check --as-cran`
+is clean. Before a CRAN submission the repository still needs to exist
+so that the continuous integration matrix can run; see
+`RELEASE_READY.md`.
+
+## What it estimates
+
+| Question | Function |
+|----|----|
+| Did crime fall after a dated intervention? | `lamp_event_study()`, `lamp_twfe()` |
+| Areas adopted at different dates | `lamp_did_staggered()` |
+| Did crime move next door instead? | `lamp_spillover()`, `lamp_displacement_quotient()` |
+| One treated force, many comparison areas | `lamp_synth()` |
+| How does crime respond to search intensity? | `lamp_elasticity()` |
+| How does searching follow crime? | `lamp_allocation()` |
+| How many crimes per thousand searches? | `lamp_crimes_prevented()` |
+| Is the estimate worth anything? | `lamp_pretrends()`, `lamp_placebo()` |
 
 ## Quick start on the bundled panel
 
@@ -97,6 +110,68 @@ adj
 The plot methods draw force-month totals with missing months shaded
 (`plot(panel)`) and the coverage grid as a heat map (`plot(cov)`).
 
+## Estimating, and checking the estimate
+
+``` r
+# a dated intervention on a simulated panel whose true effect is known
+sim <- lamp_simulate(n_areas = 60, n_months = 24, design = "event", effect = -0.25, seed = 1)
+truth <- attr(sim, "truth")
+tr <- lamp_treatment(sim, "event", date = truth$event_date, scope = truth$treated_areas)
+
+fit <- lamp_twfe(sim, "crime_total", tr)
+fit
+#> 
+#> ── streetlamp estimate: lamp_twfe
+#> Outcome: crime_total; family: Poisson pseudo-likelihood on counts
+#> Treatment: event; clustered by area
+#> Identifying assumption: Parallel trends: treated and control areas would have
+#> moved together in the outcome, net of area and month fixed effects.
+#> Sample: 1440 area-months in 60 areas; 0 rows dropped for coverage.
+#> Dispersion: 0.942
+#>   term estimate std_error statistic  p_value conf_low conf_high
+#>  treat   -0.242    0.0386     -6.28 3.47e-10   -0.318    -0.166
+
+# the true effect on the crime total, for comparison
+truth$effect_crime_total
+#> [1] -0.2283871
+```
+
+Every estimate prints the assumption it rests on and the force-months it
+had to drop. The diagnostics are the point of the package as much as the
+estimators are:
+
+``` r
+es <- lamp_event_study(sim, "crime_total", tr, window = c(-6, 6))
+
+# how large a pre-trend would this test have missed, and what would it cost?
+lamp_pretrends(es)$power
+#> # A tibble: 2 × 3
+#>   power  slope bias_mean_post
+#>   <dbl>  <dbl>          <dbl>
+#> 1   0.5 0.0376          0.150
+#> 2   0.8 0.0509          0.204
+
+# does the specification produce effects where none exist?
+lamp_placebo(fit, type = "space", n = 50, seed = 1)$p_value
+#> [1] 0
+```
+
+## Reading the results honestly
+
+Police send officers where crime has risen, so searching responds to
+crime as well as possibly reducing it. `lamp_allocation()` measures that
+channel, and nothing else in the package should be read without it.
+
+``` r
+lamp_allocation(sim, crime_lags = 1:3)$diagnostics$interpretation
+#> [1] "Searching falls where recent crime has risen, which is the opposite of the usual allocation pattern and worth checking before relying on it."
+```
+
+`inst/NOTES/methods.md` sets out the equations, the assumption behind
+each estimator, and the limits that apply to all of them: recording
+practice, anonymised locations, and the fact that recorded crime is what
+the police wrote down.
+
 ## Reading the archive
 
 The data.police.uk archive publishes one zip per month, each 1 to 2.6
@@ -115,15 +190,15 @@ zips <- list.files(
 )
 for (z in zips) lamp_archive_register(z, dir = cache)
 #> Registered archive "2026-06" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmpmaw43m/temp_libpathaa14126d2041/streetlamp/extdata/archive/2026-06.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmp0mWRoe/temp_libpath802417d172d3/streetlamp/extdata/archive/2026-06.zip'.
 #> Registered archive "2026-07" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmpmaw43m/temp_libpathaa14126d2041/streetlamp/extdata/archive/2026-07.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmp0mWRoe/temp_libpath802417d172d3/streetlamp/extdata/archive/2026-07.zip'.
 snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\RtmpSkJak7\streetlamp-cache-9a6446bb7b41'
+#> 'C:\Users\musta\AppData\Local\Temp\RtmpYzMunE\streetlamp-cache-848872321484'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.

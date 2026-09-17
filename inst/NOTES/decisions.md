@@ -4,6 +4,43 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-18, milestone M3
+
+41. **Estimate class order is `c("<estimator>", "lamp_estimate")`**, the
+    reverse of the order written in the specification. S3 dispatches on the
+    first class, so the specification's order would send every
+    `print()` and `plot()` call to the shared method and the event-study plot
+    would never run. Both classes are present, which is what the
+    specification's requirement is for.
+42. **`lamp_treatment()` returns a treatment object, not a modified panel.**
+    Estimators take it as an argument, join it by area and month, and copy it
+    into the estimate's contract. A bare column name is also accepted. This
+    satisfies both the specification's "returns a `lamp_treatment` object"
+    and the estimators' `treatment` argument.
+43. **Estimates carry their model frame** (`x$data`) so that
+    `lamp_placebo()` can refit without the caller passing the panel again,
+    as the specification's signature `lamp_placebo(estimate, type, n)`
+    requires.
+44. **The simulator's effect applies to every crime type except bicycle
+    theft**, which is therefore a genuine placebo outcome. The implied effect
+    on `crime_total` is smaller in size than `effect` and is recorded as
+    `truth$effect_crime_total`; tests compare against whichever is right for
+    the outcome they use.
+45. **Pre-trend power follows Roth (2022) and is implemented directly**: the
+    Wald statistic under a linear violation of slope `s` is non-central
+    chi-square with non-centrality `s^2 t' V^-1 t`, inverted for the slope
+    detected with given probability, and reported with the bias that slope
+    would put into the post-period estimates.
+46. **Placebo p values are randomisation shares**, not tests of a null:
+    the share of placebo estimates at least as large in size as the real
+    one. Small is good; the printed interpretation says which way round it
+    reads.
+47. **`lamp_event_study()` refuses staggered adoption outright in M3** and
+    names `lamp_did_staggered()`. In M4, once that function exists, it will
+    call it internally as the specification requires.
+48. **`withr` moves to Imports** because the simulator and placebo use
+    `withr::local_seed()` in package code, not only in tests.
+
 ## 2026-09-16, milestone M2
 
 32. **Boundaries are the ONS generalised clipped (BGC) layers, read from the

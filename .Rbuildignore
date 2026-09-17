@@ -17,3 +17,5 @@
 ^\.claude$
 ^codecov\.yml$
 ^\.pre-commit-config\.yaml$
+^vignettes/.*\.Rmd\.orig$
+^vignettes/build\.R$

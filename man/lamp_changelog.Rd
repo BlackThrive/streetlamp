@@ -37,6 +37,7 @@ cl[cl$force_id == "west-yorkshire", ]
 \seealso{
 Other panel: 
 \code{\link{lamp_adjacency}()},
+\code{\link{lamp_adjacency_from_nb}()},
 \code{\link{lamp_boundaries}()},
 \code{\link{lamp_coverage}()},
 \code{\link{lamp_panel}()},

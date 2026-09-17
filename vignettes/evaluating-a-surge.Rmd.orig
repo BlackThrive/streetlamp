@@ -1,0 +1,148 @@
+---
+title: "Evaluating a stop and search surge"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Evaluating a stop and search surge}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.path = "figures/surge-", fig.width = 7, fig.height = 4.5)
+```
+
+A force floods some areas with stop and search from a given month. Did
+recorded crime fall? This vignette works through the question on a simulated
+panel whose true answer is known, so that every estimate can be checked
+against it.
+
+```{r library}
+library(streetlamp)
+```
+
+## A panel with a known answer
+
+```{r simulate}
+sim <- lamp_simulate(
+  n_areas = 100, n_months = 30, design = "event",
+  effect = -0.25, base_rate = 30, missing = 0.05, seed = 2026
+)
+truth <- attr(sim, "truth")
+c(
+  effect_on_affected_types = truth$effect,
+  effect_on_crime_total = truth$effect_crime_total,
+  treated_areas = length(truth$treated_areas)
+)
+```
+
+The effect is applied to every crime type except bicycle theft, so the total
+moves by less than `effect`: that smaller number is what an estimator on
+`crime_total` should recover. Bicycle theft is left alone on purpose, to serve
+as a placebo outcome later.
+
+## Defining the treatment
+
+```{r treatment}
+tr <- lamp_treatment(
+  sim, "event",
+  date = truth$event_date, scope = truth$treated_areas, window = c(-12, 12)
+)
+tr
+```
+
+## Two-way fixed effects
+
+```{r twfe}
+fit <- lamp_twfe(sim, "crime_total", tr)
+fit
+```
+
+The estimate is close to the truth, and the interval covers it. The print
+method leads with the identifying assumption and with the number of
+force-months dropped because the force did not submit, since both bear on
+whether the number means anything.
+
+```{r compare-truth}
+c(estimate = fit$coefficients$estimate[1], truth = truth$effect_crime_total)
+```
+
+## The event study
+
+A single number hides the path. The event study estimates one coefficient per
+month relative to the intervention.
+
+```{r event-study}
+es <- lamp_event_study(sim, "crime_total", tr, window = c(-8, 8))
+es
+```
+
+```{r plot-es, fig.alt = "Event study coefficients by month relative to the intervention, flat before and negative after"}
+plot(es)
+```
+
+The pre-period coefficients are flat, which is the visible form of the
+parallel-trends assumption.
+
+## What the pre-trend test is worth
+
+A pre-trend test that does not reject is weak evidence, and how weak is
+computable.
+
+```{r pretrends}
+pt <- lamp_pretrends(es)
+pt
+```
+
+The power table is the part that matters. It reports the linear trend the test
+would catch half the time and four times in five, and the bias each would put
+into the post-period estimates. If that bias is the same size as the estimate,
+a passing test has told you very little.
+
+## Placebo tests
+
+Three ways of asking whether the specification manufactures effects.
+
+```{r placebo-space}
+lamp_placebo(fit, type = "space", n = 100, seed = 1)
+```
+
+```{r placebo-time}
+lamp_placebo(fit, type = "time", n = 10)
+```
+
+```{r placebo-outcome}
+lamp_placebo(fit, type = "outcome", outcome = "bicycle_theft")
+```
+
+Reassigning the treatment to random areas, or moving the date back into the
+pre-period, produces nothing like the real estimate, and bicycle theft does not
+move. Had any of them reproduced the result, the estimate would be measuring
+something other than the intervention.
+
+## Converting to crimes prevented
+
+The question is usually asked in crimes, not log points. The conversion needs
+to know how many searches the surge actually added.
+
+```{r prevented}
+lamp_crimes_prevented(fit, sim, stops_added = 8, per_stops = 1000, seed = 1)
+```
+
+The assumption chain is printed with the number because every link in it can
+fail: the figure counts recorded crime only, applies an average effect at the
+margin, and inherits the identifying assumption of the estimate it came from.
+
+## When adoption is staggered
+
+If areas start at different dates, this whole approach is wrong: relative-time
+dummies in a two-way fixed effects regression use already-treated areas as
+controls. The event study refuses rather than returning a biased number.
+
+```{r staggered-refusal, error = TRUE}
+staggered <- lamp_simulate(n_areas = 60, n_months = 30, design = "staggered", seed = 11)
+ad <- attr(staggered, "truth")$adoption
+tr_stag <- lamp_treatment(staggered, "staggered", adoption = ad[!is.na(ad$adoption_month), ])
+lamp_event_study(staggered, "crime_total", tr_stag)
+```
+
+The staggered vignette continues from here.
