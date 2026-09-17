@@ -1,0 +1,162 @@
+---
+title: "From archive to audited crime panel"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{From archive to audited crime panel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.path = "figures/panel-", fig.width = 7, fig.height = 4.5)
+```
+
+This vignette follows a crime panel from the published archive to a table you
+can estimate on, and shows what the package refuses to do quietly along the
+way.
+
+```{r library}
+library(streetlamp)
+```
+
+## The archive is a stack of snapshots, not a database
+
+data.police.uk publishes one zip per month. Each holds every force's street,
+outcomes and stop-and-search files for a window of months, so the same
+force-month appears in many snapshots and its contents can differ between
+them. `streetlamp` never merges those versions: it lists them, picks one by an
+explicit rule, and records the alternatives.
+
+The package ships two miniature snapshots so that this runs offline.
+
+```{r register}
+cache <- tempfile("streetlamp-cache-")
+zips <- list.files(
+  system.file("extdata", "archive", package = "streetlamp"),
+  pattern = "zip$", full.names = TRUE
+)
+for (z in zips) lamp_archive_register(z, dir = cache)
+
+snap <- lamp_archive_snapshot(cache)
+snap
+```
+
+Two snapshots cover the same months, so most files exist twice.
+
+```{r versions}
+versions <- lamp_list_versions(snap)
+versions[, c("force_id", "month", "file_type", "n_versions", "differs")]
+```
+
+`differs` compares checksums. Street files almost always differ between
+snapshots, because outcomes attached to old crimes keep being updated, so a
+checksum change does not mean the force re-supplied the month. To see what
+actually changed, compare the versions:
+
+```{r diff}
+lamp_version_diff(snap, "west-yorkshire", "2026-05", "outcomes")
+```
+
+Ten crime identifiers present in the June snapshot are gone from the July one.
+That is a real revision, and it is why the version used is recorded in the
+contract of everything built from it.
+
+## Reading
+
+The readers return a fixed schema with the raw labels preserved.
+
+```{r read}
+crime <- lamp_read_crime(snap)
+crime[1:3, c("crime_id", "month", "force_id", "crime_type", "lsoa_code", "is_asb")]
+```
+
+Two things are worth pausing on.
+
+```{r asb}
+asb <- crime[crime$is_asb, ]
+c(asb_rows = nrow(asb), with_a_crime_id = sum(!is.na(asb$crime_id)))
+```
+
+Anti-social behaviour carries no crime identifier and no outcome, because it
+is not a crime. It stays in its own series and out of the crime total.
+
+```{r vintage}
+lamp_lsoa_vintage(crime)[, c("force_id", "month", "vintage", "basis", "n_only_2021")]
+```
+
+The publisher moved from 2011 to 2021 LSOA boundaries with the June 2023 data,
+but archive snapshots keep each month at the vintage it was first published
+with. The reader therefore detects the vintage of every file separately, by
+matching codes against the bundled ONS lists.
+
+## Building the panel
+
+`lamp_panel()` turns records into a balanced area-by-month table. The panel
+covers every area in the police force areas of the forces present, not only
+the areas that happen to have a recorded crime.
+
+```{r panel}
+panel <- lamp_panel(crime, area = "lad")
+panel[1:4, c("area", "month", "force_id", "crime_total", "asb", "coverage_status")]
+```
+
+Districts with no recorded crime in a submitted month are zeros. Districts in
+a month the force did not submit are `NA`. That distinction is the point:
+
+```{r missing}
+wider <- lamp_read_crime(snap, months = c("2026-04", "2026-05"), forces = c("dyfed-powys", "west-yorkshire"))
+gap <- lamp_panel(wider, area = "lad")
+table(gap$coverage_status, is.na(gap$crime_total))
+```
+
+April is missing from both forces in these snapshots, so every April cell is
+`NA` rather than zero. An estimator that treated those as zero crimes would
+read the gap as a collapse in crime.
+
+## The coverage audit
+
+```{r coverage}
+stops <- lamp_read_stop_counts(snap, forces = c("west-yorkshire", "dyfed-powys"))
+full <- lamp_panel(crime, stops = NULL, area = "pfa")
+cov <- lamp_coverage(stops)
+cov
+```
+
+Dyfed-Powys submitted crime files for these months but no stop-and-search
+files. The audit marks that mismatch, because a month with an outcome and no
+treatment measurement cannot contribute to an estimate of the treatment's
+effect.
+
+```{r compare}
+lamp_coverage_compare(
+  cov, c("2026-05", "2026-05"), c("2026-06", "2026-07"),
+  file_type = "stop-and-search"
+)
+```
+
+## The contract
+
+Everything built from the archive carries its provenance.
+
+```{r contract}
+lamp_contract(panel)
+```
+
+The contract travels with the table through subsetting and dplyr verbs, and a
+copy is attached to every estimate, so a result can always be traced back to
+the snapshot and version it came from.
+
+## The bundled sample
+
+A ready-made panel of both sample forces over two years is included, which the
+other vignettes use.
+
+```{r sample}
+sample_panel <- lamp_sample_panel()
+sample_panel
+table(lamp_coverage(sample_panel)$status)
+```
+
+```{r plot-panel, fig.alt = "Monthly crime totals by force, with months that were not submitted shaded"}
+plot(sample_panel)
+```

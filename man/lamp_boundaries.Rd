@@ -53,6 +53,7 @@ adj <- lamp_adjacency(pfa)
 \seealso{
 Other panel: 
 \code{\link{lamp_adjacency}()},
+\code{\link{lamp_adjacency_from_nb}()},
 \code{\link{lamp_changelog}()},
 \code{\link{lamp_coverage}()},
 \code{\link{lamp_panel}()},

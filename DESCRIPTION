@@ -24,8 +24,11 @@ Depends:
     R (>= 4.1.0)
 Imports:
     cli,
+    did,
     digest,
     dplyr,
+    fixest,
+    generics,
     ggplot2,
     httr2,
     rlang (>= 1.1.0),
@@ -35,14 +38,17 @@ Imports:
     tibble,
     tidyr,
     tools,
-    utils
+    utils,
+    withr
 Suggests:
+    didimputation,
     httptest2,
     knitr,
     rmarkdown,
     spelling,
-    testthat (>= 3.0.0),
-    withr
+    strucchange,
+    Synth,
+    testthat (>= 3.0.0)
 VignetteBuilder:
     knitr
 Config/testthat/edition: 3

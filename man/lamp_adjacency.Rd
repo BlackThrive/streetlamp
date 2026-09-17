@@ -45,6 +45,7 @@ adj$nb
 }
 \seealso{
 Other panel: 
+\code{\link{lamp_adjacency_from_nb}()},
 \code{\link{lamp_boundaries}()},
 \code{\link{lamp_changelog}()},
 \code{\link{lamp_coverage}()},
