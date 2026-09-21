@@ -42,7 +42,14 @@ snap <- time_it(
   lamp_archive_download(archives = archive, months = months, forces = forces, dir = cache)
 )
 available <- snap$members[snap$members$available, ]
+# uncompressed size of the member files the panel is built from; the bytes
+# that crossed the wire are smaller, because archive members are deflated
 mb <- sum(available$usize, na.rm = TRUE) / 1e6
+n_files <- nrow(available)
+cache_mb <- sum(
+  file.size(list.files(cache, recursive = TRUE, full.names = TRUE)),
+  na.rm = TRUE
+) / 1e6
 
 crime <- time_it("read crime", lamp_read_crime(snap, months = months, forces = forces))
 boundaries <- time_it("boundaries", lamp_boundaries("lsoa21", dir = cache))
@@ -70,14 +77,20 @@ result <- tibble::tibble(
   n_records = nrow(crime),
   n_areas = length(unique(panel$area)),
   n_panel_rows = nrow(panel),
-  downloaded_mb = mb,
+  n_files = n_files,
+  member_mb_uncompressed = round(mb, 1),
+  cache_mb_on_disk = round(cache_mb, 1),
   r_version = R.version.string,
   run_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 )
 utils::write.csv(result, file.path(out_dir, "benchmark.csv"), row.names = FALSE)
 print(as.data.frame(result[, c("step", "seconds")]), digits = 3)
 message(sprintf(
-  "\n%d records over %d areas and %d months; %.0f MB downloaded; %.1f s in total.",
-  nrow(crime), length(unique(panel$area)), n_months, mb, sum(unlist(timings))
+  paste(
+    "\n%d records over %d areas and %d months, from %d archive files",
+    "(%.0f MB uncompressed, %.0f MB of cache on disk); %.1f s in total."
+  ),
+  nrow(crime), length(unique(panel$area)), n_months, n_files, mb, cache_mb,
+  sum(unlist(timings))
 ))
 message("written ", file.path(out_dir, "benchmark.csv"))
