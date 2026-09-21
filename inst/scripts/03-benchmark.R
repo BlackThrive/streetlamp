@@ -37,10 +37,34 @@ months <- format(seq(idx$to[which.max(idx$to)], by = "-1 month", length.out = n_
 forces <- lamp_forces()$force_id
 if (!is.na(n_forces)) forces <- utils::head(forces, n_forces)
 
-snap <- time_it(
-  "download force-months",
-  lamp_archive_download(archives = archive, months = months, forces = forces, dir = cache)
-)
+# A national pull is several thousand byte-range requests over an hour or
+# more, and a connection that drops for longer than the request-level retry
+# will end it. Members are cached one by one, so calling again resumes where
+# it stopped; that is what this loop does, and it counts the interruptions so
+# that the timing below can be read for what it is.
+interruptions <- 0L
+download_all <- function() {
+  repeat {
+    ok <- tryCatch(
+      lamp_archive_download(
+        archives = archive, months = months, forces = forces, dir = cache
+      ),
+      streetlamp_error_network = function(e) {
+        interruptions <<- interruptions + 1L
+        message("\n  network interrupted (", interruptions, "); resuming in 60 s")
+        NULL
+      }
+    )
+    if (!is.null(ok)) {
+      return(ok)
+    }
+    if (interruptions >= 20L) {
+      stop("gave up after 20 network interruptions")
+    }
+    Sys.sleep(60)
+  }
+}
+snap <- time_it("download force-months", download_all())
 available <- snap$members[snap$members$available, ]
 # uncompressed size of the member files the panel is built from; the bytes
 # that crossed the wire are smaller, because archive members are deflated
@@ -80,6 +104,8 @@ result <- tibble::tibble(
   n_files = n_files,
   member_mb_uncompressed = round(mb, 1),
   cache_mb_on_disk = round(cache_mb, 1),
+  # each interruption adds a 60 second wait to the download timing
+  network_interruptions = interruptions,
   r_version = R.version.string,
   run_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 )
