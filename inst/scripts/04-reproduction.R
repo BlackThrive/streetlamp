@@ -13,11 +13,12 @@
 #   Rscript inst/scripts/04-reproduction.R
 
 suppressMessages(library(streetlamp))
+source(file.path("inst", "scripts", "_cache.R"))
 
 out_dir <- file.path("inst", "validation")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 fixture <- file.path(out_dir, "reproduction-london.csv")
-cache <- file.path("data-raw", "downloads", "reproduction-cache")
+cache <- lamp_validation_cache("reproduction")
 
 # The specification, fixed. Changing anything here makes a new fixture.
 spec <- list(

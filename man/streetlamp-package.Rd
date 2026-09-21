@@ -42,9 +42,9 @@ package sources for what was verified and when.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/black-thrive-global/streetlamp}
-  \item \url{https://black-thrive-global.github.io/streetlamp/}
-  \item Report bugs at \url{https://github.com/black-thrive-global/streetlamp/issues}
+  \item \url{https://github.com/Mustapha-Wasseja/streetlamp}
+  \item \url{https://mustapha-wasseja.github.io/streetlamp/}
+  \item Report bugs at \url{https://github.com/Mustapha-Wasseja/streetlamp/issues}
 }
 
 }

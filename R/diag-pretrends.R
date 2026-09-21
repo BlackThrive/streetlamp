@@ -285,20 +285,23 @@ lamp_placebo <- function(estimate, type = c("time", "space", "outcome"), n = 200
     if (length(treated_areas) == 0L || length(treated_areas) >= length(all_areas)) {
       lamp_abort("A spatial placebo needs both treated and untreated areas.", "input")
     }
+    # Each draw gives every treated area a stand-in somewhere else and copies
+    # its timing across. Done area by area that is a scan of the whole panel
+    # per treated area, which on a two-force LSOA panel is hundreds of
+    # millions of comparisons per draw; the row key does it in one lookup.
+    month_key <- lamp_month_id(d$month)
+    key <- paste(d$area, month_key)
     values <- numeric(n)
     for (i in seq_len(n)) {
-      fake <- sample(all_areas, length(treated_areas))
+      stand_in <- sample(all_areas, length(treated_areas))
+      # stand-in area -> the treated area whose timing it borrows
+      origin <- unname(stats::setNames(treated_areas, stand_in)[d$area])
+      hit <- !is.na(origin)
+      borrowed <- d$.treat[match(paste(origin[hit], month_key[hit]), key)]
       d2 <- d
-      map <- stats::setNames(fake, treated_areas)
-      # keep the timing of each treated area, move it to a random area
       d2$.treat <- 0
+      d2$.treat[hit] <- as.numeric(!is.na(borrowed) & borrowed > 0)
       d2$.rel_time <- NA_integer_
-      for (j in seq_along(treated_areas)) {
-        src <- d$area == treated_areas[j]
-        dst <- d2$area == fake[j]
-        months_on <- d$month[src & d$.treat > 0]
-        d2$.treat[dst & d2$month %in% months_on] <- 1
-      }
       values[i] <- lamp_refit(estimate, d2)
     }
     dist <- tibble::tibble(draw = seq_len(n), estimate = values, label = "random areas")

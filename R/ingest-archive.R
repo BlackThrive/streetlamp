@@ -48,13 +48,35 @@ lamp_as_months <- function(x, arg = rlang::caller_arg(x), call = rlang::caller_e
   )
 }
 
-lamp_month_id <- function(month) format(month, "%Y-%m")
+# The month of a date, as "YYYY-MM".
+#
+# This is on the hot path of every estimator: the model frame keys rows by
+# area and month, and the month fixed effect is a factor of it. `format()` on
+# a Date builds a POSIXlt and formats every element, which was four fifths of
+# the time in `lamp_twfe()` on a 24,000 row panel and would be minutes on a
+# national one. A panel has a handful of distinct months and a great many
+# rows, so only the distinct values are converted.
+lamp_month_id <- function(month) {
+  if (!inherits(month, c("Date", "POSIXt"))) {
+    return(format(month, "%Y-%m"))
+  }
+  u <- unique(month)
+  ids <- rep(NA_character_, length(u))
+  ok <- !is.na(u)
+  if (any(ok)) {
+    lt <- as.POSIXlt(u[ok])
+    ids[ok] <- sprintf("%04d-%02d", lt$year + 1900L, lt$mon + 1L)
+  }
+  # matched on the underlying numbers: `match()` on Dates goes through
+  # character conversion, which is the cost this function exists to avoid
+  ids[match(unclass(month), unclass(u))]
+}
 
 # Number of calendar months from `from` to `to` inclusive.
 lamp_months_between <- function(from, to) {
-  years <- as.integer(format(to, "%Y")) - as.integer(format(from, "%Y"))
-  months <- as.integer(format(to, "%m")) - as.integer(format(from, "%m"))
-  as.integer(12L * years + months + 1L)
+  lt_from <- as.POSIXlt(from)
+  lt_to <- as.POSIXlt(to)
+  as.integer(12L * (lt_to$year - lt_from$year) + (lt_to$mon - lt_from$mon) + 1L)
 }
 
 # Split archive member names into month, force and file type.

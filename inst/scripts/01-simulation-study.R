@@ -6,20 +6,53 @@
 # table of which estimator to use when.
 #
 # Run on a schedule, not at check time:
-#   Rscript inst/scripts/01-simulation-study.R [n_reps]
+#   Rscript inst/scripts/01-simulation-study.R [n_reps] [n_workers]
 #
-# Roughly 10 minutes for 200 replications on one core.
+# One replication of all eight grid cells takes roughly seven minutes at 400
+# areas and 60 months, so 200 replications is about a day on one core and
+# about four hours across ten. Replications are independent, so they are run
+# on a cluster of workers, and each grid cell is written out as it finishes:
+# a run that is stopped early still leaves usable results.
 
 suppressMessages(library(streetlamp))
 
 args <- commandArgs(trailingOnly = TRUE)
 n_reps <- if (length(args) > 0) as.integer(args[1]) else 200L
+n_workers <- if (length(args) > 1) {
+  as.integer(args[2])
+} else {
+  max(1L, parallel::detectCores() - 2L)
+}
 n_areas <- 400L
 n_months <- 60L
 out_dir <- file.path("inst", "validation")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
-message(sprintf("Simulation study: %d replications, %d areas, %d months", n_reps, n_areas, n_months))
+message(sprintf(
+  "Simulation study: %d replications, %d areas, %d months, %d worker%s",
+  n_reps, n_areas, n_months, n_workers, if (n_workers == 1L) "" else "s"
+))
+
+# The continuous design has no single true elasticity to compare against. The
+# outcome responds to log(1 + stops) with elasticity `effect`, but only on
+# twelve of the thirteen crime types, so the elasticity of the total depends
+# on the level of stops and is not constant. The quantity the fixed effects
+# estimator is consistent for is the slope of the noise-free log mean on
+# log(1 + stops) after area and month effects, which this computes from the
+# data-generating process and the stops actually drawn. What is left between
+# this and an estimate is the estimator's own doing: it regresses log(1 + a
+# noisy count), not the log mean.
+continuous_target <- function(sim, truth) {
+  d <- sim[sim$coverage_status != "missing" & !is.na(sim$stops), ]
+  n_types <- length(truth$affected_types) + 1L
+  n_affected <- length(truth$affected_types)
+  d$.log_s <- log1p(d$stops)
+  d$.log_mean <- log(n_affected * exp(truth$effect * d$.log_s) + (n_types - n_affected))
+  d$.area <- factor(d$area)
+  d$.month <- factor(format(d$month, "%Y-%m"))
+  fit <- fixest::feols(.log_mean ~ .log_s | .area + .month, data = d, notes = FALSE)
+  unname(stats::coef(fit)[[".log_s"]])
+}
 
 one_rep <- function(rep, design, missing) {
   sim <- lamp_simulate(
@@ -100,13 +133,14 @@ one_rep <- function(rep, design, missing) {
   }
 
   if (design == "continuous") {
+    elasticity_target <- continuous_target(sim, truth)
     for (m in c("fe", "cce_pooled", "cce_mg")) {
       fit <- try(lamp_elasticity(sim, "crime_total", lags = 0, method = m), silent = TRUE)
       if (!inherits(fit, "try-error")) {
         lr <- fit$diagnostics$long_run
         rows[[length(rows) + 1L]] <- record(
           paste0("lamp_elasticity (", m, ")"), lr$estimate, lr$conf_low, lr$conf_high,
-          target_value = NA_real_
+          target_value = elasticity_target
         )
       }
     }
@@ -119,18 +153,40 @@ grid <- expand.grid(
   missing = c(0, 0.1),
   stringsAsFactors = FALSE
 )
+cl <- NULL
+if (n_workers > 1L) {
+  cl <- parallel::makeCluster(n_workers)
+  on.exit(parallel::stopCluster(cl), add = TRUE)
+  parallel::clusterEvalQ(cl, suppressMessages(library(streetlamp)))
+  parallel::clusterExport(cl, c("n_areas", "n_months", "continuous_target", "one_rep"))
+}
+
 all_rows <- list()
 for (g in seq_len(nrow(grid))) {
   design <- grid$design[g]
   missing <- grid$missing[g]
-  message(sprintf("  %s, missingness %.0f%%", design, 100 * missing))
-  for (rep in seq_len(n_reps)) {
-    all_rows[[length(all_rows) + 1L]] <- one_rep(rep, design, missing)
-    if (rep %% 25 == 0) message(sprintf("    %d/%d", rep, n_reps))
+  t0 <- Sys.time()
+  reps <- seq_len(n_reps)
+  # `design` and `missing` are passed as arguments, not captured: a worker
+  # cannot see this script's global environment
+  cell <- if (is.null(cl)) {
+    lapply(reps, one_rep, design = design, missing = missing)
+  } else {
+    parallel::parLapply(cl, reps, one_rep, design = design, missing = missing)
   }
+  all_rows <- c(all_rows, cell)
+  message(sprintf(
+    "  %-11s missingness %3.0f%%  %d reps in %.1f min",
+    design, 100 * missing, n_reps,
+    as.numeric(difftime(Sys.time(), t0, units = "mins"))
+  ))
+  # written after every cell, so that a run stopped early is still usable
+  utils::write.csv(
+    dplyr::bind_rows(all_rows), file.path(out_dir, "simulation-study.csv"),
+    row.names = FALSE
+  )
 }
 results <- dplyr::bind_rows(all_rows)
-utils::write.csv(results, file.path(out_dir, "simulation-study.csv"), row.names = FALSE)
 
 summary_table <- results |>
   dplyr::filter(!is.na(.data$target)) |>

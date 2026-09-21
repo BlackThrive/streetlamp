@@ -4,6 +4,57 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-18, validation runs
+
+49. **Pesaran's CD test is vectorised, and samples areas above a cap.** The
+    statistic sums over every pair of areas. Built pair by pair with
+    `combn()` it cost 77 seconds for 400 areas, which made the simulation
+    study a day's work and would have been impossible on the package's own
+    default geography: a national LSOA panel has 636 million pairs, and the
+    index matrix alone would not fit in memory. It is now one `cor()` call
+    with `use = "pairwise.complete.obs"` and one crossproduct for the shared
+    month counts, which reproduces the old statistic to the last bit (tested)
+    in 3.6 seconds. Above `max_areas = 2000` the test is computed on a random
+    sample of areas drawn with a fixed seed, reported in `n_areas_used` and
+    named in the printed note. Pesaran's statistic is asymptotic in the
+    number of areas, so a two thousand area sample answers the same question;
+    a silently impossible computation would not.
+50. **The continuous design now has a target in the simulation study.** It
+    had `NA`, so `lamp_elasticity()` was the one estimator with no bias,
+    RMSE or coverage figure, which is a gap in the evidence the specification
+    asks for. There is no single true elasticity in that design: the outcome
+    responds to `log(1 + stops)` with elasticity `effect` on twelve of the
+    thirteen crime types, so the elasticity of the total varies with the
+    level of stops. The target is now the slope of the noise-free log mean on
+    `log(1 + stops)` after area and month effects, computed from the
+    data-generating process and the stops actually drawn. The difference
+    between that and an estimate is the estimator's own doing, because it
+    regresses `log(1 + a noisy count)` rather than the log mean.
+51. **The simulation study runs on a cluster and writes each cell as it
+    finishes.** One replication of the eight grid cells takes about seven
+    minutes at 400 areas and 60 months, so the specification's 200
+    replications is about a day on one core. The script now takes a worker
+    count, defaulting to two fewer than the machine has, and writes
+    `simulation-study.csv` after every design-by-missingness cell, so a run
+    stopped early still leaves usable results. The script's claim of "roughly
+    10 minutes for 200 replications" was wrong by two orders of magnitude and
+    has been corrected.
+52. **The spatial placebo reassigns treatment by row key, not area by area.**
+    `lamp_placebo(type = "space")` gave each treated area a stand-in by
+    scanning the whole panel once per treated area. On the bundled two-force
+    sample that is 855 treated areas against 41,040 rows on every draw, and
+    the default 200 draws took about three hours and twenty minutes; it was
+    the reason the placebo battery never finished. Building the row key once
+    and looking the timing up gives the same draws, in the same order, from
+    the same seed, in 1.1 minutes. Verified draw for draw against the old
+    loop on both a simulated panel and the bundled sample.
+53. **Validation downloads go outside the repository.** `03-benchmark.R` and
+    `04-reproduction.R` wrote into `data-raw/downloads/`, inside a Dropbox
+    folder; the national benchmark pulls several gigabytes. They now use
+    `inst/scripts/_cache.R`, which puts downloads in
+    `tools::R_user_dir("streetlamp", "cache")/validation` unless
+    `STREETLAMP_VALIDATION_CACHE` says otherwise.
+
 ## 2026-09-18, milestone M3
 
 41. **Estimate class order is `c("<estimator>", "lamp_estimate")`**, the
