@@ -71,7 +71,47 @@ happened, so nothing should be found.
 
 ## 3. Benchmark
 
-See `benchmark.csv` for the per-step timings.
+A 36-month national LSOA panel, every force: 17,828,114 crime records over
+35,672 areas, 1,284,192 panel rows, from 4,500 archive files. 68 minutes end
+to end, peak memory about 9 GB.
+
+| Step | Seconds |
+|---|---:|
+| archive index (cached) | 0.0 |
+| download force-months | 2,372.3 |
+| read crime | 609.5 |
+| boundaries | 80.6 |
+| read stop counts | 222.4 |
+| population | 11.6 |
+| adjacency | 33.3 |
+| build panel | 731.2 |
+| coverage audit | 0.0 |
+| two-way fixed effects | 12.1 |
+
+Four things worth knowing before anyone plans around this.
+
+* **Two thirds of it is downloading.** The archive members hold 7,570 MB
+  uncompressed and the cache ends up at 7,571 MB, so a national panel is not
+  something to fetch casually; a single force over the same period is a
+  fortieth of that. Byte-range reads are what make the selective pull
+  possible at all: the whole 2026-07 archive zip is far larger than the
+  members taken from it.
+* **429 of the 4,500 files were already cached** from an attempt that a
+  network failure ended, so the download step understates a completely cold
+  pull by roughly a tenth. Everything after it is cold.
+* **A national pull will be interrupted.** Two earlier attempts died on a
+  reset connection, which is what
+  `httr2::req_retry(retry_on_failure = TRUE)` now absorbs; the retries fired
+  several times during this run and the script also resumes the whole call if
+  one gets past them. Members are cached individually, so re-running never
+  starts over.
+* **Memory, not time, is the ceiling.** Reading 17.8 million records and
+  pivoting them into the panel peaked near 9 GB on a 32 GB machine. A smaller
+  machine should build the panel a few forces at a time.
+
+Estimation on the finished national panel is not the expensive part: a
+two-way fixed effects Poisson model over 1.28 million area-months took 12
+seconds.
 
 ## 4. London reproduction
 
