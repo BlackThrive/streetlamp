@@ -51,36 +51,71 @@ hand-computed value of exactly -1 on constructed totals
 and prints it (`test-elasticity.R`). Vignettes 2 to 4 render.
 
 **M5.** `lamp_report()` runs end to end on the bundled panel with no network
-access (`test-report.R`). Validation scripts are in `inst/scripts/`. Check is
-clean; lintr, spelling and styler are clean.
+access (`test-report.R`). All four validation scripts have been run and their
+output is committed under `inst/validation/`, described in
+`inst/validation/README.md`. Check is clean; lintr, spelling and styler are
+clean.
 
 ## Checks
 
-* `R CMD check --as-cran`: 0 errors, 0 warnings, 0 notes on R 4.5.2, Windows.
-* Tests: see `inst/NOTES/progress.md` for the count at the last run. Heavy
+* `R CMD check --as-cran`: 0 errors, 0 warnings, 1 note on R 4.5.2,
+  Windows, run on 2026-09-21 with `_R_CHECK_CRAN_INCOMING_` and
+  `_R_CHECK_CRAN_INCOMING_REMOTE_` both `true`, so CRAN's own incoming,
+  URL and DOI checks ran. The note is "New submission" plus the three
+  repository URLs, which return 404 until the repository is published.
+  Everything else `urlchecker::url_check()` looks at passes.
+* Test coverage: 92.36 percent (`covr`, 2026-09-21), against the 85 percent
+  the specification requires. The thinnest files are `R/utils-http.R` at
+  61 percent and `R/utils-zip.R` at 68 percent, both of which are the
+  network and zip plumbing whose failure paths are hard to reach offline.
+* Tests: 1,190 passing, 0 failures, 0 errors, 0 warnings, 0 skipped
+  (2026-09-21, `NOT_CRAN=true`). Heavy
   estimator studies are behind `skip_on_cran()`.
 * lintr, spelling and styler: clean.
 * Examples: each under five seconds.
 * No network in examples, tests or vignettes; vignettes precomputed.
+
+## What validation showed, including the awkward parts
+
+`inst/validation/README.md` has the detail. Three things belong here because
+they qualify what the package should be used for:
+
+* **Ignoring displacement costs nearly half the effect.** In the spillover
+  design, a two-way fixed effects model that leaves out the neighbour term is
+  biased by +0.104 on a true -0.228, and its interval covers the truth in
+  none of 200 replications. `lamp_spillover()` recovers both parts.
+* **`lamp_elasticity()` is slightly conservative, and its intervals are too
+  narrow.** Over 200 replications it is biased towards zero by about 0.005 on
+  a target near -0.22, and covers the truth 66 to 70 percent of the time
+  rather than 95. The cause is its response: `log(1 + a noisy count)` rather
+  than the log mean. This is a property of the estimator, documented, not a
+  defect to be fixed before release.
+* **The simulator cannot show heterogeneity bias.** Every treated area gets
+  the same effect, so the study cannot demonstrate why two-way fixed effects
+  are unsafe under staggered adoption. The row labelled `lamp_twfe (wrong
+  here)` is close to the truth for that reason alone.
 
 ## Still to do before submission
 
 These need the repository and a maintainer decision, and are outside what
 could be done here:
 
-1. Create the GitHub repository so that the continuous integration matrix
-   (Ubuntu, macOS and Windows, on release, devel and oldrel-1) actually runs.
-   The workflows are written and committed.
-2. Run rhub and win-builder, and record the results in `cran-comments.md`.
-3. Confirm test coverage is at or above 85 percent once the coverage workflow
-   has run; the gate is configured to fail below that.
-4. Decide the maintainer email (currently the personal address) and the
-   repository owner, then update `DESCRIPTION`, `_pkgdown.yml` and
-   `README.Rmd`.
-5. Deploy the pkgdown site from the repository.
-6. Run the validation scripts in `inst/scripts/` once, with network access,
-   and commit their output under `inst/validation/`. They take roughly half
-   an hour in total.
+1. **Create `https://github.com/Mustapha-Wasseja/streetlamp` and push.**
+   This is the only thing between the package and a clean CRAN incoming
+   check: the three URLs in `DESCRIPTION` return 404 until it exists, and
+   the check names all three. Creating it also lets the continuous
+   integration matrix (Ubuntu, macOS and Windows, on release, devel and
+   oldrel-1) run, and gives the pkgdown site somewhere to deploy. The
+   workflows are written and committed. The repository owner was settled on
+   2026-09-21: the maintainer's own account, movable to a Black Thrive
+   Global organisation later. Black Thrive Global remains the copyright
+   holder in `DESCRIPTION`.
+2. Publish the pkgdown site from that repository, which clears the third
+   URL.
+3. Run rhub and win-builder on devel and release, and record the results in
+   `cran-comments.md`. Nothing has run anywhere but this Windows machine on
+   R 4.5.2.
+4. Delete the comment at the top of `cran-comments.md` once 1 to 3 hold.
 
 The maintainer submits to CRAN; this package does not do that.
 

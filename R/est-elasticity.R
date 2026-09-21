@@ -36,9 +36,12 @@ lamp_lag_matrix <- function(d, var, lags) {
 lamp_cross_section_averages <- function(d, vars) {
   out <- matrix(NA_real_, nrow = nrow(d), ncol = length(vars))
   colnames(out) <- paste0("cs_", vars)
+  # grouped on the month key rather than the Date column: `tapply()` on a
+  # Date formats every element, once per variable
+  key <- lamp_month_id(d$month)
   for (k in seq_along(vars)) {
-    m <- tapply(d[[vars[k]]], d$month, mean, na.rm = TRUE)
-    out[, k] <- as.numeric(m[as.character(d$month)])
+    m <- tapply(d[[vars[k]]], key, mean, na.rm = TRUE)
+    out[, k] <- as.numeric(m[key])
   }
   out
 }
@@ -62,40 +65,61 @@ lamp_cd_test_for <- function(d, lag_terms, cluster) {
 # Pesaran's CD test: the average pairwise correlation of residuals across
 # areas, scaled so that it is standard normal under cross-sectional
 # independence. A large value says the areas share a factor.
-lamp_cd_test <- function(resid, area, month) {
+#
+# The statistic sums over every pair of areas, so the work grows with the
+# square of the number of areas. On a national LSOA panel that is more than
+# six hundred million pairs, which no correlation matrix can hold, so above
+# `max_areas` the test is computed on a reproducible random sample of areas
+# and says so. Pesaran's statistic is standard normal as the number of areas
+# grows, so a large sample answers the same question.
+lamp_cd_test <- function(resid, area, month, max_areas = 2000L, seed = 20260101L) {
+  if (inherits(month, c("Date", "POSIXt"))) {
+    month <- lamp_month_id(month)
+  }
   wide <- tapply(resid, list(area, month), mean)
+  n_areas <- nrow(wide)
+  if (is.null(n_areas) || n_areas < 2L) {
+    return(NULL)
+  }
+  sampled <- n_areas > max_areas
+  if (sampled) {
+    wide <- wide[sort(withr::with_seed(seed, sample.int(n_areas, max_areas))), , drop = FALSE]
+  }
   n <- nrow(wide)
-  if (is.null(n) || n < 2L) {
+
+  # months in rows, areas in columns, so that `cor()` gives every pairwise
+  # correlation in one call and the crossproduct of the observed indicator
+  # gives the number of months each pair shares
+  x <- t(wide)
+  t_obs <- crossprod(!is.na(x) + 0)
+  rho <- suppressWarnings(stats::cor(x, use = "pairwise.complete.obs"))
+  # a pair needs three shared months, and a pair with no variation has no
+  # correlation: both were excluded when this was computed pair by pair
+  use <- upper.tri(rho) & t_obs >= 3L & !is.na(rho)
+  if (!any(use)) {
     return(NULL)
   }
-  pairs <- utils::combn(n, 2)
-  rho <- apply(pairs, 2, function(p) {
-    x <- wide[p[1], ]
-    y <- wide[p[2], ]
-    ok <- !is.na(x) & !is.na(y)
-    if (sum(ok) < 3L) {
-      return(NA_real_)
-    }
-    if (stats::sd(x[ok]) == 0 || stats::sd(y[ok]) == 0) {
-      return(NA_real_)
-    }
-    stats::cor(x[ok], y[ok])
-  })
-  t_obs <- apply(pairs, 2, function(p) sum(!is.na(wide[p[1], ]) & !is.na(wide[p[2], ])))
-  ok <- !is.na(rho)
-  if (sum(ok) == 0L) {
-    return(NULL)
+  cd <- sqrt(2 / (n * (n - 1))) * sum(sqrt(t_obs[use]) * rho[use])
+  note <- paste(
+    "A large statistic means areas move together; ignoring that makes",
+    "standard errors too small."
+  )
+  if (sampled) {
+    note <- paste(
+      note, sprintf(
+        "Computed on %d of %d areas, sampled at random with a fixed seed.",
+        n, n_areas
+      )
+    )
   }
-  cd <- sqrt(2 / (n * (n - 1))) * sum(sqrt(t_obs[ok]) * rho[ok])
   list(
     statistic = cd,
     p_value = 2 * stats::pnorm(-abs(cd)),
-    mean_rho = mean(rho[ok]),
-    n_areas = n,
-    note = paste(
-      "A large statistic means areas move together; ignoring that makes",
-      "standard errors too small."
-    )
+    mean_rho = mean(rho[use]),
+    n_areas = n_areas,
+    n_areas_used = n,
+    sampled = sampled,
+    note = note
   )
 }
 
@@ -142,7 +166,10 @@ lamp_cd_test <- function(resid, area, month) {
 #'   lag-by-lag elasticities; `diagnostics$long_run` is their sum with a
 #'   standard error, `diagnostics$cd_test` is Pesaran's test, and
 #'   `diagnostics$area_coefficients` holds the per-area slopes for the mean
-#'   group estimator.
+#'   group estimator. The CD test sums over every pair of areas, so above two
+#'   thousand areas it is computed on a random sample of them, drawn with a
+#'   fixed seed: `cd_test$sampled` says whether that happened and
+#'   `cd_test$n_areas_used` how many areas went in.
 #' @family estimators
 #' @references
 #' Pesaran, M. H. (2006). Estimation and inference in large heterogeneous
@@ -338,6 +365,11 @@ print.lamp_elasticity <- function(x, ...) {
       "Pesaran CD: {signif(cd$statistic, 3)} (p = {signif(cd$p_value, 3)}), ",
       "mean pairwise correlation {signif(cd$mean_rho, 2)}"
     )
+    if (isTRUE(cd$sampled)) {
+      cli::cli_text(
+        "  on {cd$n_areas_used} of {cd$n_areas} areas, sampled at random with a fixed seed"
+      )
+    }
   }
   invisible(x)
 }

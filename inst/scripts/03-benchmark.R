@@ -10,6 +10,7 @@
 # specification asks about. Pass smaller numbers for a quick check.
 
 suppressMessages(library(streetlamp))
+source(file.path("inst", "scripts", "_cache.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
 n_months <- if (length(args) > 0) as.integer(args[1]) else 36L
@@ -17,7 +18,7 @@ n_forces <- if (length(args) > 1) as.integer(args[2]) else NA_integer_
 
 out_dir <- file.path("inst", "validation")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-cache <- file.path("data-raw", "downloads", "benchmark-cache")
+cache <- lamp_validation_cache("benchmark")
 
 timings <- list()
 time_it <- function(label, expr) {
