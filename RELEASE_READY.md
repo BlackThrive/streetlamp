@@ -68,7 +68,7 @@ clean.
   the specification requires. The thinnest files are `R/utils-http.R` at
   61 percent and `R/utils-zip.R` at 68 percent, both of which are the
   network and zip plumbing whose failure paths are hard to reach offline.
-* Tests: 1,190 passing, 0 failures, 0 errors, 0 warnings, 0 skipped
+* Tests: 1,195 passing, 0 failures, 0 errors, 0 warnings, 0 skipped
   (2026-09-21, `NOT_CRAN=true`). Heavy
   estimator studies are behind `skip_on_cran()`.
 * lintr, spelling and styler: clean.
@@ -94,6 +94,12 @@ they qualify what the package should be used for:
   the same effect, so the study cannot demonstrate why two-way fixed effects
   are unsafe under staggered adoption. The row labelled `lamp_twfe (wrong
   here)` is close to the truth for that reason alone.
+* **A national panel is a 7.5 GB download and a 9 GB peak in memory.** The
+  benchmark built one: 36 months, all 45 forces, 17.8 million records over
+  35,672 LSOAs, 68 minutes end to end, two thirds of it downloading.
+  Estimation afterwards is cheap, 12 seconds for a Poisson model over 1.28
+  million area-months. A machine with less than 16 GB should build the panel
+  a few forces at a time.
 
 ## Still to do before submission
 
