@@ -48,7 +48,17 @@ later session (or the maintainer) can reverse it deliberately.
     and looking the timing up gives the same draws, in the same order, from
     the same seed, in 1.1 minutes. Verified draw for draw against the old
     loop on both a simulated panel and the bundled sample.
-53. **Validation downloads go outside the repository.** `03-benchmark.R` and
+53. **Requests retry dropped connections, not only transient statuses.**
+    `httr2::req_retry()` was already configured, but by default it retries
+    only on transient HTTP statuses; a reset connection is a transport
+    failure and ended the request. The national benchmark died at file 1,540
+    of 4,500 on "Recv failure: Connection was reset", losing an hour of
+    downloading, or it would have if members were not cached individually.
+    `retry_on_failure = TRUE`, five tries and a backoff capped at 30 seconds.
+    A pull of several thousand byte-range requests against one host will meet
+    a reset; that is ordinary, and it should cost seconds rather than the
+    run.
+54. **Validation downloads go outside the repository.** `03-benchmark.R` and
     `04-reproduction.R` wrote into `data-raw/downloads/`, inside a Dropbox
     folder; the national benchmark pulls several gigabytes. They now use
     `inst/scripts/_cache.R`, which puts downloads in
