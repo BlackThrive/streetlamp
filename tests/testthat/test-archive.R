@@ -1,3 +1,14 @@
+test_that("requests retry dropped connections, not only transient statuses", {
+  req <- lamp_request("https://example.com/thing.zip")
+  expect_s3_class(req, "httr2_request")
+  # a national pull is thousands of range requests against one host, where a
+  # reset partway through has to be survivable
+  expect_true(req$policies$retry_max_tries > 1L)
+  expect_true(isTRUE(req$policies$retry_on_failure))
+  expect_match(req$options$useragent, "streetlamp/")
+  expect_true(req$options$timeout_ms > 0)
+})
+
 test_that("member names parse into month, force and file type", {
   p <- lamp_parse_members(c(
     "2026-07/2026-07-west-yorkshire-street.csv",

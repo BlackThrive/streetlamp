@@ -18,11 +18,21 @@ lamp_user_agent <- function() {
   )
 }
 
+# `retry_on_failure` is what makes this useful. Without it `req_retry()` only
+# retries transient HTTP statuses, and a dropped connection ends the request.
+# Building a national panel is several thousand byte-range requests against
+# one host, where a reset partway through is ordinary rather than exceptional,
+# and losing the whole run to one of them is not acceptable. Anything already
+# fetched is cached, so a retry costs a few seconds, not the run.
 lamp_request <- function(url) {
   httr2::request(url) |>
     httr2::req_user_agent(lamp_user_agent()) |>
     httr2::req_timeout(600) |>
-    httr2::req_retry(max_tries = 3, backoff = function(i) 2^i)
+    httr2::req_retry(
+      max_tries = 5,
+      retry_on_failure = TRUE,
+      backoff = function(i) min(2^i, 30)
+    )
 }
 
 lamp_perform <- function(req, what, call = rlang::caller_env()) {
