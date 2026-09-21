@@ -83,6 +83,54 @@ test_that("the three methods run and report the CD test", {
   expect_message(print(fits[[1]]), "Pesaran CD")
 })
 
+test_that("the CD test matches a pair-by-pair calculation and caps large panels", {
+  by_pairs <- function(resid, area, month) {
+    wide <- tapply(resid, list(area, month), mean)
+    n <- nrow(wide)
+    pairs <- utils::combn(n, 2)
+    rho <- apply(pairs, 2, function(p) {
+      ok <- !is.na(wide[p[1], ]) & !is.na(wide[p[2], ])
+      if (sum(ok) < 3L) {
+        return(NA_real_)
+      }
+      x <- wide[p[1], ok]
+      y <- wide[p[2], ok]
+      if (stats::sd(x) == 0 || stats::sd(y) == 0) NA_real_ else stats::cor(x, y)
+    })
+    t_obs <- apply(pairs, 2, function(p) sum(!is.na(wide[p[1], ]) & !is.na(wide[p[2], ])))
+    ok <- !is.na(rho)
+    sqrt(2 / (n * (n - 1))) * sum(sqrt(t_obs[ok]) * rho[ok])
+  }
+
+  set.seed(31)
+  n_a <- 30L
+  n_m <- 24L
+  g <- expand.grid(area = sprintf("A%02d", seq_len(n_a)), month = seq_len(n_m))
+  factor_t <- stats::rnorm(n_m)
+  g$r <- factor_t[g$month] * 0.6 + stats::rnorm(nrow(g))
+  # a gappy panel and an area with no variation are the two cases the
+  # pair-by-pair version had to special-case
+  g$r[sample.int(nrow(g), 60L)] <- NA_real_
+  g$r[g$area == "A01"] <- 1
+
+  cd <- lamp_cd_test(g$r, g$area, g$month)
+  expect_equal(cd$statistic, by_pairs(g$r, g$area, g$month), tolerance = 0)
+  expect_equal(cd$n_areas, n_a)
+  expect_equal(cd$n_areas_used, n_a)
+  expect_false(cd$sampled)
+
+  # above the cap the statistic is computed on a sample of areas, the same
+  # sample every time, and the note says so
+  capped <- lamp_cd_test(g$r, g$area, g$month, max_areas = 10L)
+  expect_true(capped$sampled)
+  expect_equal(capped$n_areas, n_a)
+  expect_equal(capped$n_areas_used, 10L)
+  expect_match(capped$note, "10 of 30 areas")
+  expect_equal(capped$statistic, lamp_cd_test(g$r, g$area, g$month, max_areas = 10L)$statistic)
+
+  expect_null(lamp_cd_test(1, "A", 1))
+})
+
 test_that("the long-run sum and its interval are reported", {
   sim <- lamp_simulate(n_areas = 30, n_months = 30, design = "continuous", seed = 3)
   fit <- lamp_elasticity(sim, "crime_total", lags = 0:2)

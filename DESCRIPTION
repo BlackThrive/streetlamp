@@ -17,9 +17,9 @@ Description: Builds an area-by-month panel of recorded crime in England and
     definition; every estimator names its identifying assumption and ships
     with a placebo or pre-trend diagnostic.
 License: MIT + file LICENSE
-URL: https://github.com/black-thrive-global/streetlamp,
-    https://black-thrive-global.github.io/streetlamp/
-BugReports: https://github.com/black-thrive-global/streetlamp/issues
+URL: https://github.com/Mustapha-Wasseja/streetlamp,
+    https://mustapha-wasseja.github.io/streetlamp/
+BugReports: https://github.com/Mustapha-Wasseja/streetlamp/issues
 Depends:
     R (>= 4.1.0)
 Imports:

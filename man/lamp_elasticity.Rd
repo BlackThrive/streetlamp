@@ -36,7 +36,10 @@ A \code{lamp_estimate} of class \code{lamp_elasticity}. Coefficients are the
 lag-by-lag elasticities; \code{diagnostics$long_run} is their sum with a
 standard error, \code{diagnostics$cd_test} is Pesaran's test, and
 \code{diagnostics$area_coefficients} holds the per-area slopes for the mean
-group estimator.
+group estimator. The CD test sums over every pair of areas, so above two
+thousand areas it is computed on a random sample of them, drawn with a
+fixed seed: \code{cd_test$sampled} says whether that happened and
+\code{cd_test$n_areas_used} how many areas went in.
 }
 \description{
 Estimates how recorded crime responds to the intensity of searching, as a

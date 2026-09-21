@@ -1,11 +1,35 @@
+<!--
+Not submitted yet. Two lines below have to be true before this file is
+accurate, and both are tracked in RELEASE_READY.md:
+
+  1. https://github.com/Mustapha-Wasseja/streetlamp exists and its pkgdown
+     site is published. Until then the incoming check adds three 404 URLs to
+     the note below.
+  2. The test environments listed have actually run. Only the local check
+     has, as of 2026-09-21.
+
+Delete this comment when both hold.
+-->
+
 ## R CMD check results
 
-`R CMD check --as-cran` gives 0 errors, 0 warnings, 0 notes locally on
-R 4.5.2, Windows.
+`R CMD check --as-cran` on R 4.5.2, Windows 11: 0 errors, 0 warnings, 1 note.
+
+The note is the usual one for a first submission:
+
+```
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: 'Mustapha Wasseja <muswaseja@gmail.com>'
+
+New submission
+```
+
+The check was run with `_R_CHECK_CRAN_INCOMING_` and
+`_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
+checks ran. Every URL outside the package's own repository passes
+`urlchecker::url_check()`.
 
 ## Test environments
-
-To be completed before submission:
 
 * local: Windows 11, R 4.5.2
 * GitHub Actions: ubuntu-latest, macOS-latest, windows-latest, each on
@@ -35,3 +59,7 @@ To be completed before submission:
   common correlated effects mean group estimator) are exercised on tiny
   simulated panels in the routine tests; the full recovery and coverage
   studies are behind `skip_on_cran()`.
+* `inst/validation/` holds the output of the validation scripts in
+  `inst/scripts/`. Those scripts need the network and are never run at check
+  time; the committed results are evidence, described in
+  `inst/validation/README.md`.
