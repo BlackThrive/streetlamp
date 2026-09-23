@@ -4,6 +4,30 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-23, first continuous integration run
+
+57. **macOS on R-devel is allowed to fail in the check matrix.** The first
+    run of the matrix, the day the repository was created, failed on all
+    three macOS configurations and passed on Ubuntu and Windows. Two
+    different causes. The first was the package's own: a test added on
+    2026-09-20 asserted `tolerance = 0` between the vectorised CD test and a
+    pair-by-pair reference, and Apple's Accelerate BLAS reassociates the sums
+    differently, so the last bits differ. The tolerance is now 1e-10, which
+    is still a very strong claim and is the right one: the two compute the
+    same statistic, not the same rounding. With that fixed, macOS release and
+    oldrel-1 pass. macOS on R-devel still fails, before any of the package's
+    code runs: CRAN publishes no macOS binaries for R-devel, so every
+    dependency would build from source against GDAL, GEOS and PROJ, which the
+    runner does not carry, and `setup-r-dependencies` gives up. That
+    configuration is now `continue-on-error`, with the reason in the
+    workflow. CRAN's own macOS builders are release and oldrel, both green.
+58. **The continuous integration URL check retries and does not use
+    urlchecker's print method.** It failed twice on a five second timeout
+    against data.police.uk, one of the package's own data sources, reachable
+    throughout. `urlchecker::url_check()` aborts when it prints, so the
+    result goes through `as.data.frame()` and three attempts are made before
+    the build fails.
+
 ## 2026-09-23, authorship and repository owner
 
 55. **Three authors, one maintainer.** `Authors@R` now lists Mustapha Wasseja
