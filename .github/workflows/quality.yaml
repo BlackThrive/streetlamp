@@ -42,33 +42,30 @@ jobs:
         shell: Rscript {0}
 
       - name: URL check
-        # Fails on an HTTP status, not on a timeout. GitHub's runners cannot
-        # reach data.police.uk inside urlchecker's five second budget, three
-        # attempts running, while it answers fine elsewhere and it is the
-        # package's own primary data source. A URL that times out has not been
-        # shown to be wrong; a 404 has. Timeouts are printed either way.
-        # urlchecker::url_check() aborts when its result is printed, so the
-        # result goes through as.data.frame().
+        # Not urlchecker::url_check(), which aborts as soon as it has anything
+        # to report, so its result cannot be inspected. This is the same check
+        # underneath, and it hands back a table.
+        #
+        # An HTTP status fails the gate. A URL that could not be reached at all
+        # does not: GitHub's runners consistently time out on data.police.uk
+        # after five seconds, three attempts running, while it answers fine
+        # elsewhere and is the package's primary data source. A timeout is not
+        # evidence that a link is wrong. Both kinds are printed.
         run: |
-          res <- NULL
-          for (attempt in 1:3) {
-            out <- tryCatch(urlchecker::url_check(), error = function(e) e)
-            if (inherits(out, "error")) {
-              message("attempt ", attempt, ": ", conditionMessage(out))
-            } else {
-              res <- as.data.frame(out)
-              if (nrow(res) == 0) break
+          db <- tools:::url_db_from_package_sources(".")
+          res <- as.data.frame(tools:::check_url_db(db))
+          if (nrow(res) == 0) {
+            message("all URLs fine")
+          } else {
+            print(res[, intersect(names(res), c("URL", "From", "Status", "Message"))])
+            status <- suppressWarnings(as.integer(res$Status))
+            unreachable <- res[is.na(status), , drop = FALSE]
+            broken <- res[!is.na(status), , drop = FALSE]
+            for (u in unique(unreachable$URL)) {
+              message("unreachable from this runner, not treated as invalid: ", u)
             }
-            if (attempt < 3) Sys.sleep(20)
+            if (nrow(broken) > 0) {
+              stop("URL problems found: ", paste(unique(broken$URL), collapse = ", "))
+            }
           }
-          if (is.null(res)) stop("urlchecker did not return a result")
-          if (nrow(res) > 0) print(res[, intersect(names(res), c("URL", "From", "Status", "Message"))])
-          status <- suppressWarnings(as.integer(res$Status))
-          hard <- res[!is.na(status), , drop = FALSE]
-          soft <- res[is.na(status), , drop = FALSE]
-          if (nrow(soft) > 0) {
-            message(nrow(soft), " URL(s) could not be reached from this runner; not treated as invalid:")
-            for (u in soft$URL) message("  ", u)
-          }
-          if (nrow(hard) > 0) stop("URL problems found: ", paste(hard$URL, collapse = ", "))
         shell: Rscript {0}
