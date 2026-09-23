@@ -36,8 +36,8 @@ The cache directory path, invisibly for `lamp_cache_clear()`.
 # Point the cache at a temporary directory for the duration of the example
 old <- options(streetlamp.cache_dir = tempfile("streetlamp-cache-"))
 lamp_cache_dir()
-#> [1] "/tmp/Rtmpn5cLqQ/streetlamp-cache-1cd41e1f01a2"
+#> [1] "/tmp/RtmpMTaaPG/streetlamp-cache-1d3d680df6f1"
 lamp_cache_clear()
-#> Cleared 0 files from /tmp/Rtmpn5cLqQ/streetlamp-cache-1cd41e1f01a2.
+#> Cleared 0 files from /tmp/RtmpMTaaPG/streetlamp-cache-1d3d680df6f1.
 options(old)
 ```
