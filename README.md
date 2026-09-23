@@ -23,7 +23,7 @@ The package is under development and not yet on CRAN.
 
 ``` r
 # install.packages("pak")
-pak::pak("Mustapha-Wasseja/streetlamp")
+pak::pak("BlackThrive/streetlamp")
 ```
 
 ## Status

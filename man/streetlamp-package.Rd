@@ -42,14 +42,20 @@ package sources for what was verified and when.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/Mustapha-Wasseja/streetlamp}
-  \item \url{https://mustapha-wasseja.github.io/streetlamp/}
-  \item Report bugs at \url{https://github.com/Mustapha-Wasseja/streetlamp/issues}
+  \item \url{https://github.com/BlackThrive/streetlamp}
+  \item \url{https://blackthrive.github.io/streetlamp/}
+  \item Report bugs at \url{https://github.com/BlackThrive/streetlamp/issues}
 }
 
 }
 \author{
 \strong{Maintainer}: Mustapha Wasseja \email{muswaseja@gmail.com}
+
+Authors:
+\itemize{
+  \item Souci Frissa
+  \item Sarah Hamed
+}
 
 Other contributors:
 \itemize{

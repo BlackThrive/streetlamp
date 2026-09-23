@@ -1,0 +1,19 @@
+## Without this file the generated citation has no year, because an
+## unpublished package has no Date/Publication field and DESCRIPTION carries
+## no Date of its own (a Date field goes stale and CRAN notices).
+
+citHeader("To cite streetlamp in publications, use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "{streetlamp}: Panel Econometrics for the Effect of Police Stop and Search on Recorded Crime",
+  author = c(
+    person("Mustapha", "Wasseja"),
+    person("Souci", "Frissa"),
+    person("Sarah", "Hamed")
+  ),
+  organization = "Black Thrive Global",
+  year = "2026",
+  note = sprintf("R package version %s", meta$Version),
+  url = "https://github.com/BlackThrive/streetlamp"
+)

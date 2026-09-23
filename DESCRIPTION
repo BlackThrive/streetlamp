@@ -4,6 +4,8 @@ Title: Panel Econometrics for the Effect of Police Stop and Search on
 Version: 0.1.0
 Authors@R: c(
     person("Mustapha", "Wasseja", , "muswaseja@gmail.com", role = c("aut", "cre")),
+    person("Souci", "Frissa", role = "aut"),
+    person("Sarah", "Hamed", role = "aut"),
     person("Black Thrive Global", role = c("cph", "fnd"))
   )
 Description: Builds an area-by-month panel of recorded crime in England and
@@ -17,9 +19,9 @@ Description: Builds an area-by-month panel of recorded crime in England and
     definition; every estimator names its identifying assumption and ships
     with a placebo or pre-trend diagnostic.
 License: MIT + file LICENSE
-URL: https://github.com/Mustapha-Wasseja/streetlamp,
-    https://mustapha-wasseja.github.io/streetlamp/
-BugReports: https://github.com/Mustapha-Wasseja/streetlamp/issues
+URL: https://github.com/BlackThrive/streetlamp,
+    https://blackthrive.github.io/streetlamp/
+BugReports: https://github.com/BlackThrive/streetlamp/issues
 Depends:
     R (>= 4.1.0)
 Imports:
