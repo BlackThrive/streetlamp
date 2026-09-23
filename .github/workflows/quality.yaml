@@ -42,8 +42,20 @@ jobs:
         shell: Rscript {0}
 
       - name: URL check
+        # Retried, because a slow response is not a broken link. The first run
+        # of this workflow failed on a five second timeout against
+        # data.police.uk, which is one of the package's own data sources and
+        # was perfectly reachable. A URL that is genuinely wrong fails all
+        # three attempts.
         run: |
-          res <- urlchecker::url_check()
+          for (attempt in 1:3) {
+            res <- urlchecker::url_check()
+            if (nrow(res) == 0) break
+            if (attempt < 3) {
+              message("attempt ", attempt, ": ", nrow(res), " problem(s); retrying")
+              Sys.sleep(20)
+            }
+          }
           if (nrow(res) > 0) {
             print(res)
             stop("URL problems found")
