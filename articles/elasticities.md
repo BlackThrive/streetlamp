@@ -1,0 +1,228 @@
+# Stop-crime elasticities under cross-sectional dependence
+
+How much does recorded crime move when searching goes up by one percent?
+The number is easy to compute and easy to misread. This vignette
+computes it, then spends most of its length on the two reasons it is not
+the effect of searching on crime.
+
+``` r
+
+library(streetlamp)
+```
+
+## The estimate
+
+``` r
+
+sim <- lamp_simulate(
+  n_areas = 60, n_months = 48, design = "continuous",
+  effect = -0.2, base_rate = 30, seed = 5
+)
+fit <- lamp_elasticity(sim, "crime_total", lags = 0:3, method = "fe")
+fit
+#> 
+#> ── streetlamp estimate: lamp_elasticity
+#> Outcome: crime_total; family: least squares on log(1 + outcome)
+#> Treatment: continuous; clustered by area
+#> Identifying assumption: The association between searching and recorded crime,
+#> net of area and month effects . Causal only if the variation in searching has a
+#> source outside the crime process; see lamp_allocation().
+#> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
+#>         term estimate std_error statistic  p_value conf_low conf_high
+#>  .log_s_lag0 -0.18208   0.00888   -20.508 1.57e-28 -0.19948  -0.16468
+#>  .log_s_lag1  0.01887   0.01030     1.831 7.22e-02 -0.00133   0.03906
+#>  .log_s_lag2 -0.00174   0.01169    -0.149 8.82e-01 -0.02465   0.02117
+#>  .log_s_lag3 -0.01050   0.00960    -1.093 2.79e-01 -0.02932   0.00832
+#> Sum over lags: -0.175 [-0.215, -0.135]
+#> Pesaran CD: 32.2 (p = 8.53e-227), mean pairwise correlation 0.11
+```
+
+Each coefficient is the response to searching this month, last month and
+so on; their sum is the cumulative response.
+
+## Reason one: areas are not independent
+
+Areas share seasons, national policy, and reporting practice. Pesaran’s
+CD test asks whether that common movement is left in the residuals.
+
+``` r
+
+fit$diagnostics$cd_test[c("statistic", "p_value", "mean_rho", "n_areas")]
+#> $statistic
+#> [1] 32.15108
+#> 
+#> $p_value
+#> [1] 8.531157e-227
+#> 
+#> $mean_rho
+#> [1] 0.1139207
+#> 
+#> $n_areas
+#> [1] 60
+```
+
+A large statistic says the observations are not independent draws, so
+the standard errors from the fixed effects model are too small. The
+common correlated effects estimator handles it by adding the
+cross-sectional averages of the outcome and the regressors, which stand
+in for the unobserved factors.
+
+``` r
+
+pooled <- lamp_elasticity(sim, "crime_total", lags = 0:3, method = "cce_pooled")
+mg <- lamp_elasticity(sim, "crime_total", lags = 0:3, method = "cce_mg")
+rbind(
+  fe = fit$diagnostics$long_run[c("estimate", "std_error")],
+  cce_pooled = pooled$diagnostics$long_run[c("estimate", "std_error")],
+  cce_mg = mg$diagnostics$long_run[c("estimate", "std_error")]
+)
+#>            estimate   std_error 
+#> fe         -0.1754567 0.0204238 
+#> cce_pooled -0.1746786 0.01780803
+#> cce_mg     -0.186161  0.02040517
+```
+
+The mean group version runs a separate regression for every area and
+averages the slopes, so it does not assume that a percentage change in
+searching does the same thing everywhere. Its standard error is the
+spread of those area slopes, which is why it is usually the widest of
+the three.
+
+``` r
+
+slopes <- mg$diagnostics$area_coefficients
+summary(slopes$.log_s_lag0)
+#>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+#> -0.391397 -0.241754 -0.187755 -0.185038 -0.130178 -0.007816
+```
+
+That spread is a result in itself: if the response varies this much
+across areas, a single national elasticity is a summary of very
+different local situations.
+
+## Reason two: police go where crime is
+
+The deeper problem is direction. Forces send officers to areas where
+crime has risen, so searching responds to crime as well as possibly
+causing it.
+
+``` r
+
+allocation <- lamp_allocation(sim, crime_lags = 1:3)
+allocation
+#> 
+#> ── streetlamp estimate: lamp_allocation
+#> Outcome: stops; family: Poisson pseudo-likelihood on counts
+#> Treatment: lagged crime; clustered by area
+#> Identifying assumption: None: this is descriptive. It measures how searching
+#> has tracked recorded crime, not an effect of crime on searching.
+#> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
+#> Dispersion: 0.979
+#>             term estimate std_error statistic p_value conf_low conf_high
+#>  .log_crime_lag1  -0.0317    0.0345    -0.920   0.358  -0.0994    0.0359
+#>  .log_crime_lag2   0.0085    0.0352     0.241   0.809  -0.0605    0.0775
+#>  .log_crime_lag3  -0.0287    0.0381    -0.755   0.450  -0.1033    0.0459
+#> Sum over lags: -0.052 [-0.186, 0.0819]
+#> No clear allocation response: searching does not track recent crime in this
+#> panel, which makes the other estimates easier to read as effects.
+```
+
+In this simulated panel searching was generated independently of crime,
+so the allocation response is near zero and the elasticity is readable
+as an effect. Real data rarely looks like that. Here is the same panel
+with a deployment rule added, where officers are sent to the month’s hot
+spots:
+
+``` r
+
+responsive <- sim
+responsive$stops <- as.integer(responsive$stops + round(0.4 * responsive$crime_total))
+
+lamp_allocation(responsive, crime_lags = 1:3)
+#> 
+#> ── streetlamp estimate: lamp_allocation
+#> Outcome: stops; family: Poisson pseudo-likelihood on counts
+#> Treatment: lagged crime; clustered by area
+#> Identifying assumption: None: this is descriptive. It measures how searching
+#> has tracked recorded crime, not an effect of crime on searching.
+#> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
+#> Dispersion: 0.457
+#>             term estimate std_error statistic p_value conf_low conf_high
+#>  .log_crime_lag1  -0.0325    0.0170    -1.908  0.0564  -0.0659   0.00088
+#>  .log_crime_lag2  -0.0207    0.0168    -1.236  0.2165  -0.0536   0.01215
+#>  .log_crime_lag3  -0.0080    0.0177    -0.453  0.6506  -0.0426   0.02663
+#> Sum over lags: -0.0612 [-0.124, 0.00138]
+#> No clear allocation response: searching does not track recent crime in this
+#> panel, which makes the other estimates easier to read as effects.
+```
+
+``` r
+
+lamp_elasticity(responsive, "crime_total", lags = 0:3)$diagnostics$long_run[c("estimate", "conf_low", "conf_high")]
+#> $estimate
+#> [1] 0.6906021
+#> 
+#> $conf_low
+#> [1] 0.6093274
+#> 
+#> $conf_high
+#> [1] 0.7718767
+```
+
+The true deterrent effect has not changed. The estimated elasticity has,
+and sharply, because searching and crime are now determined together and
+the regression reports the net of the deterrent effect and the
+deployment response. Reporting the allocation model alongside the
+elasticity is the minimum honest presentation; an argument that the
+variation in searching came from somewhere outside the crime process is
+what would be needed to call the elasticity causal.
+
+## Turning it into crimes
+
+``` r
+
+lamp_crimes_prevented(fit, sim, per_stops = 1000, seed = 1)
+#> 
+#> ── Crimes prevented per 1000 searches
+#> 650 [497, 809] on crime_total
+#> 
+#> ── Assumption chain
+#> 1. The elasticity is -0.175, summed over lags 0, 1, 2, 3.
+#> 2. The effect is proportional, so it scales with the mean level of crime.
+#> 3. At the sample mean of 25.2 crimes and 6.8 searches per area-month.
+#> 4. The association between searching and recorded crime, net of area and month
+#> effects . Causal only if the variation in searching has a source outside the
+#> crime process; see lamp_allocation().
+#> 5. Recorded crime only: unreported crime and recording changes are not
+#> separated.
+#> 6. The average effect is applied at the margin, which ignores diminishing
+#> returns.
+```
+
+## On the real sample panel
+
+``` r
+
+panel <- lamp_sample_panel()
+real <- lamp_elasticity(panel, "crime_total", lags = 0:2, method = "fe")
+real$coefficients[, c("term", "estimate", "conf_low", "conf_high")]
+#> # A tibble: 3 × 4
+#>   term        estimate conf_low conf_high
+#>   <chr>          <dbl>    <dbl>     <dbl>
+#> 1 .log_s_lag0 0.0616    0.0537    0.0695 
+#> 2 .log_s_lag1 0.00259  -0.00525   0.0104 
+#> 3 .log_s_lag2 0.000213 -0.00771   0.00813
+real$diagnostics$cd_test[c("statistic", "p_value")]
+#> $statistic
+#> [1] 142.1956
+#> 
+#> $p_value
+#> [1] 0
+lamp_allocation(panel, crime_lags = 1:3)$diagnostics$interpretation
+#> [1] "Searching follows recorded crime: a one percent rise in recent crime goes with a 13.5 percent rise in searches. Any estimate of the effect of searching on crime has to contend with this reverse channel."
+```
+
+Two years of two forces is a small panel, and the specification here is
+the package’s own rather than a published one. It is shown to
+demonstrate the workflow, not as a finding about West Yorkshire or
+Dyfed-Powys.
