@@ -16,11 +16,20 @@ jobs:
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
+    # macOS on R-devel is allowed to fail. CRAN publishes no macOS binaries
+    # for R-devel, so every dependency would have to build from source against
+    # system libraries the runner does not carry (sf and spdep need GDAL, GEOS
+    # and PROJ), and setup-r-dependencies stops before it starts. CRAN's own
+    # macOS builders run release and oldrel, both of which are in this matrix
+    # and both of which pass. The configuration stays here so that a genuine
+    # failure is still visible.
+    continue-on-error: ${{ matrix.config.allow-failure || false }}
+
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'devel'}
+          - {os: macos-latest,   r: 'devel', allow-failure: true}
           - {os: macos-latest,   r: 'release'}
           - {os: macos-latest,   r: 'oldrel-1'}
           - {os: windows-latest, r: 'devel'}
