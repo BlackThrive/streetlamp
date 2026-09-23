@@ -1,21 +1,13 @@
 <!--
-Not submitted yet. Two lines below have to be true before this file is
-accurate, and both are tracked in RELEASE_READY.md:
-
-  1. https://github.com/BlackThrive/streetlamp exists and its pkgdown
-     site is published. Until then the incoming check adds three 404 URLs to
-     the note below.
-  2. The test environments listed have actually run. Only the local check
-     has, as of 2026-09-21.
-
-Delete this comment when both hold.
+Not submitted yet. One thing below is still ahead of the evidence: neither
+win-builder nor rhub has run. Everything else in this file is a result that
+has actually happened. Delete this comment once they have.
 -->
 
 ## R CMD check results
 
-`R CMD check --as-cran` on R 4.5.2, Windows 11: 0 errors, 0 warnings, 1 note.
-
-The note is the usual one for a first submission:
+0 errors, 0 warnings, 1 note. The note is the usual one for a first
+submission:
 
 ```
 * checking CRAN incoming feasibility ... NOTE
@@ -24,18 +16,24 @@ Maintainer: 'Mustapha Wasseja <muswaseja@gmail.com>'
 New submission
 ```
 
-The check was run with `_R_CHECK_CRAN_INCOMING_` and
+The local check ran with `_R_CHECK_CRAN_INCOMING_` and
 `_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
-checks ran. Every URL outside the package's own repository passes
-`urlchecker::url_check()`.
+checks ran. Every URL in the package resolves.
 
 ## Test environments
 
+Checked on 2026-09-23, all with 0 errors and 0 warnings:
+
 * local: Windows 11, R 4.5.2
-* GitHub Actions: ubuntu-latest, macOS-latest, windows-latest, each on
-  R release, R devel and R oldrel-1
-* win-builder: devel and release
-* rhub
+* GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
+  release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
+
+macOS on R devel is the one configuration that does not run. It fails before
+reaching this package: there are no CRAN macOS binaries for R devel, so `sf`
+and `spdep` would have to build from source against GDAL, GEOS and PROJ,
+which the runner does not carry. macOS release and oldrel-1 both pass.
+
+Still to run: win-builder (devel and release) and rhub.
 
 ## Notes for the reviewer
 
