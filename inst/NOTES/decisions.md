@@ -31,8 +31,12 @@ later session (or the maintainer) can reverse it deliberately.
     default geography: a national LSOA panel has 636 million pairs, and the
     index matrix alone would not fit in memory. It is now one `cor()` call
     with `use = "pairwise.complete.obs"` and one crossproduct for the shared
-    month counts, which reproduces the old statistic to the last bit (tested)
-    in 3.6 seconds. Above `max_areas = 2000` the test is computed on a random
+    month counts, which reproduces the old statistic in 3.6 seconds. Tested
+    against the pair-by-pair version, to within floating-point reassociation
+    rather than to the last bit: the vectorised form sums through BLAS, and
+    Apple's Accelerate reassociates differently from the reference
+    implementation, which is how the first version of that test failed on
+    macOS and passed everywhere else. Above `max_areas = 2000` the test is computed on a random
     sample of areas drawn with a fixed seed, reported in `n_areas_used` and
     named in the printed note. Pesaran's statistic is asymptotic in the
     number of areas, so a two thousand area sample answers the same question;
