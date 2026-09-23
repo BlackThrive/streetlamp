@@ -2,7 +2,7 @@
 Not submitted yet. Two lines below have to be true before this file is
 accurate, and both are tracked in RELEASE_READY.md:
 
-  1. https://github.com/Mustapha-Wasseja/streetlamp exists and its pkgdown
+  1. https://github.com/BlackThrive/streetlamp exists and its pkgdown
      site is published. Until then the incoming check adds three 404 URLs to
      the note below.
   2. The test environments listed have actually run. Only the local check

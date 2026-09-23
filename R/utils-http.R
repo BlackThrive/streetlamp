@@ -13,7 +13,7 @@ lamp_offline <- function() {
 
 lamp_user_agent <- function() {
   sprintf(
-    "streetlamp/%s (https://github.com/Mustapha-Wasseja/streetlamp)",
+    "streetlamp/%s (https://github.com/BlackThrive/streetlamp)",
     utils::packageVersion("streetlamp")
   )
 }
