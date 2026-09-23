@@ -78,7 +78,8 @@
 <div class="section level2">
 <h2 id="checks">Checks<a class="anchor" aria-label="anchor" href="#checks"></a></h2>
 <ul><li>
-<code>R CMD check --as-cran</code>: 0 errors, 0 warnings, 1 note on R 4.5.2, Windows, run on 2026-09-21 with <code>_R_CHECK_CRAN_INCOMING_</code> and <code>_R_CHECK_CRAN_INCOMING_REMOTE_</code> both <code>true</code>, so CRAN’s own incoming, URL and DOI checks ran. The note is “New submission” plus the three repository URLs, which return 404 until the repository is published. Everything else <code>urlchecker::url_check()</code> looks at passes.</li>
+<code>R CMD check --as-cran</code>: 0 errors, 0 warnings, 1 note on R 4.5.2, Windows, run on 2026-09-23 with <code>_R_CHECK_CRAN_INCOMING_</code> and <code>_R_CHECK_CRAN_INCOMING_REMOTE_</code> both <code>true</code>, so CRAN’s own incoming, URL and DOI checks ran. The note is “New submission” and nothing else. Every URL in the package resolves.</li>
+<li>The continuous integration matrix is green: Ubuntu, macOS and Windows on R release and oldrel-1, and R devel on Ubuntu and Windows. macOS on R devel is <code>continue-on-error</code>, because CRAN ships no macOS binaries for R devel and <code>sf</code> and <code>spdep</code> cannot build from source on the runner; CRAN’s own macOS builders are release and oldrel, both of which pass.</li>
 <li>Test coverage: 92.36 percent (<code>covr</code>, 2026-09-21), against the 85 percent the specification requires. The thinnest files are <code>R/utils-http.R</code> at 61 percent and <code>R/utils-zip.R</code> at 68 percent, both of which are the network and zip plumbing whose failure paths are hard to reach offline.</li>
 <li>Tests: 1,195 passing, 0 failures, 0 errors, 0 warnings, 0 skipped (2026-09-21, <code>NOT_CRAN=true</code>). Heavy estimator studies are behind <code>skip_on_cran()</code>.</li>
 <li>lintr, spelling and styler: clean.</li>
@@ -99,13 +100,9 @@
 </ul></div>
 <div class="section level2">
 <h2 id="still-to-do-before-submission">Still to do before submission<a class="anchor" aria-label="anchor" href="#still-to-do-before-submission"></a></h2>
-<p>These need the repository and a maintainer decision, and are outside what could be done here:</p>
-<ol style="list-style-type: decimal"><li>
-<strong>Create <code>https://github.com/BlackThrive/streetlamp</code> and push.</strong> This is the only thing between the package and a clean CRAN incoming check: the three URLs in <code>DESCRIPTION</code> return 404 until it exists, and the check names all three. Creating it also lets the continuous integration matrix (Ubuntu, macOS and Windows, on release, devel and oldrel-1) run, and gives the pkgdown site somewhere to deploy. The workflows are written and committed. The repository owner was settled on 2026-09-23: the <code>BlackThrive</code> organisation, which exists and which the maintainer belongs to. Black Thrive Global is also the copyright holder in <code>DESCRIPTION</code>.</li>
-<li>Publish the pkgdown site from that repository, which clears the third URL.</li>
-<li>Run rhub and win-builder on devel and release, and record the results in <code>cran-comments.md</code>. Nothing has run anywhere but this Windows machine on R 4.5.2.</li>
-<li>Delete the comment at the top of <code>cran-comments.md</code> once 1 to 3 hold.</li>
-</ol><p>The maintainer submits to CRAN; this package does not do that.</p>
+<ol style="list-style-type: decimal"><li>Run win-builder on devel and release, and rhub, then record the results in <code>cran-comments.md</code> and delete the comment at the top of it. These are the only checks that have not run.</li>
+<li>Submit. The maintainer does that; this package does not.</li>
+</ol><p>Done on 2026-09-23: the repository exists at <code>https://github.com/BlackThrive/streetlamp</code> with the nine-configuration check matrix running on every push, the pkgdown site is published at <code>https://blackthrive.github.io/streetlamp/</code>, and the incoming check’s note is down to “New submission”.</p>
 </div>
 <div class="section level2">
 <h2 id="what-this-package-does-not-claim">What this package does not claim<a class="anchor" aria-label="anchor" href="#what-this-package-does-not-claim"></a></h2>

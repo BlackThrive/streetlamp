@@ -72,11 +72,16 @@ are clean.
 ## Checks
 
 - `R CMD check --as-cran`: 0 errors, 0 warnings, 1 note on R 4.5.2,
-  Windows, run on 2026-09-21 with `_R_CHECK_CRAN_INCOMING_` and
+  Windows, run on 2026-09-23 with `_R_CHECK_CRAN_INCOMING_` and
   `_R_CHECK_CRAN_INCOMING_REMOTE_` both `true`, so CRAN’s own incoming,
-  URL and DOI checks ran. The note is “New submission” plus the three
-  repository URLs, which return 404 until the repository is published.
-  Everything else `urlchecker::url_check()` looks at passes.
+  URL and DOI checks ran. The note is “New submission” and nothing else.
+  Every URL in the package resolves.
+- The continuous integration matrix is green: Ubuntu, macOS and Windows
+  on R release and oldrel-1, and R devel on Ubuntu and Windows. macOS on
+  R devel is `continue-on-error`, because CRAN ships no macOS binaries
+  for R devel and `sf` and `spdep` cannot build from source on the
+  runner; CRAN’s own macOS builders are release and oldrel, both of
+  which pass.
 - Test coverage: 92.36 percent (`covr`, 2026-09-21), against the 85
   percent the specification requires. The thinnest files are
   `R/utils-http.R` at 61 percent and `R/utils-zip.R` at 68 percent, both
@@ -120,28 +125,16 @@ because they qualify what the package should be used for:
 
 ## Still to do before submission
 
-These need the repository and a maintainer decision, and are outside
-what could be done here:
+1.  Run win-builder on devel and release, and rhub, then record the
+    results in `cran-comments.md` and delete the comment at the top of
+    it. These are the only checks that have not run.
+2.  Submit. The maintainer does that; this package does not.
 
-1.  **Create `https://github.com/BlackThrive/streetlamp` and push.**
-    This is the only thing between the package and a clean CRAN incoming
-    check: the three URLs in `DESCRIPTION` return 404 until it exists,
-    and the check names all three. Creating it also lets the continuous
-    integration matrix (Ubuntu, macOS and Windows, on release, devel and
-    oldrel-1) run, and gives the pkgdown site somewhere to deploy. The
-    workflows are written and committed. The repository owner was
-    settled on 2026-09-23: the `BlackThrive` organisation, which exists
-    and which the maintainer belongs to. Black Thrive Global is also the
-    copyright holder in `DESCRIPTION`.
-2.  Publish the pkgdown site from that repository, which clears the
-    third URL.
-3.  Run rhub and win-builder on devel and release, and record the
-    results in `cran-comments.md`. Nothing has run anywhere but this
-    Windows machine on R 4.5.2.
-4.  Delete the comment at the top of `cran-comments.md` once 1 to 3
-    hold.
-
-The maintainer submits to CRAN; this package does not do that.
+Done on 2026-09-23: the repository exists at
+`https://github.com/BlackThrive/streetlamp` with the nine-configuration
+check matrix running on every push, the pkgdown site is published at
+`https://blackthrive.github.io/streetlamp/`, and the incoming check’s
+note is down to “New submission”.
 
 ## What this package does not claim
 
