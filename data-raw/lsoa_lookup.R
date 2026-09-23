@@ -33,7 +33,7 @@ hub_csv <- function(item, dest) {
   )
   for (i in seq_len(10)) {
     resp <- httr2::request(url) |>
-      httr2::req_user_agent("streetlamp data-raw (https://github.com/Mustapha-Wasseja/streetlamp)") |>
+      httr2::req_user_agent("streetlamp data-raw (https://github.com/BlackThrive/streetlamp)") |>
       httr2::req_error(is_error = function(resp) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_status(resp) == 200L) {

@@ -16,3 +16,6 @@ None so far.
   is the specification's placeholder. If the repository is created under
   another owner, update `DESCRIPTION` (URL, BugReports), `_pkgdown.yml` and
   `README.Rmd`.
+  **Answered 2026-09-23**: `https://github.com/BlackThrive/streetlamp`. That
+  organisation exists and the maintainer belongs to it. The placeholder never
+  did exist under either spelling.

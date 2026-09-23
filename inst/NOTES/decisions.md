@@ -4,6 +4,24 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-23, authorship and repository owner
+
+55. **Three authors, one maintainer.** `Authors@R` now lists Mustapha Wasseja
+    (`aut`, `cre`), Souci Frissa (`aut`) and Sarah Hamed (`aut`), with Black
+    Thrive Global as `cph` and `fnd`. The specification named only the
+    maintainer; the co-authors were supplied on 2026-09-23. No ORCIDs, and no
+    email for the two co-authors, because CRAN requires one only for the
+    maintainer and none were given. There is no `inst/CITATION`, so the
+    citation is generated from `DESCRIPTION` and picks the three up without
+    further work.
+56. **The repository is `github.com/BlackThrive/streetlamp`**, replacing both
+    the specification's `black-thrive-global` placeholder and the maintainer's
+    personal account chosen on 2026-09-21. `BlackThrive` is the organisation
+    that actually exists, and the maintainer belongs to it. The pkgdown site
+    follows at `blackthrive.github.io/streetlamp/`. The repository itself is
+    not created yet, so all three URLs still return 404 and CRAN's incoming
+    check still names them.
+
 ## 2026-09-18, validation runs
 
 49. **Pesaran's CD test is vectorised, and samples areas above a cap.** The

@@ -106,16 +106,16 @@ they qualify what the package should be used for:
 These need the repository and a maintainer decision, and are outside what
 could be done here:
 
-1. **Create `https://github.com/Mustapha-Wasseja/streetlamp` and push.**
+1. **Create `https://github.com/BlackThrive/streetlamp` and push.**
    This is the only thing between the package and a clean CRAN incoming
    check: the three URLs in `DESCRIPTION` return 404 until it exists, and
    the check names all three. Creating it also lets the continuous
    integration matrix (Ubuntu, macOS and Windows, on release, devel and
    oldrel-1) run, and gives the pkgdown site somewhere to deploy. The
    workflows are written and committed. The repository owner was settled on
-   2026-09-21: the maintainer's own account, movable to a Black Thrive
-   Global organisation later. Black Thrive Global remains the copyright
-   holder in `DESCRIPTION`.
+   2026-09-23: the `BlackThrive` organisation, which exists and which the
+   maintainer belongs to. Black Thrive Global is also the copyright holder in
+   `DESCRIPTION`.
 2. Publish the pkgdown site from that repository, which clears the third
    URL.
 3. Run rhub and win-builder on devel and release, and record the results in
