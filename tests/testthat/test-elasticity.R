@@ -114,7 +114,11 @@ test_that("the CD test matches a pair-by-pair calculation and caps large panels"
   g$r[g$area == "A01"] <- 1
 
   cd <- lamp_cd_test(g$r, g$area, g$month)
-  expect_equal(cd$statistic, by_pairs(g$r, g$area, g$month), tolerance = 0)
+  # not bit-identical: the vectorised form sums through BLAS, which reassociates
+  # differently on Accelerate than on the reference implementation, and this
+  # failed on macOS at `tolerance = 0`. The claim is that it is the same
+  # statistic, not the same rounding.
+  expect_equal(cd$statistic, by_pairs(g$r, g$area, g$month), tolerance = 1e-10)
   expect_equal(cd$n_areas, n_a)
   expect_equal(cd$n_areas_used, n_a)
   expect_false(cd$sampled)
