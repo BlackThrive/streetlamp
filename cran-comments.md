@@ -1,11 +1,11 @@
 <!--
-Not submitted yet. One thing below is still ahead of the evidence: rhub has
-not run. Everything else in this file is a result that has actually happened.
-Delete this comment once it has.
+Not submitted yet.
 
 The win-builder runs were of the tree at 3722dfd. Everything committed since
 is either skipped on CRAN (the plot snapshot tests) or cosmetic; if the
 package changes further before submission, run win-builder again.
+
+Delete this comment when submitting.
 -->
 
 ## R CMD check results
@@ -45,13 +45,24 @@ Checked on 2026-09-23 and 2026-09-24, all with 0 errors and 0 warnings:
   to 66 s, vignettes and both manuals OK.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
   release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
+* R-hub v2: `linux` and `windows` on R devel, and the `donttest`, `atlas` and
+  `mkl` containers. All clean. `atlas` and `mkl` were included deliberately:
+  the package has no compiled code, but it does sum through BLAS in Pesaran's
+  CD test, and those two are where an alternative BLAS would show up.
 
-macOS on R devel is the one configuration that does not run. It fails before
-reaching this package: there are no CRAN macOS binaries for R devel, so `sf`
-and `spdep` would have to build from source against GDAL, GEOS and PROJ,
-which the runner does not carry. macOS release and oldrel-1 both pass.
+macOS on R devel is the one GitHub Actions configuration that does not run.
+It fails before reaching this package: there are no CRAN macOS binaries for R
+devel, so `sf` and `spdep` would have to build from source against GDAL, GEOS
+and PROJ, which the runner does not carry. macOS release and oldrel-1 both
+pass, and those are the versions CRAN's own macOS builders use.
 
-Still to run: rhub.
+R-hub's `nosuggests` container reports one ERROR, in re-building the
+vignettes: `there is no package called 'rmarkdown'`. Examples and tests both
+pass there, which is the part that matters, so nothing in the package's code
+needs a suggested package without checking for it first. The vignettes are
+`.Rmd` and their engine is `knitr::rmarkdown`, so rebuilding them without
+`rmarkdown` installed cannot work, for this or any package built the same
+way.
 
 ## Notes for the reviewer
 
