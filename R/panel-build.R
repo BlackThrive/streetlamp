@@ -548,21 +548,32 @@ plot.lamp_panel <- function(x, y = NULL, outcome = "crime_total", ...) {
       missing = all(is.na(.data[[outcome]])),
       .groups = "drop"
     )
+  col <- lamp_colours()
+  by_force$force <- lamp_force_label(by_force$force_id)
   gaps <- by_force[by_force$missing, ]
+  gaps$month_end <- as.Date(format(gaps$month + 32, "%Y-%m-01"))
+  ends <- by_force[!by_force$missing, ]
+  ends <- ends[ends$month == stats::ave(ends$month, ends$force, FUN = max), ]
   p <- ggplot2::ggplot(by_force, ggplot2::aes(x = .data$month, y = .data$value))
   if (nrow(gaps) > 0L) {
     p <- p + ggplot2::geom_rect(
       data = gaps,
-      ggplot2::aes(xmin = .data$month, xmax = .data$month + 31, ymin = -Inf, ymax = Inf),
-      inherit.aes = FALSE, fill = "grey85"
+      ggplot2::aes(xmin = .data$month, xmax = .data$month_end, ymin = -Inf, ymax = Inf),
+      inherit.aes = FALSE, fill = col[["shade"]]
     )
   }
   p +
-    ggplot2::geom_line(na.rm = TRUE) +
-    ggplot2::facet_wrap(ggplot2::vars(.data$force_id), scales = "free_y") +
-    ggplot2::labs(
-      x = NULL, y = outcome,
-      title = "Force-month totals; shaded months have no submitted file"
+    ggplot2::geom_line(colour = col[["series"]], linewidth = 0.8, na.rm = TRUE) +
+    ggplot2::geom_point(data = ends, colour = col[["series"]], size = 2.2) +
+    ggplot2::facet_wrap(ggplot2::vars(.data$force), scales = "free_y") +
+    ggplot2::scale_y_continuous(
+      labels = lamp_label_number,
+      expand = ggplot2::expansion(mult = c(0.08, 0.12))
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::labs(
+      x = NULL, y = NULL,
+      title = sprintf("%s by force and month", lamp_pretty_name(outcome)),
+      subtitle = if (nrow(gaps) > 0L) "Shaded months have no submitted file" else NULL
+    ) +
+    lamp_theme()
 }

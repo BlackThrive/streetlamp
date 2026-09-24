@@ -128,8 +128,9 @@ fit
 #> moved together in the outcome, net of area and month fixed effects.
 #> Sample: 1440 area-months in 60 areas; 0 rows dropped for coverage.
 #> Dispersion: 0.942
-#>   term estimate std_error statistic  p_value conf_low conf_high
-#>  treat   -0.242    0.0386     -6.28 3.47e-10   -0.318    -0.166
+#>   Term             Estimate  Std. error            95% CI       p
+#>   ───────────────  ────────  ──────────  ────────────────  ──────
+#>   Treated × after    −0.242      0.0386  [−0.318, −0.166]  <0.001
 
 # the true effect on the crime total, for comparison
 truth$effect_crime_total
@@ -190,15 +191,15 @@ zips <- list.files(
 )
 for (z in zips) lamp_archive_register(z, dir = cache)
 #> Registered archive "2026-06" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmp0mWRoe/temp_libpath802417d172d3/streetlamp/extdata/archive/2026-06.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmpy87S3Y/temp_libpath295c318b155a/streetlamp/extdata/archive/2026-06.zip'.
 #> Registered archive "2026-07" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmp0mWRoe/temp_libpath802417d172d3/streetlamp/extdata/archive/2026-07.zip'.
+#> 'C:/Users/musta/AppData/Local/Temp/Rtmpy87S3Y/temp_libpath295c318b155a/streetlamp/extdata/archive/2026-07.zip'.
 snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\RtmpYzMunE\streetlamp-cache-848872321484'
+#> 'C:\Users\musta\AppData\Local\Temp\Rtmpms2tIT\streetlamp-cache-8ba86d5c2eb2'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.

@@ -225,21 +225,26 @@ print.lamp_coverage <- function(x, ...) {
 
 #' @export
 plot.lamp_coverage <- function(x, y = NULL, ...) {
-  levels_status <- c("submitted", "refreshed", "partial_suspected", "not_read", "missing")
+  col <- lamp_colours()
+  levels_status <- lamp_status_levels()
   d <- tibble::as_tibble(x)
   d$status <- factor(d$status, levels = levels_status)
-  ggplot2::ggplot(d, ggplot2::aes(x = .data$month, y = .data$force_id, fill = .data$status)) +
-    ggplot2::geom_tile(colour = "white", linewidth = 0.2) +
-    ggplot2::facet_wrap(ggplot2::vars(.data$file_type), ncol = 1) +
+  d$force <- lamp_force_label(d$force_id)
+  d$force <- factor(d$force, levels = rev(sort(unique(d$force))))
+  d$file <- lamp_file_type_label(d$file_type)
+  present <- levels_status[levels_status %in% d$status]
+  ggplot2::ggplot(d, ggplot2::aes(x = .data$month, y = .data$force, fill = .data$status)) +
+    ggplot2::geom_tile(colour = col[["surface"]], linewidth = 0.8) +
+    ggplot2::facet_wrap(ggplot2::vars(.data$file), ncol = 1) +
     ggplot2::scale_fill_manual(
-      values = c(
-        submitted = "#2a6f97", refreshed = "#61a5c2", partial_suspected = "#e9c46a",
-        not_read = "#cccccc", missing = "#e76f51"
-      ),
-      drop = FALSE
+      values = col[levels_status],
+      breaks = present,
+      labels = lamp_status_label(present)
     ) +
-    ggplot2::labs(x = NULL, y = NULL, fill = "status") +
-    ggplot2::theme_minimal()
+    ggplot2::scale_x_date(expand = ggplot2::expansion(mult = 0.01)) +
+    ggplot2::labs(x = NULL, y = NULL, fill = NULL, title = "File coverage by force and month") +
+    lamp_theme() +
+    ggplot2::theme(panel.grid = ggplot2::element_blank())
 }
 
 # Changelog ---------------------------------------------------------------------

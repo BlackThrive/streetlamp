@@ -17,6 +17,11 @@
 #' @param title Report title.
 #' @param diagnostics Include the pre-trend and placebo sections where the
 #'   estimates support them.
+#' @param figures Draw each estimate's `plot()` as a PNG into a `_figures`
+#'   directory beside the report and include it. `NULL`, the default, draws
+#'   figures for an HTML report (where they are also embedded in the page, so
+#'   the file stands alone) and not for a Markdown one. A figure that cannot
+#'   be drawn is skipped, never an error.
 #' @param quiet Suppress rendering output.
 #'
 #' @return The path to the written file, invisibly.
@@ -33,7 +38,7 @@
 #' )
 #' file.exists(out)
 lamp_report <- function(panel, estimates, file = NULL, title = "streetlamp report",
-                        diagnostics = TRUE, quiet = FALSE) {
+                        diagnostics = TRUE, figures = NULL, quiet = FALSE) {
   lamp_check_panel(panel)
   check_string(title)
   check_bool(diagnostics)
@@ -57,7 +62,14 @@ lamp_report <- function(panel, estimates, file = NULL, title = "streetlamp repor
     lamp_abort("{.arg file} must end in {.val .html} or {.val .md}.", "input")
   }
 
-  md <- lamp_report_markdown(panel, estimates, title, diagnostics)
+  figures <- figures %||% (fmt == "html")
+  check_bool(figures)
+  figure_dir <- NULL
+  if (figures) {
+    figure_dir <- lamp_report_figures(estimates, file, quiet = quiet)
+  }
+
+  md <- lamp_report_markdown(panel, estimates, title, diagnostics, figure_dir = figure_dir)
   if (fmt == "md") {
     writeLines(md, file)
     if (!quiet) lamp_inform("Report written to {.path {file}}.", class = "report")
@@ -72,10 +84,23 @@ lamp_report <- function(panel, estimates, file = NULL, title = "streetlamp repor
       "input"
     )
   }
-  tmp <- tempfile(fileext = ".md")
+  # The rendered page carries the title in its <title>; the Markdown H1 is
+  # the visible heading, so the title is not passed as a metadata block too.
+  out_dir <- dirname(normalizePath(file, mustWork = FALSE))
+  tmp <- file.path(out_dir, basename(tempfile(fileext = ".md")))
   writeLines(md, tmp)
+  on.exit(unlink(tmp), add = TRUE)
+  format <- rmarkdown::html_document(
+    theme = NULL, highlight = NULL, mathjax = NULL,
+    css = system.file("templates", "report.css", package = "streetlamp"),
+    self_contained = TRUE,
+    pandoc_args = rmarkdown::pandoc_metadata_arg("pagetitle", title)
+  )
   rlang::try_fetch(
-    rmarkdown::render(tmp, output_file = normalizePath(file, mustWork = FALSE), quiet = TRUE),
+    rmarkdown::render(
+      tmp,
+      output_format = format, output_file = normalizePath(file, mustWork = FALSE), quiet = TRUE
+    ),
     error = function(e) {
       lamp_abort(
         c(
@@ -91,7 +116,39 @@ lamp_report <- function(panel, estimates, file = NULL, title = "streetlamp repor
   invisible(file)
 }
 
-lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
+# Draw each estimate's plot into a directory beside the report and return the
+# directory, or NULL when nothing could be drawn. Figures are a courtesy: a
+# device that cannot open never stops the report.
+lamp_report_figures <- function(estimates, file, quiet = FALSE) {
+  # not "_files": rmarkdown treats a directory of that name beside the output
+  # as its own intermediate and deletes it after a self-contained render
+  dir <- paste0(tools::file_path_sans_ext(file), "_figures")
+  dir.create(dir, showWarnings = FALSE, recursive = TRUE)
+  drawn <- 0L
+  for (i in seq_along(estimates)) {
+    path <- file.path(dir, sprintf("estimate-%02d.png", i))
+    ok <- rlang::try_fetch(
+      {
+        grDevices::png(path, width = 7.5, height = 4.5, units = "in", res = 150)
+        on.exit(grDevices::dev.off(), add = TRUE)
+        print(plot(estimates[[i]]))
+        grDevices::dev.off()
+        on.exit()
+        TRUE
+      },
+      error = function(e) FALSE
+    )
+    if (isTRUE(ok) && file.exists(path)) drawn <- drawn + 1L else unlink(path)
+  }
+  if (drawn == 0L) {
+    unlink(dir, recursive = TRUE)
+    if (!quiet) lamp_inform("No figures could be drawn; the report is text only.", class = "report")
+    return(NULL)
+  }
+  dir
+}
+
+lamp_report_markdown <- function(panel, estimates, title, diagnostics, figure_dir = NULL) {
   contract <- lamp_contract(panel)
   out <- c(
     sprintf("# %s", title),
@@ -114,12 +171,11 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
 
   cov <- rlang::try_fetch(lamp_coverage(panel), error = function(e) NULL)
   if (!is.null(cov)) {
-    tab <- table(cov$file_type, cov$status)
     out <- c(
       out, "### Coverage", "",
       "Force-months by file type and status. A month a force did not submit is",
       "not a month with no crime, and every estimate below excludes those rows.",
-      "", lamp_md_table(as.data.frame.matrix(tab), rownames_to = "file_type"), ""
+      "", lamp_md_table(lamp_table(cov)), ""
     )
     n_mismatch <- sum(cov$mismatch %in% TRUE)
     if (n_mismatch > 0L) {
@@ -151,8 +207,9 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
   }
 
   out <- c(out, "## Estimates", "")
-  for (nm in names(estimates)) {
-    e <- estimates[[nm]]
+  for (i in seq_along(estimates)) {
+    nm <- names(estimates)[i]
+    e <- estimates[[i]]
     used <- e$sample[nrow(e$sample), ]
     out <- c(
       out,
@@ -160,36 +217,43 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
       sprintf("- Estimator: `%s`", e$estimator),
       sprintf("- Outcome: `%s`, modelled as %s", e$meta$outcome, lamp_family_label(e$meta$family)),
       sprintf("- Clustered by: %s", e$meta$cluster),
-      sprintf("- Sample: %s area-months in %s areas", used$n_rows, used$n_areas),
+      sprintf(
+        "- Sample: %s area-months in %s areas",
+        lamp_label_number(used$n_rows), lamp_label_number(used$n_areas)
+      ),
       sprintf("- Force-months dropped for coverage: %s", e$diagnostics$n_dropped_coverage %||% 0L),
       "",
       sprintf("**Identifying assumption.** %s", e$assumption),
-      "",
-      lamp_md_table(as.data.frame(e$coefficients)),
       ""
     )
+    figure <- if (!is.null(figure_dir)) file.path(figure_dir, sprintf("estimate-%02d.png", i))
+    if (!is.null(figure) && file.exists(figure)) {
+      rel <- file.path(basename(figure_dir), basename(figure))
+      out <- c(out, sprintf("![%s](%s)", nm, rel), "")
+    }
+    out <- c(out, lamp_md_table(lamp_table(e)), "")
     ov <- e$diagnostics$overall
     if (!is.null(ov)) {
       out <- c(out, sprintf(
         "Overall effect: %s (standard error %s).",
-        signif(ov$estimate, 3), signif(ov$std_error, 3)
+        lamp_fmt_num(ov$estimate), lamp_fmt_num(ov$std_error)
       ), "")
     }
     net <- e$diagnostics$net
     if (!is.null(net)) {
       out <- c(out, sprintf(
-        "Net effect including neighbours: %s [%s, %s].",
-        signif(net$estimate, 3), signif(net$conf_low, 3), signif(net$conf_high, 3)
+        "Net effect including neighbours: %s %s.",
+        lamp_fmt_num(net$estimate), lamp_fmt_interval(net$conf_low, net$conf_high)
       ), "")
     }
     if (!is.null(e$diagnostics$dispersion) && !is.na(e$diagnostics$dispersion)) {
-      out <- c(out, sprintf("Dispersion: %s.", signif(e$diagnostics$dispersion, 3)), "")
+      out <- c(out, sprintf("Dispersion: %s.", lamp_fmt_num(e$diagnostics$dispersion)), "")
     }
     m <- e$diagnostics$moran
     if (!is.null(m)) {
       out <- c(out, sprintf(
         "Moran's I of residuals: %s (p = %s). %s",
-        signif(m$statistic, 3), signif(m$p_value, 3), m$note
+        lamp_fmt_num(m$statistic), lamp_fmt_p(m$p_value), m$note
       ), "")
     }
     if (diagnostics && inherits(e, "lamp_event_study")) {
@@ -199,11 +263,11 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
           out, "**Pre-trends.**", "",
           sprintf(
             "Joint test of %s pre-period coefficients: p = %s.",
-            pt$test$df, signif(pt$test$p_value, 3)
+            pt$test$df, lamp_fmt_p(pt$test$p_value)
           ), ""
         )
         if (!is.null(pt$power)) {
-          out <- c(out, lamp_md_table(as.data.frame(pt$power)), "")
+          out <- c(out, lamp_md_table(lamp_table(pt)), "")
         }
         out <- c(out, pt$interpretation, "")
       }
@@ -236,25 +300,4 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics) {
     ""
   )
   out
-}
-
-# A small Markdown table, so that reports need no extra package.
-lamp_md_table <- function(df, rownames_to = NULL) {
-  if (!is.null(rownames_to)) {
-    df <- cbind(stats::setNames(data.frame(rownames(df)), rownames_to), df)
-  }
-  fmt <- function(x) {
-    if (is.numeric(x)) {
-      formatC(signif(x, 4), format = "g")
-    } else {
-      as.character(x)
-    }
-  }
-  cells <- lapply(df, fmt)
-  header <- paste("|", paste(names(df), collapse = " | "), "|")
-  rule <- paste("|", paste(rep("---", length(df)), collapse = " | "), "|")
-  rows <- vapply(seq_len(nrow(df)), function(i) {
-    paste("|", paste(vapply(cells, function(col) col[i], character(1)), collapse = " | "), "|")
-  }, character(1))
-  c(header, rule, rows)
 }
