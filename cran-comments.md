@@ -2,6 +2,10 @@
 Not submitted yet. One thing below is still ahead of the evidence: rhub has
 not run. Everything else in this file is a result that has actually happened.
 Delete this comment once it has.
+
+The win-builder runs were of the tree at 3722dfd. Everything committed since
+is either skipped on CRAN (the plot snapshot tests) or cosmetic; if the
+package changes further before submission, run win-builder again.
 -->
 
 ## R CMD check results
@@ -36,7 +40,9 @@ spelled as intended:
 Checked on 2026-09-23 and 2026-09-24, all with 0 errors and 0 warnings:
 
 * local: Windows 11, R 4.5.2
-* win-builder: R 4.6.1 (release). 1 note, the one above.
+* win-builder: R 4.6.1 (release) and R devel (2026-09-21 r90579). 1 note on
+  each, the one above, and identical on both. Examples 25 to 26 s, tests 64
+  to 66 s, vignettes and both manuals OK.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
   release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
 
