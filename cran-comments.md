@@ -1,7 +1,7 @@
 <!--
-Not submitted yet. One thing below is still ahead of the evidence: neither
-win-builder nor rhub has run. Everything else in this file is a result that
-has actually happened. Delete this comment once they have.
+Not submitted yet. One thing below is still ahead of the evidence: rhub has
+not run. Everything else in this file is a result that has actually happened.
+Delete this comment once it has.
 -->
 
 ## R CMD check results
@@ -20,11 +20,23 @@ The local check ran with `_R_CHECK_CRAN_INCOMING_` and
 `_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
 checks ran. Every URL in the package resolves.
 
+win-builder adds two possibly misspelled words in `DESCRIPTION`. Both are
+spelled as intended:
+
+* **elasticities** is the standard term for what the package estimates: the
+  proportional response of recorded crime to a proportional change in
+  searches.
+* **pre** is the first half of **pre-trend**, which the spell checker splits
+  at the hyphen. A pre-trend is the movement in the outcome before an
+  intervention, and testing for one is a standard part of a
+  difference-in-differences design.
+
 ## Test environments
 
-Checked on 2026-09-23, all with 0 errors and 0 warnings:
+Checked on 2026-09-23 and 2026-09-24, all with 0 errors and 0 warnings:
 
 * local: Windows 11, R 4.5.2
+* win-builder: R 4.6.1 (release). 1 note, the one above.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
   release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
 
@@ -33,7 +45,7 @@ reaching this package: there are no CRAN macOS binaries for R devel, so `sf`
 and `spdep` would have to build from source against GDAL, GEOS and PROJ,
 which the runner does not carry. macOS release and oldrel-1 both pass.
 
-Still to run: win-builder (devel and release) and rhub.
+Still to run: rhub.
 
 ## Notes for the reviewer
 
