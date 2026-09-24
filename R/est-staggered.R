@@ -105,7 +105,9 @@ lamp_check_count_outcome <- function(d, outcome, family, call = rlang::caller_en
 #' designs: robust and efficient estimation. Review of Economic Studies 91(6).
 #' @export
 #' @examples
-#' sim <- lamp_simulate(n_areas = 40, n_months = 24, design = "staggered", effect = -0.3, seed = 1)
+#' # small: most of this example's cost is loading the did package, which
+#' # whichever example reaches it first has to pay
+#' sim <- lamp_simulate(n_areas = 24, n_months = 18, design = "staggered", effect = -0.3, seed = 1)
 #' ad <- attr(sim, "truth")$adoption
 #' tr <- lamp_treatment(sim, "staggered", adoption = ad[!is.na(ad$adoption_month), ])
 #' fit <- lamp_did_staggered(sim, "crime_total", tr)
@@ -400,17 +402,35 @@ print.lamp_did_staggered <- function(x, ...) {
 #' @export
 plot.lamp_did_staggered <- function(x, y = NULL, ...) {
   d <- x$coefficients
-  ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate)) +
+  # The reference period is normalised to zero and carries no standard error,
+  # so it has no interval to draw. In the same layer as the rest it is dropped
+  # with a "removed 1 row" warning on every render; on its own it shows where
+  # the comparison is anchored, which is worth seeing.
+  has_interval <- !is.na(d$conf_low) & !is.na(d$conf_high)
+  p <- ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate)) +
     ggplot2::annotate(
       "rect",
       xmin = min(d$rel_time) - 0.5, xmax = -0.5, ymin = -Inf, ymax = Inf, fill = "grey92"
     ) +
     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "grey40") +
-    ggplot2::geom_pointrange(ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high)) +
+    ggplot2::geom_pointrange(
+      data = d[has_interval, , drop = FALSE],
+      ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high)
+    )
+  if (any(!has_interval)) {
+    p <- p + ggplot2::geom_point(
+      data = d[!has_interval, , drop = FALSE],
+      shape = 21, fill = "white", size = 2
+    )
+  }
+  p +
     ggplot2::labs(
       x = "months since adoption", y = sprintf("effect on %s", x$meta$outcome),
       title = sprintf("Staggered difference-in-differences (%s)", x$meta$backend),
-      subtitle = x$assumption
+      subtitle = x$assumption,
+      caption = if (any(!has_interval)) {
+        "hollow: the reference period, normalised to zero"
+      }
     ) +
     ggplot2::theme_minimal()
 }

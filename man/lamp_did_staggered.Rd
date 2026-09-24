@@ -82,7 +82,9 @@ the coefficients are effects on that scale.
 }
 
 \examples{
-sim <- lamp_simulate(n_areas = 40, n_months = 24, design = "staggered", effect = -0.3, seed = 1)
+# small: most of this example's cost is loading the did package, which
+# whichever example reaches it first has to pay
+sim <- lamp_simulate(n_areas = 24, n_months = 18, design = "staggered", effect = -0.3, seed = 1)
 ad <- attr(sim, "truth")$adoption
 tr <- lamp_treatment(sim, "staggered", adoption = ad[!is.na(ad$adoption_month), ])
 fit <- lamp_did_staggered(sim, "crime_total", tr)
