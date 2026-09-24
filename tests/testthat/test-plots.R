@@ -44,9 +44,17 @@ test_that("the estimator plots look the way they did", {
   vdiffr::expect_doppelganger("twfe coefficients", plot(fit))
 
   es <- lamp_event_study(f$sim, "crime_total", f$tr, window = c(-6, 6))
-  vdiffr::expect_doppelganger("event study", plot(es))
+  # Both of these put the pre-trend p value in the subtitle, and a clustered
+  # Wald statistic differs in its third significant figure between BLAS
+  # implementations, so the rendered text differs on every platform. The
+  # number is asserted directly in test-eventstudy.R and test-diagnostics.R;
+  # what is worth comparing here is the drawing, so the subtitle is fixed.
+  vdiffr::expect_doppelganger("event study", plot(es) + ggplot2::labs(subtitle = "pre-trend test"))
 
-  vdiffr::expect_doppelganger("pre-trends", plot(lamp_pretrends(es)))
+  vdiffr::expect_doppelganger(
+    "pre-trends",
+    plot(lamp_pretrends(es)) + ggplot2::labs(subtitle = "joint test")
+  )
   vdiffr::expect_doppelganger(
     "placebo in space",
     plot(lamp_placebo(fit, type = "space", n = 30, seed = 404))
