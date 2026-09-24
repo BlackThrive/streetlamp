@@ -301,6 +301,12 @@ tidy.lamp_estimate <- function(x, ...) {
   x$coefficients
 }
 
+# Wrap a long assumption so that it fits under a plot title instead of
+# running off the right edge of the panel.
+lamp_wrap_subtitle <- function(x, width = 90L) {
+  paste(strwrap(x, width = width), collapse = "\n")
+}
+
 #' @export
 plot.lamp_estimate <- function(x, y = NULL, ...) {
   d <- x$coefficients
@@ -311,7 +317,7 @@ plot.lamp_estimate <- function(x, y = NULL, ...) {
     ggplot2::labs(
       x = "estimate", y = NULL,
       title = sprintf("%s: %s", x$estimator, x$meta$outcome),
-      subtitle = x$assumption
+      subtitle = lamp_wrap_subtitle(x$assumption)
     ) +
     ggplot2::theme_minimal()
 }
