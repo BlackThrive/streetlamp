@@ -46,15 +46,18 @@ Checked on 2026-09-23 and 2026-09-24, all with 0 errors and 0 warnings:
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
   release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
 * R-hub v2: `linux` and `windows` on R devel, and the `donttest`, `atlas` and
-  `mkl` containers. All clean. `atlas` and `mkl` were included deliberately:
+  `mkl` containers, all clean; `nosuggests` and `macos` are discussed below.
+  `atlas` and `mkl` were included deliberately:
   the package has no compiled code, but it does sum through BLAS in Pesaran's
   CD test, and those two are where an alternative BLAS would show up.
 
-macOS on R devel is the one GitHub Actions configuration that does not run.
-It fails before reaching this package: there are no CRAN macOS binaries for R
-devel, so `sf` and `spdep` would have to build from source against GDAL, GEOS
-and PROJ, which the runner does not carry. macOS release and oldrel-1 both
-pass, and those are the versions CRAN's own macOS builders use.
+macOS on R devel does not run, on either system, and in both cases it fails
+before reaching this package. There are no CRAN macOS binaries for R devel,
+so `sf`'s compiled dependency chain has to build from source: on GitHub
+Actions the runner has no GDAL, GEOS or PROJ and dependency setup gives up;
+on R-hub, `s2` spent eleven minutes compiling abseil-cpp and then failed.
+macOS release and oldrel-1 both pass on GitHub Actions, and those are the
+versions CRAN's own macOS builders use.
 
 R-hub's `nosuggests` container reports one ERROR, in re-building the
 vignettes: `there is no package called 'rmarkdown'`. Examples and tests both
