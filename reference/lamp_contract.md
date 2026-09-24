@@ -47,7 +47,7 @@ contract
 #> Source LSOA vintage: "lsoa21"
 #> Crime category sets: "fourteen"
 #> Treatment: not defined
-#> Created 2026-09-24 06:05 with streetlamp 0.1.0
+#> Created 2026-09-24 06:16 with streetlamp 0.1.0
 contract$coverage
 #> # A tibble: 3 × 8
 #>   force_id    month      file_type status    archive n_records n_versions
