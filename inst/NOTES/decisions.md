@@ -4,6 +4,40 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-24, snapshot tests for plots
+
+59. **The specification's snapshot tests for plots were missing, and now
+    exist.** Section 9.4 asks for them; what the suite had was seven
+    assertions that `plot()` returns a `ggplot`, which catches a method that
+    errors and nothing else. A panel drawn from the wrong series, a coverage
+    heat map that stops shading missing months, an event study whose
+    reference period drifts: all return a perfectly good `ggplot`.
+    `tests/testthat/test-plots.R` now compares the rendered SVG of all eight
+    plot methods against stored baselines, with `vdiffr` in `Suggests`. They
+    are skipped on CRAN, as the specification says, so they cost the check
+    nothing; `R CMD check` runs its tests in 79 seconds either way.
+60. **The staggered plot draws its reference period instead of dropping
+    it.** The first snapshot run found this: `did`'s dynamic aggregation
+    returns the reference period with an estimate of zero and no standard
+    error, so `geom_pointrange()` discarded it and warned "Removed 1 row
+    containing missing values" on every render. It is now drawn as a hollow
+    point with a caption saying what it is, which removes the warning and
+    shows where the comparison is anchored. This is what the snapshot tests
+    were for: nothing else in the suite would have seen it.
+61. **`inst/templates/` removed.** The specification's skeleton lists it as
+    holding the report template, but `lamp_report()` assembles Markdown in
+    code and hands it to `rmarkdown::render()`. The directory had been empty
+    since M0, git never tracked it, and `R CMD build` deleted it from every
+    tarball. Building the document in code rather than from a template file
+    keeps the two from drifting apart, and is the choice being kept.
+62. **The `lamp_did_staggered()` example is smaller.** With the machine under
+    load it took 6.1 seconds of elapsed time and tripped the "examples over
+    5s" note. Almost all of that is loading the `did` package, which
+    whichever example reaches it first has to pay: the fit itself is under
+    half a second, and a second call in the same session takes 0.44 seconds.
+    The panel is now 24 areas by 18 months, which leaves the example making
+    the same point for less, and the check is back to one note.
+
 ## 2026-09-23, first continuous integration run
 
 57. **macOS on R-devel is allowed to fail in the check matrix.** The first
