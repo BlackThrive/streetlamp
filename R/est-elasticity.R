@@ -253,11 +253,11 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
   contract <- mf$contract
   new_lamp_estimate(
     "lamp_elasticity", res$coefficients,
-    assumption = paste(
-      "The association between searching and recorded crime, net of area and",
+    assumption = paste0(
+      "The association between searching and recorded crime, net of area and ",
       "month effects",
-      if (method != "fe") "and of common factors proxied by cross-sectional averages" else "",
-      ". Causal only if the variation in searching has a source outside the",
+      if (method != "fe") " and of common factors proxied by cross-sectional averages",
+      ". Causal only if the variation in searching has a source outside the ",
       "crime process; see lamp_allocation()."
     ),
     sample = mf$sample, diagnostics = diagnostics,
