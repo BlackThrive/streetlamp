@@ -131,7 +131,9 @@ Other estimators:
 ## Examples
 
 ``` r
-sim <- lamp_simulate(n_areas = 40, n_months = 24, design = "staggered", effect = -0.3, seed = 1)
+# small: most of this example's cost is loading the did package, which
+# whichever example reaches it first has to pay
+sim <- lamp_simulate(n_areas = 24, n_months = 18, design = "staggered", effect = -0.3, seed = 1)
 ad <- attr(sim, "truth")$adoption
 tr <- lamp_treatment(sim, "staggered", adoption = ad[!is.na(ad$adoption_month), ])
 fit <- lamp_did_staggered(sim, "crime_total", tr)
@@ -139,6 +141,7 @@ fit <- lamp_did_staggered(sim, "crime_total", tr)
 #> ℹ Coefficients are effects on that transformed scale, not proportional effects
 #>   on the count; zeros are handled by the transformation, not modelled.
 #> You have a balanced panel. Setting allow_unbalanced_panel = FALSE.
+#> Warning: Not returning pre-test Wald statistic due to singular covariance matrix
 fit
 #> 
 #> ── streetlamp estimate: lamp_did_staggered 
@@ -146,40 +149,37 @@ fit
 #> Treatment: staggered; clustered by area
 #> Identifying assumption: Parallel trends by cohort against never-treated areas,
 #> and no anticipation before adoption. Outcome modelled on the ols_log scale.
-#> Sample: 960 area-months in 40 areas; 0 rows dropped for coverage.
-#> Pre-trend joint test: p = 0
+#> Sample: 432 area-months in 24 areas; 0 rows dropped for coverage.
 #>  rel_time estimate std_error conf_low conf_high  p_value
-#>       -12   0.0668    0.1370   -0.202    0.3354 0.625833
-#>       -11  -0.0911    0.1537   -0.392    0.2102 0.553408
-#>       -10   0.0302    0.1253   -0.215    0.2757 0.809606
-#>        -9  -0.0632    0.0973   -0.254    0.1275 0.515843
-#>        -8  -0.0149    0.1059   -0.222    0.1926 0.887913
-#>        -7  -0.0345    0.1328   -0.295    0.2259 0.795322
-#>        -6  -0.0997    0.1008   -0.297    0.0978 0.322543
-#>        -5   0.0588    0.0886   -0.115    0.2326 0.507028
-#>        -4   0.0407    0.1165   -0.188    0.2691 0.727167
-#>        -3   0.0357    0.1137   -0.187    0.2585 0.753671
-#>        -2  -0.0889    0.0937   -0.273    0.0946 0.342297
+#>       -11  -0.0912     0.201   -0.485    0.3028 6.50e-01
+#>       -10   0.1647     0.218   -0.263    0.5926 4.51e-01
+#>        -9  -0.3517     0.149   -0.644   -0.0589 1.86e-02
+#>        -8  -0.1143     0.155   -0.417    0.1889 4.60e-01
+#>        -7  -0.1486     0.177   -0.496    0.1985 4.01e-01
+#>        -6  -0.2456     0.132   -0.504    0.0128 6.25e-02
+#>        -5   0.0282     0.141   -0.249    0.3055 8.42e-01
+#>        -4  -0.0317     0.107   -0.241    0.1774 7.66e-01
+#>        -3  -0.0100     0.139   -0.282    0.2617 9.42e-01
+#>        -2  -0.0386     0.181   -0.393    0.3161 8.31e-01
 #>        -1   0.0000        NA       NA        NA       NA
-#>         0  -0.1499    0.1393   -0.423    0.1231 0.281738
-#>         1  -0.2083    0.0978   -0.400   -0.0166 0.033205
-#>         2  -0.3146    0.0972   -0.505   -0.1241 0.001212
-#>         3  -0.2957    0.1149   -0.521   -0.0705 0.010051
-#>         4  -0.1360    0.1206   -0.372    0.1004 0.259480
-#>         5  -0.3391    0.1106   -0.556   -0.1223 0.002173
-#>         6  -0.2982    0.1174   -0.528   -0.0680 0.011113
-#>         7  -0.0837    0.1062   -0.292    0.1244 0.430437
-#>         8  -0.3303    0.0991   -0.525   -0.1361 0.000856
-#>         9  -0.2695    0.1459   -0.555    0.0165 0.064791
-#>        10  -0.0652    0.1570   -0.373    0.2424 0.677706
-#>        11  -0.2177    0.1895   -0.589    0.1536 0.250501
-#>        12  -0.3030    0.1484   -0.594   -0.0122 0.041126
-#> Overall effect: -0.227 (standard error 0.0897)
+#>         0  -0.3724     0.134   -0.634   -0.1107 5.29e-03
+#>         1  -0.4120     0.136   -0.678   -0.1459 2.41e-03
+#>         2  -0.2516     0.136   -0.518    0.0147 6.40e-02
+#>         3  -0.4985     0.135   -0.764   -0.2333 2.30e-04
+#>         4  -0.3597     0.144   -0.641   -0.0781 1.23e-02
+#>         5  -0.5191     0.129   -0.771   -0.2668 5.52e-05
+#>         6  -0.2419     0.107   -0.451   -0.0324 2.36e-02
+#>         7  -0.6134     0.130   -0.869   -0.3579 2.55e-06
+#>         8  -0.4745     0.180   -0.826   -0.1226 8.22e-03
+#>         9  -0.1054     0.194   -0.485    0.2741 5.86e-01
+#>        10  -0.5167     0.167   -0.844   -0.1897 1.96e-03
+#>        11  -0.4630     0.215   -0.885   -0.0412 3.14e-02
+#> Overall effect: -0.401 (standard error 0.0894)
 fit$diagnostics$overall
 #> $estimate
-#> [1] -0.2271851
+#> [1] -0.4009418
 #> 
 #> $std_error
-#> [1] 0.08972677
+#> [1] 0.08936057
 #> 
 ```
