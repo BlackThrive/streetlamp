@@ -42,6 +42,12 @@ reference:
 - title: Reporting
   contents:
   - has_concept("reporting")
+- title: Plots and tables
+  desc: >
+    The colours and theme every plot method draws with, and presentation
+    tables with terms in words, intervals in brackets and rounded p values.
+  contents:
+  - has_concept("presentation")
 - title: Contract
   contents:
   - has_concept("contract")

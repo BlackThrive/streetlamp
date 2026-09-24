@@ -273,7 +273,7 @@ print.lamp_estimate <- function(x, ...) {
     m <- x$diagnostics$moran
     cli::cli_text("Moran's I of residuals: {signif(m$statistic, 3)} (p = {signif(m$p_value, 3)})")
   }
-  print(as.data.frame(x$coefficients), row.names = FALSE, digits = 3)
+  lamp_print_table(lamp_table(x))
   invisible(x)
 }
 
@@ -301,23 +301,113 @@ tidy.lamp_estimate <- function(x, ...) {
   x$coefficients
 }
 
-# Wrap a long assumption so that it fits under a plot title instead of
-# running off the right edge of the panel.
-lamp_wrap_subtitle <- function(x, width = 90L) {
-  paste(strwrap(x, width = width), collapse = "\n")
-}
-
 #' @export
 plot.lamp_estimate <- function(x, y = NULL, ...) {
+  col <- lamp_colours()
   d <- x$coefficients
-  d$term <- factor(d$term, levels = rev(d$term))
-  ggplot2::ggplot(d, ggplot2::aes(y = .data$term, x = .data$estimate)) +
-    ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "grey50") +
-    ggplot2::geom_pointrange(ggplot2::aes(xmin = .data$conf_low, xmax = .data$conf_high)) +
-    ggplot2::labs(
-      x = "estimate", y = NULL,
-      title = sprintf("%s: %s", x$estimator, x$meta$outcome),
-      subtitle = lamp_wrap_subtitle(x$assumption)
+  d$label <- lamp_pretty_term(d$term)
+  d$label <- factor(d$label, levels = rev(d$label))
+  d$text <- lamp_fmt_interval(d$conf_low, d$conf_high)
+  d$text <- sprintf("%s  %s", lamp_fmt_num(d$estimate), d$text)
+  net <- x$diagnostics$net
+  caption <- if (!is.null(net)) {
+    sprintf(
+      "Net effect, own area plus neighbours: %s %s",
+      lamp_fmt_num(net$estimate), lamp_fmt_interval(net$conf_low, net$conf_high)
+    )
+  }
+  ggplot2::ggplot(d, ggplot2::aes(y = .data$label, x = .data$estimate)) +
+    ggplot2::geom_vline(xintercept = 0, colour = col[["baseline"]], linewidth = 0.5) +
+    ggplot2::geom_linerange(
+      ggplot2::aes(xmin = .data$conf_low, xmax = .data$conf_high),
+      colour = col[["series"]], linewidth = 0.9
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::geom_point(colour = col[["series"]], size = 3) +
+    ggplot2::geom_text(
+      ggplot2::aes(x = .data$conf_high, label = .data$text),
+      hjust = -0.15, colour = col[["secondary"]], size = 3.2
+    ) +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0.06, 0.5))) +
+    ggplot2::labs(
+      x = lamp_effect_label(x), y = NULL,
+      title = sprintf(
+        "%s: %s", lamp_estimator_label(x$estimator), lamp_pretty_name(x$meta$outcome)
+      ),
+      subtitle = lamp_wrap_subtitle(x$assumption),
+      caption = caption
+    ) +
+    lamp_theme() +
+    ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
+}
+
+lamp_estimator_label <- function(estimator) {
+  known <- c(
+    lamp_twfe = "Two-way fixed effects",
+    lamp_event_study = "Event study",
+    lamp_did_staggered = "Staggered difference-in-differences",
+    lamp_spillover = "Spillover model",
+    lamp_elasticity = "Stop-crime elasticity",
+    lamp_synth = "Synthetic control"
+  )
+  ifelse(estimator %in% names(known), known[estimator], estimator)
+}
+
+# The dynamic-effects drawing shared by the event study, the staggered
+# estimator and the pre-trend diagnostic: an interval ribbon and a line
+# through the point estimates, the months before the event shaded, and the
+# reference period drawn hollow because it is normalised to zero.
+lamp_plot_dynamic <- function(d, reference, x_label, y_label, title, subtitle = NULL,
+                              caption = NULL, shade = TRUE) {
+  col <- lamp_colours()
+  has_interval <- !is.na(d$conf_low) & !is.na(d$conf_high)
+  is_ref <- !has_interval | (!is.na(reference) & d$rel_time == reference)
+  d <- d[order(d$rel_time), , drop = FALSE]
+  p <- ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate))
+  if (shade && any(d$rel_time < 0)) {
+    p <- p + ggplot2::annotate(
+      "rect",
+      xmin = min(d$rel_time) - 0.5, xmax = -0.5, ymin = -Inf, ymax = Inf,
+      fill = col[["shade"]]
+    )
+  }
+  p <- p +
+    ggplot2::geom_hline(yintercept = 0, colour = col[["baseline"]], linewidth = 0.5) +
+    ggplot2::geom_ribbon(
+      data = d[has_interval, , drop = FALSE],
+      ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high),
+      fill = col[["series"]], alpha = 0.12
+    ) +
+    ggplot2::geom_line(colour = col[["series"]], linewidth = 0.8) +
+    ggplot2::geom_point(
+      data = d[!is_ref, , drop = FALSE],
+      colour = col[["series"]], size = 2.4
+    )
+  if (any(is_ref)) {
+    p <- p + ggplot2::geom_point(
+      data = d[is_ref, , drop = FALSE],
+      shape = 21, fill = col[["surface"]], colour = col[["series"]], size = 2.6, stroke = 0.9
+    )
+    caption <- paste(c(caption, "Hollow point: the reference period, normalised to zero."),
+      collapse = " "
+    )
+  }
+  if (shade && any(d$rel_time < 0) && any(d$rel_time >= 0)) {
+    p <- p +
+      ggplot2::annotate(
+        "text",
+        x = -0.5, y = Inf, label = "before ", hjust = 1, vjust = 1.6,
+        colour = col[["muted"]], size = 3
+      ) +
+      ggplot2::annotate(
+        "text",
+        x = -0.5, y = Inf, label = " after", hjust = 0, vjust = 1.6,
+        colour = col[["muted"]], size = 3
+      )
+  }
+  p +
+    ggplot2::scale_x_continuous(breaks = lamp_integer_breaks) +
+    ggplot2::labs(
+      x = x_label, y = y_label, title = title, subtitle = subtitle, caption = caption
+    ) +
+    lamp_theme()
 }

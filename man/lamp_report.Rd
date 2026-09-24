@@ -10,6 +10,7 @@ lamp_report(
   file = NULL,
   title = "streetlamp report",
   diagnostics = TRUE,
+  figures = NULL,
   quiet = FALSE
 )
 }
@@ -26,6 +27,12 @@ estimate. Names become section headings.}
 
 \item{diagnostics}{Include the pre-trend and placebo sections where the
 estimates support them.}
+
+\item{figures}{Draw each estimate's \code{plot()} as a PNG into a \verb{_figures}
+directory beside the report and include it. \code{NULL}, the default, draws
+figures for an HTML report (where they are also embedded in the page, so
+the file stands alone) and not for a Markdown one. A figure that cannot
+be drawn is skipped, never an error.}
 
 \item{quiet}{Suppress rendering output.}
 }

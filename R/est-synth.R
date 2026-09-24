@@ -297,21 +297,48 @@ print.lamp_synth <- function(x, ...) {
 
 #' @export
 plot.lamp_synth <- function(x, y = NULL, ...) {
+  col <- lamp_colours()
   d <- x$path
+  labels <- c(observed = "Observed", synthetic = "Synthetic control")
   long <- dplyr::bind_rows(
     tibble::tibble(month = d$month, value = d$observed, series = "observed"),
     tibble::tibble(month = d$month, value = d$synthetic, series = "synthetic")
   )
-  ggplot2::ggplot(long, ggplot2::aes(x = .data$month, y = .data$value, linetype = .data$series)) +
-    ggplot2::geom_vline(xintercept = x$treatment_start, linetype = 3, colour = "grey40") +
-    ggplot2::geom_line() +
-    ggplot2::labs(
-      x = NULL, y = x$outcome, linetype = NULL,
-      title = sprintf("Synthetic control for %s", x$treated_unit),
-      subtitle = sprintf(
-        "pre-period fit %s; mean post-period gap %s",
-        signif(x$rmspe_pre, 3), signif(x$effect, 3)
-      )
+  long$series <- factor(labels[long$series], levels = labels)
+  ends <- long[long$month == max(long$month), , drop = FALSE]
+  subtitle <- sprintf(
+    "Pre-period fit (root mean squared error) %s; mean post-period gap %s",
+    lamp_fmt_num(x$rmspe_pre), lamp_fmt_num(x$effect)
+  )
+  if (!is.na(x$p_value)) {
+    subtitle <- sprintf("%s; permutation %s", subtitle, lamp_fmt_p_phrase(x$p_value))
+  }
+  ggplot2::ggplot(long, ggplot2::aes(x = .data$month, y = .data$value)) +
+    ggplot2::annotate(
+      "rect",
+      xmin = min(long$month), xmax = x$treatment_start, ymin = -Inf, ymax = Inf,
+      fill = col[["shade"]]
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::geom_line(
+      ggplot2::aes(colour = .data$series, linetype = .data$series),
+      linewidth = 0.8
+    ) +
+    ggplot2::geom_text(
+      data = ends,
+      ggplot2::aes(label = .data$series),
+      hjust = -0.1, colour = col[["secondary"]], size = 3.1, show.legend = FALSE
+    ) +
+    ggplot2::scale_colour_manual(
+      values = stats::setNames(c(col[["series"]], col[["contrast"]]), labels)
+    ) +
+    ggplot2::scale_linetype_manual(values = stats::setNames(c("solid", "22"), labels)) +
+    ggplot2::scale_x_date(expand = ggplot2::expansion(mult = c(0.01, 0.2))) +
+    ggplot2::scale_y_continuous(labels = lamp_label_number) +
+    ggplot2::labs(
+      x = NULL, y = lamp_pretty_name(x$outcome), colour = NULL, linetype = NULL,
+      title = sprintf("Synthetic control for %s", x$treated_unit),
+      subtitle = lamp_wrap_subtitle(subtitle),
+      caption = "Shaded months are before the intervention."
+    ) +
+    lamp_theme()
 }

@@ -1,5 +1,23 @@
 # streetlamp 0.1.0
 
+* One visual system for every figure and table. `lamp_theme()` and
+  `lamp_colours()` are exported and every `plot()` method uses them: a
+  recessive hairline grid, left-aligned titles, forces and outcomes named in
+  words, thousands separators on axes, and a palette checked as a set for
+  colour-vision deficiency. Event studies, staggered fits and pre-trend
+  diagnostics draw an interval ribbon with the reference period hollow;
+  coefficient plots print the estimate and interval beside each mark; the
+  placebo histogram labels the actual estimate and reports its p value; the
+  synthetic control path labels both series at the line ends and shades the
+  pre-period like the event study does.
+* `lamp_table()` formats any estimate, pre-trend diagnostic, synthetic
+  control or coverage audit as a presentation table: terms in words, the
+  95 percent interval in brackets, p values as `<0.001` where they are that
+  small, ready for `knitr::kable()`. The print methods and the report use
+  it, so a console print no longer shows p values in scientific notation.
+* `lamp_report()` HTML output is styled by a bundled stylesheet, embeds each
+  estimate's plot (new `figures` argument), and renders tables with numeric
+  columns right-aligned.
 * The `plot()` methods for estimates and staggered fits wrap the identifying
   assumption in the subtitle instead of letting it run off the panel, and
   `lamp_elasticity()` no longer leaves a stray space before the full stop in
