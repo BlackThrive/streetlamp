@@ -5,7 +5,6 @@ Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
 ## 2026-09-24, snapshot tests for plots
-
 59. **The specification's snapshot tests for plots were missing, and now
     exist.** Section 9.4 asks for them; what the suite had was seven
     assertions that `plot()` returns a `ggplot`, which catches a method that
@@ -37,6 +36,14 @@ later session (or the maintainer) can reverse it deliberately.
     half a second, and a second call in the same session takes 0.44 seconds.
     The panel is now 24 areas by 18 months, which leaves the example making
     the same point for less, and the check is back to one note.
+63. **win-builder's two "possibly misspelled words" are left alone.**
+    R-release on win-builder returns one note: "New submission", plus
+    `elasticities` and `pre` flagged in `DESCRIPTION`. `elasticities` is the
+    standard term for what the package estimates, and `pre` is the first half
+    of `pre-trend`, which the spell checker splits at the hyphen. Rewording a
+    description to satisfy a spell checker would make it worse, so both are
+    explained in `cran-comments.md` instead, which is what that file is for.
+    Both are in `inst/WORDLIST` so the local and CI spelling gates agree.
 
 ## 2026-09-23, first continuous integration run
 
