@@ -110,6 +110,18 @@ tests in time, space and outcome.
 - [`lamp_report()`](https://blackthrive.github.io/streetlamp/reference/lamp_report.md)
   : Build a report on a panel and the estimates made from it
 
+## Plots and tables
+
+The colours and theme every plot method draws with, and presentation
+tables with terms in words, intervals in brackets and rounded p values.
+
+- [`lamp_colours()`](https://blackthrive.github.io/streetlamp/reference/lamp_colours.md)
+  : The colours streetlamp draws with
+- [`lamp_table()`](https://blackthrive.github.io/streetlamp/reference/lamp_table.md)
+  : A presentation-ready table from a streetlamp object
+- [`lamp_theme()`](https://blackthrive.github.io/streetlamp/reference/lamp_theme.md)
+  : The ggplot2 theme streetlamp plots use
+
 ## Contract
 
 - [`lamp_contract()`](https://blackthrive.github.io/streetlamp/reference/lamp_contract.md)

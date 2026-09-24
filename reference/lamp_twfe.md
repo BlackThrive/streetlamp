@@ -112,8 +112,9 @@ fit
 #> moved together in the outcome, net of area and month fixed effects.
 #> Sample: 576 area-months in 24 areas; 0 rows dropped for coverage.
 #> Dispersion: 0.972
-#>   term estimate std_error statistic  p_value conf_low conf_high
-#>  treat   -0.276    0.0572     -4.82 1.43e-06   -0.388    -0.164
+#>   Term             Estimate  Std. error            95% CI       p
+#>   ───────────────  ────────  ──────────  ────────────────  ──────
+#>   Treated × after    −0.276      0.0572  [−0.388, −0.164]  <0.001
 tidy(fit)
 #> # A tibble: 1 × 7
 #>   term  estimate std_error statistic    p_value conf_low conf_high

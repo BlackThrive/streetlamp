@@ -2,6 +2,33 @@
 
 ## streetlamp 0.1.0
 
+- One visual system for every figure and table.
+  [`lamp_theme()`](https://blackthrive.github.io/streetlamp/reference/lamp_theme.md)
+  and
+  [`lamp_colours()`](https://blackthrive.github.io/streetlamp/reference/lamp_colours.md)
+  are exported and every
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method uses
+  them: a recessive hairline grid, left-aligned titles, forces and
+  outcomes named in words, thousands separators on axes, and a palette
+  checked as a set for colour-vision deficiency. Event studies,
+  staggered fits and pre-trend diagnostics draw an interval ribbon with
+  the reference period hollow; coefficient plots print the estimate and
+  interval beside each mark; the placebo histogram labels the actual
+  estimate and reports its p value; the synthetic control path labels
+  both series at the line ends and shades the pre-period like the event
+  study does.
+- [`lamp_table()`](https://blackthrive.github.io/streetlamp/reference/lamp_table.md)
+  formats any estimate, pre-trend diagnostic, synthetic control or
+  coverage audit as a presentation table: terms in words, the 95 percent
+  interval in brackets, p values as `<0.001` where they are that small,
+  ready for
+  [`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html). The
+  print methods and the report use it, so a console print no longer
+  shows p values in scientific notation.
+- [`lamp_report()`](https://blackthrive.github.io/streetlamp/reference/lamp_report.md)
+  HTML output is styled by a bundled stylesheet, embeds each estimate’s
+  plot (new `figures` argument), and renders tables with numeric columns
+  right-aligned.
 - The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods
   for estimates and staggered fits wrap the identifying assumption in
   the subtitle instead of letting it run off the panel, and

@@ -129,9 +129,10 @@ fit
 #> net of area and month effects. Causal only if the variation in searching has a
 #> source outside the crime process; see lamp_allocation().
 #> Sample: 1050 area-months in 30 areas; 0 rows dropped for coverage.
-#>         term estimate std_error statistic  p_value conf_low conf_high
-#>  .log_s_lag0  -0.1510    0.0276     -5.46 0.000007   -0.205   -0.0968
-#>  .log_s_lag1  -0.0467    0.0405     -1.15 0.258073   -0.126    0.0327
+#>   Term              Estimate  Std. error             95% CI       p
+#>   ────────────────  ────────  ──────────  ─────────────────  ──────
+#>   Log stops, lag 0    −0.151      0.0276  [−0.205, −0.0968]  <0.001
+#>   Log stops, lag 1   −0.0467      0.0405   [−0.126, 0.0327]   0.258
 #> Sum over lags: -0.198 [-0.302, -0.0934]
 #> Pesaran CD: 2.92 (p = 0.00351), mean pairwise correlation 0.024
 fit$diagnostics$cd_test$statistic

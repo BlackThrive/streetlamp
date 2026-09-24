@@ -77,9 +77,10 @@ pt
 #> ── streetlamp pre-trend diagnostic 
 #> Joint test of 5 pre-period coefficients: p = 0.456
 #> Linear pre-trend the test would detect:
-#>  power  slope bias_mean_post
-#>    0.5 0.0399          0.160
-#>    0.8 0.0541          0.216
+#>   Power  Detectable slope per month  Bias it would leave in the mean post-period effect
+#>   ─────  ──────────────────────────  ──────────────────────────────────────────────────
+#>   0.5                        0.0399                                                0.16
+#>   0.8                        0.0541                                               0.216
 #> The pre-trend test does not reject (p = 0.456), but it would detect a linear
 #> trend of 0.054 log points a month only 80 percent of the time; such a trend
 #> would shift the mean post-period coefficient by 0.22. Compare that with the

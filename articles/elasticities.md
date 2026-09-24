@@ -28,11 +28,12 @@ fit
 #> net of area and month effects. Causal only if the variation in searching has a
 #> source outside the crime process; see lamp_allocation().
 #> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
-#>         term estimate std_error statistic  p_value conf_low conf_high
-#>  .log_s_lag0 -0.18208   0.00888   -20.508 1.57e-28 -0.19948  -0.16468
-#>  .log_s_lag1  0.01887   0.01030     1.831 7.22e-02 -0.00133   0.03906
-#>  .log_s_lag2 -0.00174   0.01169    -0.149 8.82e-01 -0.02465   0.02117
-#>  .log_s_lag3 -0.01050   0.00960    -1.093 2.79e-01 -0.02932   0.00832
+#>   Term              Estimate  Std. error              95% CI       p
+#>   ────────────────  ────────  ──────────  ──────────────────  ──────
+#>   Log stops, lag 0    −0.182     0.00888    [−0.199, −0.165]  <0.001
+#>   Log stops, lag 1    0.0189      0.0103  [−0.00133, 0.0391]   0.072
+#>   Log stops, lag 2  −0.00174      0.0117   [−0.0247, 0.0212]   0.882
+#>   Log stops, lag 3   −0.0105      0.0096  [−0.0293, 0.00832]   0.279
 #> Sum over lags: -0.175 [-0.215, -0.135]
 #> Pesaran CD: 32.2 (p = 8.53e-227), mean pairwise correlation 0.11
 ```
@@ -118,10 +119,11 @@ allocation
 #> has tracked recorded crime, not an effect of crime on searching.
 #> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
 #> Dispersion: 0.979
-#>             term estimate std_error statistic p_value conf_low conf_high
-#>  .log_crime_lag1  -0.0317    0.0345    -0.920   0.358  -0.0994    0.0359
-#>  .log_crime_lag2   0.0085    0.0352     0.241   0.809  -0.0605    0.0775
-#>  .log_crime_lag3  -0.0287    0.0381    -0.755   0.450  -0.1033    0.0459
+#>   Term             Estimate  Std. error             95% CI      p
+#>   ───────────────  ────────  ──────────  ─────────────────  ─────
+#>   .log_crime_lag1   −0.0317      0.0345  [−0.0994, 0.0359]  0.358
+#>   .log_crime_lag2    0.0085      0.0352  [−0.0605, 0.0775]  0.809
+#>   .log_crime_lag3   −0.0287      0.0381   [−0.103, 0.0459]  0.450
 #> Sum over lags: -0.052 [-0.186, 0.0819]
 #> No clear allocation response: searching does not track recent crime in this
 #> panel, which makes the other estimates easier to read as effects.
@@ -147,10 +149,11 @@ lamp_allocation(responsive, crime_lags = 1:3)
 #> has tracked recorded crime, not an effect of crime on searching.
 #> Sample: 2700 area-months in 60 areas; 0 rows dropped for coverage.
 #> Dispersion: 0.457
-#>             term estimate std_error statistic p_value conf_low conf_high
-#>  .log_crime_lag1  -0.0325    0.0170    -1.908  0.0564  -0.0659   0.00088
-#>  .log_crime_lag2  -0.0207    0.0168    -1.236  0.2165  -0.0536   0.01215
-#>  .log_crime_lag3  -0.0080    0.0177    -0.453  0.6506  -0.0426   0.02663
+#>   Term             Estimate  Std. error              95% CI      p
+#>   ───────────────  ────────  ──────────  ──────────────────  ─────
+#>   .log_crime_lag1   −0.0325       0.017  [−0.0659, 0.00088]  0.056
+#>   .log_crime_lag2   −0.0207      0.0168   [−0.0536, 0.0121]  0.216
+#>   .log_crime_lag3    −0.008      0.0177   [−0.0426, 0.0266]  0.651
 #> Sum over lags: -0.0612 [-0.124, 0.00138]
 #> No clear allocation response: searching does not track recent crime in this
 #> panel, which makes the other estimates easier to read as effects.

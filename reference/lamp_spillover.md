@@ -113,8 +113,9 @@ fit
 #> is pulled toward zero.
 #> Sample: 980 area-months in 49 areas; 0 rows dropped for coverage.
 #> Dispersion: 0.951
-#>                term estimate std_error statistic p_value conf_low conf_high
-#>            own area  -0.1228     0.206    -0.598   0.550   -0.526     0.280
-#>  neighbours, ring 1  -0.0902     0.221    -0.409   0.683   -0.523     0.342
+#>   Term                Estimate  Std. error           95% CI      p
+#>   ──────────────────  ────────  ──────────  ───────────────  ─────
+#>   Own area              −0.123       0.206   [−0.526, 0.28]  0.550
+#>   Neighbours, ring 1   −0.0902       0.221  [−0.523, 0.342]  0.683
 #> Net effect (own plus neighbours): -0.213 [-0.306, -0.12]
 ```

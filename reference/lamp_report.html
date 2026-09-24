@@ -68,6 +68,7 @@ have one.</p>
 <span>  file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"streetlamp report"</span>,</span>
 <span>  diagnostics <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  figures <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -97,6 +98,14 @@ estimate. Names become section headings.</p></dd>
 <dt id="arg-diagnostics">diagnostics<a class="anchor" aria-label="anchor" href="#arg-diagnostics"></a></dt>
 <dd><p>Include the pre-trend and placebo sections where the
 estimates support them.</p></dd>
+
+
+<dt id="arg-figures">figures<a class="anchor" aria-label="anchor" href="#arg-figures"></a></dt>
+<dd><p>Draw each estimate's <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> as a PNG into a <code>_figures</code>
+directory beside the report and include it. <code>NULL</code>, the default, draws
+figures for an HTML report (where they are also embedded in the page, so
+the file stands alone) and not for a Markdown one. A figure that cannot
+be drawn is skipped, never an error.</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
