@@ -1,11 +1,9 @@
 <!--
-Not submitted yet.
-
-The win-builder runs were of the tree at 3722dfd. Everything committed since
-is either skipped on CRAN (the plot snapshot tests) or cosmetic; if the
-package changes further before submission, run win-builder again.
-
-Delete this comment when submitting.
+Not submitted yet. The win-builder entry below is from the tree at 3722dfd,
+which predates the presentation layer, its three new exports and its two new
+Imports. Both win-builder targets were resubmitted on d699514 on 2026-09-24;
+replace the entry with those results before submitting, and delete this
+comment.
 -->
 
 ## R CMD check results
