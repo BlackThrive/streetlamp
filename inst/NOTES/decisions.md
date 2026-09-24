@@ -44,6 +44,26 @@ later session (or the maintainer) can reverse it deliberately.
     description to satisfy a spell checker would make it worse, so both are
     explained in `cran-comments.md` instead, which is what that file is for.
     Both are in `inst/WORDLIST` so the local and CI spelling gates agree.
+64. **R-hub's `nosuggests` failure is left as it is.** That container removes
+    every suggested package and reports one ERROR: re-building the vignettes
+    fails with "there is no package called 'rmarkdown'". Examples and tests
+    both pass there, which is the question worth asking, and they answer it:
+    nothing in the package's code reaches for a suggested package without
+    checking for it first. The vignettes are `.Rmd` with `knitr::rmarkdown`
+    as their engine, so rebuilding them without `rmarkdown` cannot work, for
+    this package or any other built the same way. Changing the engine to one
+    that needs neither `rmarkdown` nor pandoc would risk five rendered
+    vignettes to satisfy a configuration CRAN does not run. Recorded in
+    `cran-comments.md` instead.
+65. **`atlas` and `mkl` were included in the R-hub run on purpose.** They
+    exist for packages with compiled code, and this one has none. They were
+    run anyway because the package sums through BLAS in Pesaran's CD test,
+    and two of this week's failures came from BLAS reassociating differently:
+    a test that demanded bit-identical sums, and two plot baselines carrying
+    a clustered Wald p value in their subtitle. Both containers are clean,
+    which is the evidence that those fixes hold under a different BLAS rather
+    than just under a different operating system.
+
 
 ## 2026-09-23, first continuous integration run
 
