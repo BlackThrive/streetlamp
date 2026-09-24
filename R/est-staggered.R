@@ -427,7 +427,7 @@ plot.lamp_did_staggered <- function(x, y = NULL, ...) {
     ggplot2::labs(
       x = "months since adoption", y = sprintf("effect on %s", x$meta$outcome),
       title = sprintf("Staggered difference-in-differences (%s)", x$meta$backend),
-      subtitle = x$assumption,
+      subtitle = lamp_wrap_subtitle(x$assumption),
       caption = if (any(!has_interval)) {
         "hollow: the reference period, normalised to zero"
       }
