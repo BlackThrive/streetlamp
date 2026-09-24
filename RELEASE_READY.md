@@ -125,13 +125,18 @@ because they qualify what the package should be used for:
 
 ## Still to do before submission
 
-1.  Run rhub, then record the result in `cran-comments.md` and delete
-    the comment at the top of it. It is the only check that has not run.
-    win-builder came back clean on 2026-09-24, on R 4.6.1 and on R devel
-    (2026-09-21 r90579): one note on each, identical, “New submission”
-    plus two words in `DESCRIPTION` that a spell checker does not know
-    (`elasticities`, and `pre` from `pre-trend` split at the hyphen).
-2.  Submit. The maintainer does that; this package does not.
+1.  Submit. The maintainer does that; this package does not. Delete the
+    comment at the top of `cran-comments.md` when doing so.
+
+Every check the specification asks for has run. win-builder on
+2026-09-24, R 4.6.1 and R devel (2026-09-21 r90579): one note on each,
+identical, “New submission” plus two words a spell checker does not know
+(`elasticities`, and `pre` from `pre-trend` split at the hyphen). R-hub
+v2 on 2026-09-24: `linux` and `windows` on R devel, and the `donttest`,
+`atlas` and `mkl` containers, all clean. The `nosuggests` container
+errors only in re-building the vignettes, which needs `rmarkdown`; its
+examples and tests pass, so no code in the package reaches for a
+suggested package without checking first.
 
 Done on 2026-09-23: the repository exists at
 `https://github.com/BlackThrive/streetlamp` with the nine-configuration

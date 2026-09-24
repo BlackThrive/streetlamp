@@ -100,9 +100,9 @@
 </ul></div>
 <div class="section level2">
 <h2 id="still-to-do-before-submission">Still to do before submission<a class="anchor" aria-label="anchor" href="#still-to-do-before-submission"></a></h2>
-<ol style="list-style-type: decimal"><li>Run rhub, then record the result in <code>cran-comments.md</code> and delete the comment at the top of it. It is the only check that has not run. win-builder came back clean on 2026-09-24, on R 4.6.1 and on R devel (2026-09-21 r90579): one note on each, identical, “New submission” plus two words in <code>DESCRIPTION</code> that a spell checker does not know (<code>elasticities</code>, and <code>pre</code> from <code>pre-trend</code> split at the hyphen).</li>
-<li>Submit. The maintainer does that; this package does not.</li>
-</ol><p>Done on 2026-09-23: the repository exists at <code>https://github.com/BlackThrive/streetlamp</code> with the nine-configuration check matrix running on every push, the pkgdown site is published at <code>https://blackthrive.github.io/streetlamp/</code>, and the incoming check’s note is down to “New submission”.</p>
+<ol style="list-style-type: decimal"><li>Submit. The maintainer does that; this package does not. Delete the comment at the top of <code>cran-comments.md</code> when doing so.</li>
+</ol><p>Every check the specification asks for has run. win-builder on 2026-09-24, R 4.6.1 and R devel (2026-09-21 r90579): one note on each, identical, “New submission” plus two words a spell checker does not know (<code>elasticities</code>, and <code>pre</code> from <code>pre-trend</code> split at the hyphen). R-hub v2 on 2026-09-24: <code>linux</code> and <code>windows</code> on R devel, and the <code>donttest</code>, <code>atlas</code> and <code>mkl</code> containers, all clean. The <code>nosuggests</code> container errors only in re-building the vignettes, which needs <code>rmarkdown</code>; its examples and tests pass, so no code in the package reaches for a suggested package without checking first.</p>
+<p>Done on 2026-09-23: the repository exists at <code>https://github.com/BlackThrive/streetlamp</code> with the nine-configuration check matrix running on every push, the pkgdown site is published at <code>https://blackthrive.github.io/streetlamp/</code>, and the incoming check’s note is down to “New submission”.</p>
 </div>
 <div class="section level2">
 <h2 id="what-this-package-does-not-claim">What this package does not claim<a class="anchor" aria-label="anchor" href="#what-this-package-does-not-claim"></a></h2>

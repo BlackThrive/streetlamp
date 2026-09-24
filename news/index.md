@@ -2,6 +2,12 @@
 
 ## streetlamp 0.1.0
 
+- The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods
+  for estimates and staggered fits wrap the identifying assumption in
+  the subtitle instead of letting it run off the panel, and
+  [`lamp_elasticity()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity.md)
+  no longer leaves a stray space before the full stop in its assumption
+  text.
 - First release. Builds an area-by-month panel of recorded crime in
   England and Wales from the data.police.uk archive, attaches stop and
   search intensity as a treatment, and estimates its effect with panel

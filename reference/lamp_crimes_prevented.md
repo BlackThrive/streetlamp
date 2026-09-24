@@ -111,7 +111,7 @@ lamp_crimes_prevented(el, sim)
 #> 2. The effect is proportional, so it scales with the mean level of crime.
 #> 3. At the sample mean of 7.13 crimes and 6.78 searches per area-month.
 #> 4. The association between searching and recorded crime, net of area and month
-#> effects . Causal only if the variation in searching has a source outside the
+#> effects. Causal only if the variation in searching has a source outside the
 #> crime process; see lamp_allocation().
 #> 5. Recorded crime only: unreported crime and recording changes are not
 #> separated.

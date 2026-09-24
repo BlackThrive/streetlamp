@@ -126,7 +126,7 @@ fit
 #> Outcome: crime_total; family: least squares on log(1 + outcome)
 #> Treatment: continuous; clustered by area
 #> Identifying assumption: The association between searching and recorded crime,
-#> net of area and month effects . Causal only if the variation in searching has a
+#> net of area and month effects. Causal only if the variation in searching has a
 #> source outside the crime process; see lamp_allocation().
 #> Sample: 1050 area-months in 30 areas; 0 rows dropped for coverage.
 #>         term estimate std_error statistic  p_value conf_low conf_high
