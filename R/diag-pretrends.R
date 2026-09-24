@@ -163,7 +163,7 @@ print.lamp_pretrends <- function(x, ...) {
   )
   if (!is.null(x$power)) {
     cli::cli_text("Linear pre-trend the test would detect:")
-    print(as.data.frame(x$power), row.names = FALSE, digits = 3)
+    lamp_print_table(lamp_table(x))
   }
   cli::cli_text(x$interpretation)
   invisible(x)
@@ -171,16 +171,18 @@ print.lamp_pretrends <- function(x, ...) {
 
 #' @export
 plot.lamp_pretrends <- function(x, y = NULL, ...) {
-  d <- x$coefficients
-  ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate)) +
-    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "grey40") +
-    ggplot2::geom_pointrange(ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high)) +
-    ggplot2::labs(
-      x = "months before the event", y = sprintf("effect on %s", x$outcome),
-      title = "Pre-period coefficients",
-      subtitle = sprintf("joint test p = %s", signif(x$test$p_value, 3))
-    ) +
-    ggplot2::theme_minimal()
+  lamp_plot_dynamic(
+    x$coefficients,
+    reference = NA,
+    x_label = "Months before the event",
+    y_label = sprintf("Effect on %s (log points)", tolower(lamp_pretty_name(x$outcome))),
+    title = "Pre-period coefficients",
+    subtitle = sprintf(
+      "Joint test that all %s are zero: %s",
+      x$test$df, lamp_fmt_p_phrase(x$test$p_value)
+    ),
+    shade = FALSE
+  )
 }
 
 # Placebo -----------------------------------------------------------------------------
@@ -381,14 +383,33 @@ print.lamp_placebo <- function(x, ...) {
 
 #' @export
 plot.lamp_placebo <- function(x, y = NULL, ...) {
+  col <- lamp_colours()
   d <- x$distribution[is.finite(x$distribution$estimate), ]
+  # put the label on whichever side of the line has more room
+  on_left <- x$actual > stats::median(c(d$estimate, x$actual))
   ggplot2::ggplot(d, ggplot2::aes(x = .data$estimate)) +
-    ggplot2::geom_histogram(bins = min(30L, max(5L, nrow(d))), fill = "grey75", colour = "white") +
-    ggplot2::geom_vline(xintercept = x$actual, colour = "#c1121f", linewidth = 1) +
-    ggplot2::labs(
-      x = "placebo estimate", y = "count",
-      title = sprintf("Placebo in %s", x$type),
-      subtitle = sprintf("red line: the real estimate (%s)", signif(x$actual, 3))
+    ggplot2::geom_histogram(
+      bins = min(30L, max(5L, nrow(d))),
+      fill = col[["neutral"]], colour = col[["surface"]], linewidth = 0.6
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::geom_vline(xintercept = x$actual, colour = col[["accent"]], linewidth = 0.9) +
+    ggplot2::annotate(
+      "text",
+      x = x$actual, y = Inf, label = sprintf("actual estimate %s", lamp_fmt_num(x$actual)),
+      hjust = if (on_left) 1.08 else -0.08, vjust = 1.6,
+      colour = col[["secondary"]], size = 3.2
+    ) +
+    ggplot2::scale_y_continuous(
+      labels = lamp_label_number, expand = ggplot2::expansion(mult = c(0, 0.12))
+    ) +
+    ggplot2::labs(
+      x = "Placebo estimate", y = "Placebo draws",
+      title = sprintf("Placebo in %s", x$type),
+      subtitle = sprintf(
+        "%s placebo estimates; share at least as extreme as the actual: %s",
+        lamp_label_number(nrow(d)), lamp_fmt_p_phrase(x$p_value)
+      )
+    ) +
+    lamp_theme() +
+    ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
 }

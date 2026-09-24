@@ -92,16 +92,16 @@ test_that("the report validates its arguments", {
   )
 })
 
-test_that("the Markdown table helper formats numbers and row names", {
-  df <- data.frame(a = c(1.23456, 2), b = c("x", "y"), stringsAsFactors = FALSE)
+test_that("the Markdown table helper right-aligns every column after the first", {
+  df <- data.frame(a = c("x", "y"), b = c("1.23", "2"), c = c("[1, 2]", NA), stringsAsFactors = FALSE)
   tbl <- streetlamp:::lamp_md_table(df)
   expect_length(tbl, 4L)
-  expect_equal(tbl[1], "| a | b |")
-  expect_equal(tbl[2], "| --- | --- |")
-  expect_match(tbl[3], "1.235")
+  expect_equal(tbl[1], "| a | b | c |")
+  expect_equal(tbl[2], "| --- | ---: | ---: |")
+  expect_equal(tbl[3], "| x | 1.23 | [1, 2] |")
+  expect_equal(tbl[4], "| y | 2 |  |")
 
-  m <- as.data.frame.matrix(table(c("p", "q"), c("r", "r")))
-  named <- streetlamp:::lamp_md_table(m, rownames_to = "file_type")
-  expect_match(named[1], "file_type")
-  expect_length(named, 4L)
+  # a pipe inside a cell is escaped rather than splitting the row
+  piped <- streetlamp:::lamp_md_table(data.frame(a = "p|q", stringsAsFactors = FALSE))
+  expect_match(piped[3], "p\\|q", fixed = TRUE)
 })

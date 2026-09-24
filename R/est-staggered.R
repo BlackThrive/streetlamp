@@ -382,13 +382,7 @@ lamp_joint_zero_p <- function(co) {
 
 #' @export
 print.lamp_did_staggered <- function(x, ...) {
-  compact <- x
-  if (nrow(x$coefficients) > 0L) {
-    compact$coefficients <- x$coefficients[, c(
-      "rel_time", "estimate", "std_error", "conf_low", "conf_high", "p_value"
-    )]
-  }
-  print.lamp_estimate(compact, ...)
+  print.lamp_estimate(x, ...)
   ov <- x$diagnostics$overall
   if (!is.null(ov)) {
     cli::cli_text(
@@ -401,36 +395,39 @@ print.lamp_did_staggered <- function(x, ...) {
 
 #' @export
 plot.lamp_did_staggered <- function(x, y = NULL, ...) {
-  d <- x$coefficients
   # The reference period is normalised to zero and carries no standard error,
-  # so it has no interval to draw. In the same layer as the rest it is dropped
-  # with a "removed 1 row" warning on every render; on its own it shows where
-  # the comparison is anchored, which is worth seeing.
-  has_interval <- !is.na(d$conf_low) & !is.na(d$conf_high)
-  p <- ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate)) +
-    ggplot2::annotate(
-      "rect",
-      xmin = min(d$rel_time) - 0.5, xmax = -0.5, ymin = -Inf, ymax = Inf, fill = "grey92"
-    ) +
-    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "grey40") +
-    ggplot2::geom_pointrange(
-      data = d[has_interval, , drop = FALSE],
-      ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high)
+  # so it has no interval; lamp_plot_dynamic() draws it hollow rather than
+  # dropping it with a warning on every render.
+  ov <- x$diagnostics$overall
+  subtitle <- lamp_wrap_subtitle(x$assumption)
+  if (!is.null(ov)) {
+    subtitle <- paste0(
+      sprintf(
+        "Overall effect %s (standard error %s). ",
+        lamp_fmt_num(ov$estimate), lamp_fmt_num(ov$std_error)
+      ),
+      subtitle
     )
-  if (any(!has_interval)) {
-    p <- p + ggplot2::geom_point(
-      data = d[!has_interval, , drop = FALSE],
-      shape = 21, fill = "white", size = 2
-    )
+    subtitle <- lamp_wrap_subtitle(subtitle)
   }
-  p +
-    ggplot2::labs(
-      x = "months since adoption", y = sprintf("effect on %s", x$meta$outcome),
-      title = sprintf("Staggered difference-in-differences (%s)", x$meta$backend),
-      subtitle = lamp_wrap_subtitle(x$assumption),
-      caption = if (any(!has_interval)) {
-        "hollow: the reference period, normalised to zero"
-      }
-    ) +
-    ggplot2::theme_minimal()
+  lamp_plot_dynamic(
+    x$coefficients,
+    reference = NA,
+    x_label = "Months since adoption",
+    y_label = lamp_effect_label(x),
+    title = sprintf(
+      "Staggered difference-in-differences: %s (%s)",
+      lamp_pretty_name(x$meta$outcome), lamp_backend_label(x$meta$backend)
+    ),
+    subtitle = subtitle
+  )
+}
+
+lamp_backend_label <- function(backend) {
+  known <- c(
+    callaway_santanna = "Callaway and Sant'Anna",
+    sun_abraham = "Sun and Abraham",
+    imputation = "imputation"
+  )
+  ifelse(backend %in% names(known), known[backend], backend)
 }

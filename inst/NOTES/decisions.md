@@ -4,6 +4,27 @@ Choices made without the maintainer, as required by specification section 12.
 Newest session first. Each entry says what was decided and why, so that a
 later session (or the maintainer) can reverse it deliberately.
 
+## 2026-09-24, the presentation layer
+
+66. **One visual system, exported.** `lamp_theme()`, `lamp_colours()` and
+    `lamp_table()` are new exports, with `lamp_table()` methods for
+    estimates, event studies, staggered fits, pre-trend diagnostics,
+    synthetic controls and coverage audits. Every `plot()` method now draws
+    through the same theme and palette, and `inst/templates/report.css`
+    styles the HTML report to match. Written in a parallel Codex session; it
+    goes into 0.1.0 at the maintainer's decision of 2026-09-24 rather than
+    waiting for 0.2.0, so the first release has one look rather than two.
+67. **`ggplot2 (>= 3.5.0)` in Imports.** `lamp_theme()` sets
+    `legend.location`, a theme element ggplot2 added in 3.5.0, and several
+    plots use `linewidth`, which arrived in 3.4.0. The dependency carried no
+    version at all, so on an older ggplot2 the theme would have failed with
+    an unused-argument error at the first plot. The bound is set at the
+    higher of the two. CRAN checks against the current ggplot2 and would
+    never have caught this; a user on a pinned older version would have.
+68. **Two new Imports, `grDevices` and `grid`.** Both are base R packages, so
+    they add nothing to install. `grid` supplies `unit()` for the theme's
+    spacing, `grDevices` the colour work behind the palette.
+
 ## 2026-09-24, snapshot tests for plots
 59. **The specification's snapshot tests for plots were missing, and now
     exist.** Section 9.4 asks for them; what the suite had was seven
@@ -23,12 +44,14 @@ later session (or the maintainer) can reverse it deliberately.
     point with a caption saying what it is, which removes the warning and
     shows where the comparison is anchored. This is what the snapshot tests
     were for: nothing else in the suite would have seen it.
-61. **`inst/templates/` removed.** The specification's skeleton lists it as
-    holding the report template, but `lamp_report()` assembles Markdown in
-    code and hands it to `rmarkdown::render()`. The directory had been empty
-    since M0, git never tracked it, and `R CMD build` deleted it from every
-    tarball. Building the document in code rather than from a template file
-    keeps the two from drifting apart, and is the choice being kept.
+61. **`inst/templates/` removed, then restored.** It had been empty since M0
+    and `R CMD build` deleted it from every tarball, so on 2026-09-24 it went,
+    on the grounds that `lamp_report()` assembles Markdown in code. Later the
+    same day the presentation layer gave it a reason to exist:
+    `inst/templates/report.css` is what `lamp_report()` passes to
+    `rmarkdown::render()` for an HTML report, read through
+    `system.file()`. The document is still built in code; only its styling
+    lives in a file. Superseded, and recorded rather than quietly deleted.
 62. **The `lamp_did_staggered()` example is smaller.** With the machine under
     load it took 6.1 seconds of elapsed time and tripped the "examples over
     5s" note. Almost all of that is loading the `did` package, which

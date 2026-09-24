@@ -178,36 +178,22 @@ lamp_event_study <- function(panel, outcome = "crime_total", event, window = c(-
 
 #' @export
 print.lamp_event_study <- function(x, ...) {
-  # show relative time rather than the fixest term names
-  compact <- x
-  compact$coefficients <- x$coefficients[, c(
-    "rel_time", "estimate", "std_error", "conf_low", "conf_high", "p_value"
-  )]
-  print.lamp_estimate(compact, ...)
+  # lamp_table() shows relative time rather than the fixest term names
+  print.lamp_estimate(x, ...)
   invisible(x)
 }
 
 #' @export
 plot.lamp_event_study <- function(x, y = NULL, ...) {
-  d <- x$coefficients
-  ref <- x$meta$reference
-  ggplot2::ggplot(d, ggplot2::aes(x = .data$rel_time, y = .data$estimate)) +
-    ggplot2::annotate(
-      "rect",
-      xmin = min(d$rel_time) - 0.5, xmax = -0.5, ymin = -Inf, ymax = Inf,
-      fill = "grey92"
-    ) +
-    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "grey40") +
-    ggplot2::geom_vline(xintercept = -0.5, linetype = 3, colour = "grey40") +
-    ggplot2::geom_pointrange(ggplot2::aes(ymin = .data$conf_low, ymax = .data$conf_high)) +
-    ggplot2::labs(
-      x = sprintf("months relative to the event (reference %s)", ref),
-      y = sprintf("effect on %s", x$meta$outcome),
-      title = "Event study",
-      subtitle = sprintf(
-        "shaded: before the event; pre-trend joint test p = %s",
-        signif(x$diagnostics$pretrend_p, 3)
-      )
-    ) +
-    ggplot2::theme_minimal()
+  lamp_plot_dynamic(
+    x$coefficients,
+    reference = x$meta$reference,
+    x_label = "Months relative to the event",
+    y_label = lamp_effect_label(x),
+    title = sprintf("Event study: %s", lamp_pretty_name(x$meta$outcome)),
+    subtitle = sprintf(
+      "Shaded months are before the event; pre-trend joint test %s",
+      lamp_fmt_p_phrase(x$diagnostics$pretrend_p)
+    )
+  )
 }

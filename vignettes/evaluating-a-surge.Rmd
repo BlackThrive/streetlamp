@@ -72,8 +72,9 @@ fit
 #> moved together in the outcome, net of area and month fixed effects.
 #> Sample: 2850 area-months in 100 areas; 150 rows dropped for coverage.
 #> Dispersion: 0.968
-#>   term estimate std_error statistic  p_value conf_low conf_high
-#>  treat   -0.226    0.0133       -17 8.44e-65   -0.252      -0.2
+#>   Term             Estimate  Std. error          95% CI       p
+#>   ───────────────  ────────  ──────────  ──────────────  ──────
+#>   Treated × after    −0.226      0.0133  [−0.252, −0.2]  <0.001
 ```
 
 The estimate is close to the truth, and the interval covers it. The print
@@ -108,24 +109,25 @@ es
 #> Sample: 2850 area-months in 100 areas; 150 rows dropped for coverage.
 #> Pre-trend joint test: p = 0.443
 #> Dispersion: 0.969
-#>  rel_time estimate std_error conf_low conf_high  p_value
-#>        -8  -0.0114    0.0378  -0.0854    0.0626 7.63e-01
-#>        -7  -0.0509    0.0570  -0.1627    0.0608 3.72e-01
-#>        -6  -0.0425    0.0515  -0.1435    0.0585 4.09e-01
-#>        -5  -0.0784    0.0517  -0.1796    0.0229 1.29e-01
-#>        -4  -0.0155    0.0534  -0.1201    0.0892 7.72e-01
-#>        -3  -0.0542    0.0633  -0.1783    0.0699 3.92e-01
-#>        -2  -0.0708    0.0485  -0.1659    0.0243 1.45e-01
-#>        -1   0.0000    0.0000   0.0000    0.0000       NA
-#>         0  -0.1789    0.0582  -0.2930   -0.0647 2.13e-03
-#>         1  -0.3130    0.0563  -0.4234   -0.2027 2.68e-08
-#>         2  -0.2803    0.0569  -0.3919   -0.1687 8.53e-07
-#>         3  -0.2778    0.0540  -0.3836   -0.1720 2.66e-07
-#>         4  -0.2531    0.0571  -0.3650   -0.1411 9.36e-06
-#>         5  -0.2593    0.0518  -0.3609   -0.1578 5.55e-07
-#>         6  -0.2339    0.0499  -0.3318   -0.1361 2.80e-06
-#>         7  -0.2212    0.0464  -0.3122   -0.1302 1.90e-06
-#>         8  -0.2511    0.0360  -0.3216   -0.1805 3.03e-12
+#>   Months since event  Estimate  Std. error             95% CI       p
+#>   ──────────────────  ────────  ──────────  ─────────────────  ──────
+#>   -8                   −0.0114      0.0378  [−0.0854, 0.0626]   0.763
+#>   -7                   −0.0509       0.057   [−0.163, 0.0608]   0.372
+#>   -6                   −0.0425      0.0515   [−0.144, 0.0585]   0.409
+#>   -5                   −0.0784      0.0517    [−0.18, 0.0229]   0.129
+#>   -4                   −0.0155      0.0534    [−0.12, 0.0892]   0.772
+#>   -3                   −0.0542      0.0633   [−0.178, 0.0699]   0.392
+#>   -2                   −0.0708      0.0485   [−0.166, 0.0243]   0.145
+#>   -1 (reference)             0           0             [0, 0]        
+#>   0                     −0.179      0.0582  [−0.293, −0.0647]   0.002
+#>   1                     −0.313      0.0563   [−0.423, −0.203]  <0.001
+#>   2                      −0.28      0.0569   [−0.392, −0.169]  <0.001
+#>   3                     −0.278       0.054   [−0.384, −0.172]  <0.001
+#>   4                     −0.253      0.0571   [−0.365, −0.141]  <0.001
+#>   5                     −0.259      0.0518   [−0.361, −0.158]  <0.001
+#>   6                     −0.234      0.0499   [−0.332, −0.136]  <0.001
+#>   7                     −0.221      0.0464    [−0.312, −0.13]  <0.001
+#>   8                     −0.251       0.036   [−0.322, −0.181]  <0.001
 ```
 
 
@@ -154,9 +156,10 @@ pt
 #> ── streetlamp pre-trend diagnostic
 #> Joint test of 7 pre-period coefficients: p = 0.443
 #> Linear pre-trend the test would detect:
-#>  power  slope bias_mean_post
-#>    0.5 0.0104         0.0519
-#>    0.8 0.0139         0.0697
+#>   Power  Detectable slope per month  Bias it would leave in the mean post-period effect
+#>   ─────  ──────────────────────────  ──────────────────────────────────────────────────
+#>   0.5                        0.0104                                              0.0519
+#>   0.8                        0.0139                                              0.0697
 #> The pre-trend test does not reject (p = 0.443), but it would detect a linear
 #> trend of 0.014 log points a month only 80 percent of the time; such a trend
 #> would shift the mean post-period coefficient by 0.07. Compare that with the

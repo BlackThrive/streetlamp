@@ -1,0 +1,112 @@
+/* streetlamp report: one column of text, hairline tables, figures in line. */
+:root {
+  color-scheme: light;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --secondary: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --series: #2a78d6;
+}
+html {
+  background: var(--surface);
+}
+body {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+h1, h2, h3 {
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+h1 + p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--grid);
+}
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.5rem;
+}
+p, li {
+  color: var(--ink);
+}
+ul {
+  padding-left: 1.25rem;
+}
+li {
+  margin: 0.2rem 0;
+}
+strong {
+  font-weight: 600;
+}
+code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  font-size: 0.88em;
+  color: var(--secondary);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.92rem;
+}
+th, td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--grid);
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  color: var(--secondary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--grid);
+}
+th:not(:first-child), td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+tbody tr:hover {
+  background: #f4f3f0;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0 1.5rem;
+}
+.caveat, blockquote {
+  color: var(--secondary);
+  border-left: 3px solid var(--grid);
+  margin: 1rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+}
+@media print {
+  body {
+    max-width: none;
+    padding: 0;
+  }
+  tbody tr:hover {
+    background: none;
+  }
+}

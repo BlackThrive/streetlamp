@@ -46,7 +46,7 @@ snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\RtmpwJojME\streetlamp-cache-6aa06f1b29e'
+#> 'C:\Users\musta\AppData\Local\Temp\RtmpkXgih3\streetlamp-cache-3d5031ad59f8'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.
