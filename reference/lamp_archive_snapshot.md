@@ -63,7 +63,7 @@ snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
-#> Cache: /tmp/RtmpvzuGDe/streetlamp-cache-1cdd7fc5c1d0
+#> Cache: /tmp/RtmpFplkBQ/streetlamp-cache-1c865c14e99d
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.

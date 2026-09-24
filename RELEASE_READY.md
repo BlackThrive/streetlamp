@@ -125,9 +125,12 @@ because they qualify what the package should be used for:
 
 ## Still to do before submission
 
-1.  Run win-builder on devel and release, and rhub, then record the
-    results in `cran-comments.md` and delete the comment at the top of
-    it. These are the only checks that have not run.
+1.  Run rhub, then record the result in `cran-comments.md` and delete
+    the comment at the top of it. It is the only check that has not run.
+    win-builder came back clean on 2026-09-24, on R 4.6.1 and on R devel
+    (2026-09-21 r90579): one note on each, identical, “New submission”
+    plus two words in `DESCRIPTION` that a spell checker does not know
+    (`elasticities`, and `pre` from `pre-trend` split at the hyphen).
 2.  Submit. The maintainer does that; this package does not.
 
 Done on 2026-09-23: the repository exists at
