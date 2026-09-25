@@ -1,9 +1,7 @@
 <!--
-Not submitted yet. The win-builder entry below is from the tree at 3722dfd,
-which predates the presentation layer, its three new exports and its two new
-Imports. Both win-builder targets were resubmitted on d699514 on 2026-09-24;
-replace the entry with those results before submitting, and delete this
-comment.
+Not submitted yet. win-builder R devel is confirmed on this tree; the R
+release run of the same tree has been processed but its log has not been
+read. Read it, and delete this comment.
 -->
 
 ## R CMD check results
@@ -38,9 +36,10 @@ spelled as intended:
 Checked on 2026-09-23 and 2026-09-24, all with 0 errors and 0 warnings:
 
 * local: Windows 11, R 4.5.2
-* win-builder: R 4.6.1 (release) and R devel (2026-09-21 r90579). 1 note on
-  each, the one above, and identical on both. Examples 25 to 26 s, tests 64
-  to 66 s, vignettes and both manuals OK.
+* win-builder, R devel (2026-09-21 r90579): 1 note, the one above. Examples
+  26 s, tests 67 s, vignettes and both manuals OK. R 4.6.1 (release) returned
+  the same single note on an earlier tree; the release run of this tree is
+  still to be read.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest, on R
   release and R oldrel-1; and R devel on ubuntu-latest and windows-latest
 * R-hub v2: `linux` and `windows` on R devel, and the `donttest`, `atlas` and
