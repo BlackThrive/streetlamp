@@ -1,8 +1,8 @@
 # Decisions log
 
-Choices made without the maintainer, as required by specification section 12.
-Newest session first. Each entry says what was decided and why, so that a
-later session (or the maintainer) can reverse it deliberately.
+Design choices that are not obvious from the code, newest first. Each entry
+says what was decided and why, so that it can be reversed deliberately rather
+than by accident.
 
 ## 2026-09-24, the presentation layer
 
@@ -11,9 +11,9 @@ later session (or the maintainer) can reverse it deliberately.
     estimates, event studies, staggered fits, pre-trend diagnostics,
     synthetic controls and coverage audits. Every `plot()` method now draws
     through the same theme and palette, and `inst/templates/report.css`
-    styles the HTML report to match. Written in a parallel Codex session; it
-    goes into 0.1.0 at the maintainer's decision of 2026-09-24 rather than
-    waiting for 0.2.0, so the first release has one look rather than two.
+    styles the HTML report to match. Developed alongside the release work and
+    included in 0.1.0 on 2026-09-24 rather than held for 0.2.0, so that the
+    first release has one look rather than two.
 67. **`ggplot2 (>= 3.5.0)` in Imports.** `lamp_theme()` sets
     `legend.location`, a theme element ggplot2 added in 3.5.0, and several
     plots use `linewidth`, which arrived in 3.4.0. The dependency carried no

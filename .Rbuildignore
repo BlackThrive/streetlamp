@@ -8,13 +8,10 @@
 ^pkgdown$
 ^data-raw$
 ^cran-comments\.md$
-^CLAUDE\.md$
-^AGENTS\.md$
 ^RELEASE_READY\.md$
 ^\.lintr$
 ^\.gitignore$
 ^\.gitattributes$
-^\.claude$
 ^codecov\.yml$
 ^\.pre-commit-config\.yaml$
 ^vignettes/.*\.Rmd\.orig$
