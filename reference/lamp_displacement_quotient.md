@@ -112,7 +112,7 @@ lamp_displacement_quotient(
 #> 
 #> ── Weighted displacement quotient 
 #> Outcome: crime_total
-#> WDQ: 3.93 [1.5, 69.4] from 50 of 50 bootstrap draws
+#> WDQ: 3.93 [-18.3, 7.91] from 50 of 50 bootstrap draws
 #> Treated-area change net of controls: -0.02623
 #> WDQ 3.93 is above 1: the buffer improved more than the treated areas, which is
 #> hard to attribute to the intervention.

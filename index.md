@@ -26,12 +26,15 @@ pak::pak("BlackThrive/streetlamp")
 
 ## Status
 
-All milestones are complete: acquisition and versioning, geography and
-population, the panel and its coverage audit, treatment definitions, the
-estimators and their diagnostics, and reporting. `R CMD check --as-cran`
-is clean. Before a CRAN submission the repository still needs to exist
-so that the continuous integration matrix can run; see
-`RELEASE_READY.md`.
+The 0.2.0 development series adds count-mean elasticities,
+calendar-aware lags, heterogeneous simulation designs, covariance-aware
+effect summaries, design audits and complete robustness grids. Source
+and continuous integration are available on GitHub. Historical 0.1.0
+validation is retained; new research evidence is in
+`inst/validation/research-upgrade`. A causal empirical case still needs
+independently documented intervention assignment. This development
+version has not been submitted to CRAN. Cross-platform release checks
+for the expanded development version are pending.
 
 ## What it estimates
 
@@ -44,7 +47,19 @@ so that the continuous integration matrix can run; see
 | How does crime respond to search intensity? | [`lamp_elasticity()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity.md) |
 | How does searching follow crime? | [`lamp_allocation()`](https://blackthrive.github.io/streetlamp/reference/lamp_allocation.md) |
 | How many crimes per thousand searches? | [`lamp_crimes_prevented()`](https://blackthrive.github.io/streetlamp/reference/lamp_crimes_prevented.md) |
+| Is the design supported by the observed data? | [`lamp_design_audit()`](https://blackthrive.github.io/streetlamp/reference/lamp_design_audit.md) |
+| Is the result sensitive to specifications or individual areas? | [`lamp_elasticity_robustness()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity_robustness.md) |
+| What is the uncertainty of an average or sum of effects? | [`lamp_effect_summary()`](https://blackthrive.github.io/streetlamp/reference/lamp_effect_summary.md) |
+| How would an assumed differential trend change an event estimate? | [`lamp_trend_sensitivity()`](https://blackthrive.github.io/streetlamp/reference/lamp_trend_sensitivity.md) |
 | Is the estimate worth anything? | [`lamp_pretrends()`](https://blackthrive.github.io/streetlamp/reference/lamp_pretrends.md), [`lamp_placebo()`](https://blackthrive.github.io/streetlamp/reference/lamp_placebo.md) |
+
+`lamp_elasticity(method = "fe")` now defaults to Poisson
+pseudo-likelihood for the conditional count mean. Use
+`family = "ols_log"` for the former response scale, which CCE methods
+retain. The covariate is `log(1 + stops)`: its slope is not
+automatically a conventional stops elasticity. At stop intensity S, a
+count-mean slope becomes `slope * S / (1 + S)`. Observational
+associations do not identify the effect of deciding to search more.
 
 ## Quick start on the bundled panel
 

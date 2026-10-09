@@ -17,7 +17,7 @@ printed with it."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">streetlamp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,8 +30,9 @@ printed with it."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/archive-to-panel.html">From archive to audited crime panel</a></li>
     <li><a class="dropdown-item" href="../articles/displacement-and-spillovers.html">Displacement and spillovers</a></li>
-    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime elasticities under cross-sectional dependence</a></li>
+    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime slopes and cross-sectional dependence</a></li>
     <li><a class="dropdown-item" href="../articles/evaluating-a-surge.html">Evaluating a stop and search surge</a></li>
+    <li><a class="dropdown-item" href="../articles/research-validation.html">Research validation: estimands, heterogeneity and empirical credibility</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-evidence.html">Simulation evidence: what each estimator recovers and when it fails</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -101,11 +102,12 @@ estimate's outcome.</p></dd>
 
 
 <dt id="arg-n-boot">n_boot<a class="anchor" aria-label="anchor" href="#arg-n-boot"></a></dt>
-<dd><p>Bootstrap replications for the interval, default 2000.</p></dd>
+<dd><p>Retained for compatibility. Intervals now transform the
+coefficient interval directly and require no simulation.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Random seed.</p></dd>
+<dd><p>Retained for compatibility; the conversion is deterministic.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -119,7 +121,10 @@ vector naming every step from the estimate to the number.</p>
     <p>For an elasticity <code>e</code>, a proportional change in searches <code>dS/S</code> changes
 crime by <code>e * dS/S</code>, so at mean monthly crime <code>C</code> and mean searches <code>S</code> the
 crimes prevented by an extra <code>per_stops</code> searches are
-<code>-e * C * per_stops / S</code>. For a treatment effect in log points <code>b</code>, the
+<code>-e * C * per_stops / S</code>. The elasticity estimators use <code>log(1 + stops)</code>,
+so their derivative has denominator <code>S + 1</code>. The count-mean model uses
+<code>C</code> in the numerator; the legacy log-one-plus outcome approximation uses
+<code>C + 1</code>. For a treatment effect in log points <code>b</code>, the
 effect on crime is <code>C * (exp(b) - 1)</code>, and it is divided by the searches
 the intervention actually added, which you must supply as <code>stops_added</code>
 because a binary treatment does not say how much searching it involved.</p>
@@ -156,18 +161,20 @@ the costs of searching, which fall on the people searched.</p>
 <span class="r-in"><span><span class="fu">lamp_crimes_prevented</span><span class="op">(</span><span class="va">el</span>, <span class="va">sim</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ── Crimes prevented per 1000 searches </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 85.6 [-8.81, 179] on <span style="color: #00BB00;">crime_total</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 90.2 [-0.615, 181] on <span style="color: #00BB00;">crime_total</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ── Assumption chain </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 1. The elasticity is -0.0814, summed over lags 0, 1.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 2. The effect is proportional, so it scales with the mean level of crime.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 3. At the sample mean of 7.13 crimes and 6.78 searches per area-month.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 4. The association between searching and recorded crime, net of area and month</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1. The log-one-plus stops slope is -0.0982, summed over lags 0, 1.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2. The denominator is mean stops plus one; legacy OLS also uses mean crime plus</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> one.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 3. The effect is proportional, so it scales with the mean level of crime.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 4. At the sample mean of 7.12 crimes and 6.76 searches per area-month.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 5. The association between searching and recorded crime, net of area and month</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> effects. Causal only if the variation in searching has a source outside the</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> crime process; see lamp_allocation().</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 5. Recorded crime only: unreported crime and recording changes are not</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 6. Recorded crime only: unreported crime and recording changes are not</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> separated.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 6. The average effect is applied at the margin, which ignores diminishing</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 7. The average effect is applied at the margin, which ignores diminishing</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> returns.</span>
 </code></pre></div>
     </div>

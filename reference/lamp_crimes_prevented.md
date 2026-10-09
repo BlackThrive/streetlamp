@@ -52,11 +52,12 @@ lamp_crimes_prevented(
 
 - n_boot:
 
-  Bootstrap replications for the interval, default 2000.
+  Retained for compatibility. Intervals now transform the coefficient
+  interval directly and require no simulation.
 
 - seed:
 
-  Random seed.
+  Retained for compatibility; the conversion is deterministic.
 
 ## Value
 
@@ -69,10 +70,14 @@ vector naming every step from the estimate to the number.
 For an elasticity `e`, a proportional change in searches `dS/S` changes
 crime by `e * dS/S`, so at mean monthly crime `C` and mean searches `S`
 the crimes prevented by an extra `per_stops` searches are
-`-e * C * per_stops / S`. For a treatment effect in log points `b`, the
-effect on crime is `C * (exp(b) - 1)`, and it is divided by the searches
-the intervention actually added, which you must supply as `stops_added`
-because a binary treatment does not say how much searching it involved.
+`-e * C * per_stops / S`. The elasticity estimators use
+`log(1 + stops)`, so their derivative has denominator `S + 1`. The
+count-mean model uses `C` in the numerator; the legacy log-one-plus
+outcome approximation uses `C + 1`. For a treatment effect in log points
+`b`, the effect on crime is `C * (exp(b) - 1)`, and it is divided by the
+searches the intervention actually added, which you must supply as
+`stops_added` because a binary treatment does not say how much searching
+it involved.
 
 ## What this number does not include
 
@@ -104,17 +109,19 @@ el <- lamp_elasticity(sim, "crime_total", lags = 0:1)
 lamp_crimes_prevented(el, sim)
 #> 
 #> ── Crimes prevented per 1000 searches 
-#> 85.6 [-8.81, 179] on crime_total
+#> 90.2 [-0.615, 181] on crime_total
 #> 
 #> ── Assumption chain 
-#> 1. The elasticity is -0.0814, summed over lags 0, 1.
-#> 2. The effect is proportional, so it scales with the mean level of crime.
-#> 3. At the sample mean of 7.13 crimes and 6.78 searches per area-month.
-#> 4. The association between searching and recorded crime, net of area and month
+#> 1. The log-one-plus stops slope is -0.0982, summed over lags 0, 1.
+#> 2. The denominator is mean stops plus one; legacy OLS also uses mean crime plus
+#> one.
+#> 3. The effect is proportional, so it scales with the mean level of crime.
+#> 4. At the sample mean of 7.12 crimes and 6.76 searches per area-month.
+#> 5. The association between searching and recorded crime, net of area and month
 #> effects. Causal only if the variation in searching has a source outside the
 #> crime process; see lamp_allocation().
-#> 5. Recorded crime only: unreported crime and recording changes are not
+#> 6. Recorded crime only: unreported crime and recording changes are not
 #> separated.
-#> 6. The average effect is applied at the margin, which ignores diminishing
+#> 7. The average effect is applied at the margin, which ignores diminishing
 #> returns.
 ```

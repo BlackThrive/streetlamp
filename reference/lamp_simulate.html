@@ -15,7 +15,7 @@ so effect is a log point effect: -0.1 is a 9.5 percent reduction."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">streetlamp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,8 +28,9 @@ so effect is a log point effect: -0.1 is a 9.5 percent reduction."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/archive-to-panel.html">From archive to audited crime panel</a></li>
     <li><a class="dropdown-item" href="../articles/displacement-and-spillovers.html">Displacement and spillovers</a></li>
-    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime elasticities under cross-sectional dependence</a></li>
+    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime slopes and cross-sectional dependence</a></li>
     <li><a class="dropdown-item" href="../articles/evaluating-a-surge.html">Evaluating a stop and search surge</a></li>
+    <li><a class="dropdown-item" href="../articles/research-validation.html">Research validation: estimands, heterogeneity and empirical credibility</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-evidence.html">Simulation evidence: what each estimator recovers and when it fails</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -69,7 +70,13 @@ so <code>effect</code> is a log point effect: -0.1 is a 9.5 percent reduction.</
 <span>  missing <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  base_rate <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  population <span class="op">=</span> <span class="fl">1500</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cohort_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dynamic_effect <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  trend_violation <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  dispersion <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  missing_mechanism <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"random"</span>, <span class="st">"high_outcome"</span><span class="op">)</span>,</span>
+<span>  effect_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"log"</span>, <span class="st">"additive"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -121,6 +128,42 @@ indices within the panel; <code>NULL</code> picks three evenly spaced cohorts.</
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Random seed.</p></dd>
 
+
+<dt id="arg-cohort-effects">cohort_effects<a class="anchor" aria-label="anchor" href="#arg-cohort-effects"></a></dt>
+<dd><p>Optional named numeric vector, with adoption month
+indices as names (e.g. <code>c("9" = -0.4, "13" = -0.1, "17" = 0.2)</code>).
+Replaces <code>effect</code> for those cohorts; requires the staggered design and
+exactly one value for every adopting cohort.</p></dd>
+
+
+<dt id="arg-dynamic-effect">dynamic_effect<a class="anchor" aria-label="anchor" href="#arg-dynamic-effect"></a></dt>
+<dd><p>Optional finite numeric multipliers for relative
+months 0, 1, ...; the last multiplier persists thereafter. For example
+<code>c(0, 0.5, 1)</code> gives a delayed, growing effect. Binary designs only.</p></dd>
+
+
+<dt id="arg-trend-violation">trend_violation<a class="anchor" aria-label="anchor" href="#arg-trend-violation"></a></dt>
+<dd><p>Differential monthly trend for ever-treated areas,
+in the same units as <code>effect</code>. Zero preserves the identifying assumption.</p></dd>
+
+
+<dt id="arg-dispersion">dispersion<a class="anchor" aria-label="anchor" href="#arg-dispersion"></a></dt>
+<dd><p>Negative-binomial size per crime type; <code>Inf</code> (default)
+gives Poisson counts. Smaller positive values give more overdispersion.</p></dd>
+
+
+<dt id="arg-missing-mechanism">missing_mechanism<a class="anchor" aria-label="anchor" href="#arg-missing-mechanism"></a></dt>
+<dd><p><code>"random"</code> or <code>"high_outcome"</code>. The latter makes
+force-months with larger untreated expected counts more likely to be
+missing, as a stress test rather than an ignorable missingness claim.</p></dd>
+
+
+<dt id="arg-effect-scale">effect_scale<a class="anchor" aria-label="anchor" href="#arg-effect-scale"></a></dt>
+<dd><p><code>"log"</code> (default) multiplies affected count means.
+<code>"additive"</code> adds <code>effect</code> counts to the combined affected outcome and
+uses an additive area/time baseline, so count-level parallel trends
+hold when <code>trend_violation = 0</code>. Non-positive type means are rejected.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -152,6 +195,11 @@ counts and <code>coverage_status = "missing"</code>, exactly as a real panel doe
 Bicycle theft is never affected by treatment, which makes it the default
 placebo outcome in <code><a href="lamp_placebo.html">lamp_placebo()</a></code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>Other simulation:
+<code><a href="lamp_simulation_truth.html">lamp_simulation_truth()</a></code></p></div>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -159,26 +207,26 @@ placebo outcome in <code><a href="lamp_placebo.html">lamp_placebo()</a></code>.<
 <span class="r-in"><span><span class="va">sim</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">streetlamp panel</span>: 36 simulated area x 24 months; see `lamp_contract()` and</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> `lamp_coverage()`.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 864 × 27</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 864 × 28</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    area  month      force_id bicycle_theft burglary criminal_damage_and_…¹ drugs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> S000… 2018-01-01 sim-nor…             1        0                      1     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> S000… 2018-02-01 sim-nor…             0        0                      0     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> S000… 2018-03-01 sim-nor…             3        0                      2     2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> S000… 2018-04-01 sim-nor…             1        2                      1     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> S000… 2018-05-01 sim-nor…             2        1                      0     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> S000… 2018-06-01 sim-nor…             0        0                      0     3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> S000… 2018-07-01 sim-nor…             2        0                      2     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> S000… 2018-08-01 sim-nor…             0        0                      1     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> S000… 2018-09-01 sim-nor…             0        0                      1     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> S000… 2018-10-01 sim-nor…             0        0                      2     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> S000… 2018-01-01 sim-nor…             0        0                      1     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> S000… 2018-02-01 sim-nor…             1        3                      0     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> S000… 2018-03-01 sim-nor…             1        2                      1     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> S000… 2018-04-01 sim-nor…             3        0                      1     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> S000… 2018-05-01 sim-nor…             0        0                      1     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> S000… 2018-06-01 sim-nor…             0        1                      0     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> S000… 2018-07-01 sim-nor…             0        0                      1     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> S000… 2018-08-01 sim-nor…             0        1                      0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> S000… 2018-09-01 sim-nor…             0        2                      1     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> S000… 2018-10-01 sim-nor…             1        1                      1     2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 854 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ abbreviated name: ¹​criminal_damage_and_arson</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 20 more variables: other_crime &lt;int&gt;, other_theft &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 21 more variables: other_crime &lt;int&gt;, other_theft &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   possession_of_weapons &lt;int&gt;, public_order &lt;int&gt;, robbery &lt;int&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   shoplifting &lt;int&gt;, theft_from_the_person &lt;int&gt;, vehicle_crime &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   violence_and_sexual_offences &lt;int&gt;, crime_total &lt;int&gt;, asb &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   stops &lt;int&gt;, stops_s60 &lt;int&gt;, population &lt;dbl&gt;, stop_rate &lt;dbl&gt;, …</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   violence_and_sexual_offences &lt;int&gt;, crime_total &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   affected_crime &lt;int&gt;, asb &lt;int&gt;, stops &lt;int&gt;, stops_s60 &lt;int&gt;, …</span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">sim</span>, <span class="st">"truth"</span><span class="op">)</span><span class="op">$</span><span class="va">effect</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] -0.2</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">coverage_status</span><span class="op">)</span></span></span>

@@ -95,15 +95,25 @@ standard errors and the force-months it excluded.
 What the estimates are worth: pre-trend testing with power, and placebo
 tests in time, space and outcome.
 
+- [`lamp_design_audit()`](https://blackthrive.github.io/streetlamp/reference/lamp_design_audit.md)
+  : Audit the support and assumptions of an intervention design
+- [`lamp_effect_summary()`](https://blackthrive.github.io/streetlamp/reference/lamp_effect_summary.md)
+  : Summarise effects using their joint covariance
+- [`lamp_elasticity_robustness()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity_robustness.md)
+  : Evaluate an explicit elasticity specification grid
 - [`lamp_placebo()`](https://blackthrive.github.io/streetlamp/reference/lamp_placebo.md)
   : Placebo tests for a streetlamp estimate
 - [`lamp_pretrends()`](https://blackthrive.github.io/streetlamp/reference/lamp_pretrends.md)
   : Test and interpret pre-trends
+- [`lamp_trend_sensitivity()`](https://blackthrive.github.io/streetlamp/reference/lamp_trend_sensitivity.md)
+  : Sensitivity to a specified differential linear trend
 
 ## Simulation
 
 - [`lamp_simulate()`](https://blackthrive.github.io/streetlamp/reference/lamp_simulate.md)
   : Simulate a panel with a known treatment effect
+- [`lamp_simulation_truth()`](https://blackthrive.github.io/streetlamp/reference/lamp_simulation_truth.md)
+  : Recover exact expected outcomes from a simulated panel
 
 ## Reporting
 
@@ -117,6 +127,9 @@ tables with terms in words, intervals in brackets and rounded p values.
 
 - [`lamp_colours()`](https://blackthrive.github.io/streetlamp/reference/lamp_colours.md)
   : The colours streetlamp draws with
+- [`lamp_map()`](https://blackthrive.github.io/streetlamp/reference/lamp_map.md)
+  : Map a panel column, an area-level estimate or a synthetic control's
+  donors
 - [`lamp_table()`](https://blackthrive.github.io/streetlamp/reference/lamp_table.md)
   : A presentation-ready table from a streetlamp object
 - [`lamp_theme()`](https://blackthrive.github.io/streetlamp/reference/lamp_theme.md)

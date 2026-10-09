@@ -27,6 +27,7 @@ A ggplot2 theme object.
 
 Other presentation:
 [`lamp_colours()`](https://blackthrive.github.io/streetlamp/reference/lamp_colours.md),
+[`lamp_map()`](https://blackthrive.github.io/streetlamp/reference/lamp_map.md),
 [`lamp_table()`](https://blackthrive.github.io/streetlamp/reference/lamp_table.md)
 
 ## Examples

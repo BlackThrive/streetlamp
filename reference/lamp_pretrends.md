@@ -59,7 +59,11 @@ testing for parallel trends. American Economic Review: Insights 4(3),
 ## See also
 
 Other diagnostics:
-[`lamp_placebo()`](https://blackthrive.github.io/streetlamp/reference/lamp_placebo.md)
+[`lamp_design_audit()`](https://blackthrive.github.io/streetlamp/reference/lamp_design_audit.md),
+[`lamp_effect_summary()`](https://blackthrive.github.io/streetlamp/reference/lamp_effect_summary.md),
+[`lamp_elasticity_robustness()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity_robustness.md),
+[`lamp_placebo()`](https://blackthrive.github.io/streetlamp/reference/lamp_placebo.md),
+[`lamp_trend_sensitivity()`](https://blackthrive.github.io/streetlamp/reference/lamp_trend_sensitivity.md)
 
 ## Examples
 

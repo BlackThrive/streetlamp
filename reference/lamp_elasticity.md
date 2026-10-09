@@ -1,7 +1,7 @@
 # Elasticity of crime with respect to stop and search
 
 Estimates how recorded crime responds to the intensity of searching, as
-a distributed lag of log crime on log stops with area and month fixed
+a distributed lag of log-one-plus stops with area and month fixed
 effects. Three methods are offered, differing in how they handle the
 fact that areas move together.
 
@@ -15,7 +15,8 @@ lamp_elasticity(
   lags = 0:3,
   method = c("fe", "cce_mg", "cce_pooled"),
   cluster = c("area", "force"),
-  min_months = 12L
+  min_months = 12L,
+  family = NULL
 )
 ```
 
@@ -52,6 +53,13 @@ lamp_elasticity(
 
   Months an area needs before it enters a mean-group regression.
 
+- family:
+
+  `NULL` selects `"poisson"` for `fe` and `"ols_log"` for the CCE
+  methods. Poisson pseudo-likelihood models the conditional count mean,
+  including zeros, with clustered inference. CCE currently supports only
+  `"ols_log"`. Specify `"ols_log"` to reproduce the former FE scale.
+
 ## Value
 
 A `lamp_estimate` of class `lamp_elasticity`. Coefficients are the
@@ -65,10 +73,14 @@ fixed seed: `cd_test$sampled` says whether that happened and
 
 ## What an elasticity here is and is not
 
-The coefficient is the percentage change in recorded crime associated
-with a one percent change in searches, not the effect of a decision to
-search more. Police send officers where crime is rising, so the
-association runs in both directions;
+With `family = "poisson"`, a coefficient describes the log conditional
+mean of the count per unit of `log(1 + stops)`. Its elasticity with
+respect to stops at intensity S is `coefficient * S / (1 + S)`. With
+`family = "ols_log"`, it describes `log(1 + observed crime)` instead;
+this is a different estimand, particularly when counts are small.
+Neither is automatically the effect of a decision to search more. Police
+send officers where crime is rising, so the association runs in both
+directions;
 [`lamp_allocation()`](https://blackthrive.github.io/streetlamp/reference/lamp_allocation.md)
 measures that reverse channel and should be reported alongside. Read the
 elasticity as a description of the joint movement unless the variation
@@ -87,11 +99,13 @@ in searching has an argued external source.
 - `cce_pooled`: one pooled regression with the same averages added,
   which is more precise if the slope really is common.
 
-Pesaran's CD test is reported in every case. It is computed on the
-residuals of a regression with area effects only, because month dummies
+Pesaran's CD test is an auxiliary descriptive diagnostic in every case.
+It uses OLS residuals of log-one-plus counts with area effects only,
+including when the primary estimator is Poisson, because month dummies
 would remove the common factor by construction and make the statistic
-negative whatever the data looked like. A large statistic says the areas
-move together, and that the `fe` standard errors are too small.
+negative whatever the data looked like. A large statistic flags shared
+movements; it does not by itself prove that clustered intervals are
+invalid.
 
 ## References
 
@@ -123,17 +137,17 @@ fit <- lamp_elasticity(sim, "crime_total", lags = 0:1)
 fit
 #> 
 #> ── streetlamp estimate: lamp_elasticity 
-#> Outcome: crime_total; family: least squares on log(1 + outcome)
+#> Outcome: crime_total; family: Poisson pseudo-likelihood on counts
 #> Treatment: continuous; clustered by area
 #> Identifying assumption: The association between searching and recorded crime,
 #> net of area and month effects. Causal only if the variation in searching has a
 #> source outside the crime process; see lamp_allocation().
 #> Sample: 1050 area-months in 30 areas; 0 rows dropped for coverage.
-#>   Term              Estimate  Std. error             95% CI       p
-#>   ────────────────  ────────  ──────────  ─────────────────  ──────
-#>   Log stops, lag 0    −0.151      0.0276  [−0.205, −0.0968]  <0.001
-#>   Log stops, lag 1   −0.0467      0.0405   [−0.126, 0.0327]   0.258
-#> Sum over lags: -0.198 [-0.302, -0.0934]
+#>   Term              Estimate  Std. error            95% CI       p
+#>   ────────────────  ────────  ──────────  ────────────────  ──────
+#>   Log stops, lag 0     −0.17       0.028  [−0.225, −0.115]  <0.001
+#>   Log stops, lag 1   −0.0412      0.0366  [−0.113, 0.0305]   0.260
+#> Sum over lags: -0.211 [-0.312, -0.11]
 #> Pesaran CD: 2.92 (p = 0.00351), mean pairwise correlation 0.024
 fit$diagnostics$cd_test$statistic
 #> [1] 2.918753

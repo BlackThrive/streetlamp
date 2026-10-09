@@ -1,5 +1,12 @@
 # Simulation evidence: what each estimator recovers and when it fails
 
+This vignette preserves the original 0.1.0 worked examples. Its
+homogeneous effects and transformed-outcome comparisons are not the
+current research validation. See
+[`vignette("research-validation", package = "streetlamp")`](https://blackthrive.github.io/streetlamp/articles/research-validation.md)
+and `inst/validation/research-upgrade` for explicit count-mean targets,
+heterogeneous cohorts, dynamic effects and Monte Carlo uncertainty.
+
 Every estimator in this package returns a number. This vignette is about
 which of those numbers are right, under what conditions, and how each
 one fails when its assumption does not hold. It uses
@@ -279,7 +286,7 @@ The full study across all designs, with and without missingness, is in
 | Treatment may move crime next door | [`lamp_spillover()`](https://blackthrive.github.io/streetlamp/reference/lamp_spillover.md), [`lamp_displacement_quotient()`](https://blackthrive.github.io/streetlamp/reference/lamp_displacement_quotient.md) | Others count the displacement as a success |
 | One treated force or area, many donors | [`lamp_synth()`](https://blackthrive.github.io/streetlamp/reference/lamp_synth.md) | Fixed effects cannot build a counterfactual from one unit |
 | Continuous intensity, no discrete event | [`lamp_elasticity()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity.md) with [`lamp_allocation()`](https://blackthrive.github.io/streetlamp/reference/lamp_allocation.md) | Read the pair, never the elasticity alone |
-| Areas move together over time | `lamp_elasticity(method = "cce_mg")` | Fixed effects standard errors are too small |
+| Areas move together over time | Consider `lamp_elasticity(method = "cce_mg")` on the legacy response scale | Shared movements need investigation; a CD statistic alone does not establish invalid clustered intervals |
 
 Every row assumes the treatment is not simply a response to the outcome.
 When it is, and for stop and search it usually is, none of these

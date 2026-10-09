@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">streetlamp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,8 +37,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/archive-to-panel.html">From archive to audited crime panel</a></li>
     <li><a class="dropdown-item" href="articles/displacement-and-spillovers.html">Displacement and spillovers</a></li>
-    <li><a class="dropdown-item" href="articles/elasticities.html">Stop-crime elasticities under cross-sectional dependence</a></li>
+    <li><a class="dropdown-item" href="articles/elasticities.html">Stop-crime slopes and cross-sectional dependence</a></li>
     <li><a class="dropdown-item" href="articles/evaluating-a-surge.html">Evaluating a stop and search surge</a></li>
+    <li><a class="dropdown-item" href="articles/research-validation.html">Research validation: estimands, heterogeneity and empirical credibility</a></li>
     <li><a class="dropdown-item" href="articles/simulation-evidence.html">Simulation evidence: what each estimator recovers and when it fails</a></li>
   </ul>
 </li>
@@ -72,7 +73,7 @@
 <div class="section level2">
 <h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>
 </h2>
-<p>All milestones are complete: acquisition and versioning, geography and population, the panel and its coverage audit, treatment definitions, the estimators and their diagnostics, and reporting. <code>R CMD check --as-cran</code> is clean. Before a CRAN submission the repository still needs to exist so that the continuous integration matrix can run; see <code>RELEASE_READY.md</code>.</p>
+<p>The 0.2.0 development series adds count-mean elasticities, calendar-aware lags, heterogeneous simulation designs, covariance-aware effect summaries, design audits and complete robustness grids. Source and continuous integration are available on GitHub. Historical 0.1.0 validation is retained; new research evidence is in <code>inst/validation/research-upgrade</code>. A causal empirical case still needs independently documented intervention assignment. This development version has not been submitted to CRAN. Cross-platform release checks for the expanded development version are pending.</p>
 </div>
 <div class="section level2">
 <h2 id="what-it-estimates">What it estimates<a class="anchor" aria-label="anchor" href="#what-it-estimates"></a>
@@ -120,6 +121,22 @@
 <td><code><a href="reference/lamp_crimes_prevented.html">lamp_crimes_prevented()</a></code></td>
 </tr>
 <tr>
+<td>Is the design supported by the observed data?</td>
+<td><code><a href="reference/lamp_design_audit.html">lamp_design_audit()</a></code></td>
+</tr>
+<tr>
+<td>Is the result sensitive to specifications or individual areas?</td>
+<td><code><a href="reference/lamp_elasticity_robustness.html">lamp_elasticity_robustness()</a></code></td>
+</tr>
+<tr>
+<td>What is the uncertainty of an average or sum of effects?</td>
+<td><code><a href="reference/lamp_effect_summary.html">lamp_effect_summary()</a></code></td>
+</tr>
+<tr>
+<td>How would an assumed differential trend change an event estimate?</td>
+<td><code><a href="reference/lamp_trend_sensitivity.html">lamp_trend_sensitivity()</a></code></td>
+</tr>
+<tr>
 <td>Is the estimate worth anything?</td>
 <td>
 <code><a href="reference/lamp_pretrends.html">lamp_pretrends()</a></code>, <code><a href="reference/lamp_placebo.html">lamp_placebo()</a></code>
@@ -127,6 +144,7 @@
 </tr>
 </tbody>
 </table>
+<p><code>lamp_elasticity(method = "fe")</code> now defaults to Poisson pseudo-likelihood for the conditional count mean. Use <code>family = "ols_log"</code> for the former response scale, which CCE methods retain. The covariate is <code>log(1 + stops)</code>: its slope is not automatically a conventional stops elasticity. At stop intensity S, a count-mean slope becomes <code>slope * S / (1 + S)</code>. Observational associations do not identify the effect of deciding to search more.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start-on-the-bundled-panel">Quick start on the bundled panel<a class="anchor" aria-label="anchor" href="#quick-start-on-the-bundled-panel"></a>

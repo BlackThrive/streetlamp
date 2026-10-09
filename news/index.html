@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">streetlamp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,8 +20,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/archive-to-panel.html">From archive to audited crime panel</a></li>
     <li><a class="dropdown-item" href="../articles/displacement-and-spillovers.html">Displacement and spillovers</a></li>
-    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime elasticities under cross-sectional dependence</a></li>
+    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime slopes and cross-sectional dependence</a></li>
     <li><a class="dropdown-item" href="../articles/evaluating-a-surge.html">Evaluating a stop and search surge</a></li>
+    <li><a class="dropdown-item" href="../articles/research-validation.html">Research validation: estimands, heterogeneity and empirical credibility</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-evidence.html">Simulation evidence: what each estimator recovers and when it fails</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -41,6 +42,16 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0.9000" id="streetlamp-0209000">streetlamp 0.2.0.9000<a class="anchor" aria-label="anchor" href="#streetlamp-0209000"></a></h2>
+<ul><li><p><code><a href="../reference/lamp_map.html">lamp_map()</a></code> draws the geography the package has carried since the start and never showed: a choropleth of any panel column, of the per-area slopes of a mean group elasticity, or of the donor weights behind a synthetic control. The rule that governs the rest of the package governs the map too. An area with no usable data is filled in a neutral grey and counted in the caption, never shaded as though it were quiet, and an area the panel never covered is counted separately from one whose files were missing, because they are not the same thing. Fills are sequential, or diverging and centred on zero where the values cross it, from the same palette as every other figure.</p></li>
+<li><p><code><a href="../reference/lamp_elasticity.html">lamp_elasticity()</a></code> defaults to clustered Poisson pseudo-likelihood for the fixed-effects method. This estimates the conditional count mean and avoids treating log-one-plus observed counts as log expected counts. Use <code>family = "ols_log"</code> for the former response scale; CCE still uses that scale. Calendar lags now preserve missing-month gaps. Lag-sum intervals use joint covariance and the backend’s reference distribution.</p></li>
+<li><p><code><a href="../reference/lamp_simulate.html">lamp_simulate()</a></code> supports cohort-specific effects, dynamic effect paths, overdispersed counts, selective missing submissions, and deliberate trend violations. An additive count design supports count-level parallel trends. <code><a href="../reference/lamp_simulation_truth.html">lamp_simulation_truth()</a></code> exposes exact area-month counterfactual means on either the count-difference or log-mean scale.</p></li>
+<li><p><code><a href="../reference/lamp_effect_summary.html">lamp_effect_summary()</a></code> uses joint covariance for effect combinations and each staggered backend’s own overall ATT. <code><a href="../reference/lamp_trend_sensitivity.html">lamp_trend_sensitivity()</a></code> reports conditional sensitivity to specified differential linear trends.</p></li>
+<li><p><code><a href="../reference/lamp_design_audit.html">lamp_design_audit()</a></code> records data support and identification questions. <code><a href="../reference/lamp_elasticity_robustness.html">lamp_elasticity_robustness()</a></code> retains complete specification grids, failures, and optional leave-one-area-out results.</p></li>
+<li><p>Crimes-prevented conversions account for log-one-plus stops, use the fitted sample, preserve covariance in event averages, distinguish count-level effects, and transform intervals directly. IHS effects require predictions and are rejected by the simple conversion.</p></li>
+<li><p>New research validation and a hash-verified London association study are separate from historical 0.1.0 results. London is explicitly observational; its comparison-outcome and future-exposure diagnostics are retained.</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="streetlamp-010">streetlamp 0.1.0<a class="anchor" aria-label="anchor" href="#streetlamp-010"></a></h2>
 <ul><li>One visual system for every figure and table. <code><a href="../reference/lamp_theme.html">lamp_theme()</a></code> and <code><a href="../reference/lamp_colours.html">lamp_colours()</a></code> are exported and every <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method uses them: a recessive hairline grid, left-aligned titles, forces and outcomes named in words, thousands separators on axes, and a palette checked as a set for colour-vision deficiency. Event studies, staggered fits and pre-trend diagnostics draw an interval ribbon with the reference period hollow; coefficient plots print the estimate and interval beside each mark; the placebo histogram labels the actual estimate and reports its p value; the synthetic control path labels both series at the line ends and shades the pre-period like the event study does.</li>
 <li>
@@ -56,7 +67,8 @@
 <li>M1: selective download from the data.police.uk archive by HTTP byte range (<code><a href="../reference/lamp_archive_index.html">lamp_archive_index()</a></code>, <code><a href="../reference/lamp_archive_download.html">lamp_archive_download()</a></code>, <code><a href="../reference/lamp_archive_register.html">lamp_archive_register()</a></code>, <code><a href="../reference/lamp_archive_snapshot.html">lamp_archive_snapshot()</a></code>); one archive version per force-month file with alternatives recorded (<code><a href="../reference/lamp_list_versions.html">lamp_list_versions()</a></code>, <code><a href="../reference/lamp_select_version.html">lamp_select_version()</a></code>, <code><a href="../reference/lamp_version_diff.html">lamp_version_diff()</a></code>); readers with a fixed schema and a panel contract (<code><a href="../reference/lamp_read_crime.html">lamp_read_crime()</a></code>, <code><a href="../reference/lamp_read_outcomes.html">lamp_read_outcomes()</a></code>, <code><a href="../reference/lamp_read_stop_counts.html">lamp_read_stop_counts()</a></code>, <code><a href="../reference/lamp_contract.html">lamp_contract()</a></code>); LSOA vintage detection (<code><a href="../reference/lamp_lsoa_vintage.html">lamp_lsoa_vintage()</a></code>); the forces table (<code><a href="../reference/lamp_forces.html">lamp_forces()</a></code>); and two bundled miniature archive snapshots for offline examples and tests.</li>
 <li>M0: package skeleton, MIT licence, continuous integration, testthat, pkgdown, lintr; bundled crime and outcome classifications, national policy shocks table, bank holidays table, and ONS LSOA 2011 and 2021 code lists with the 2011 to 2021 best-fit lookup.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

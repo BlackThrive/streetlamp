@@ -17,7 +17,7 @@ Source:
 
 Wasseja M, Frissa S, Hamed S (2026). *streetlamp: Panel Econometrics for
 the Effect of Police Stop and Search on Recorded Crime*. Black Thrive
-Global. R package version 0.1.0,
+Global. R package version 0.2.0.9000,
 <https://github.com/BlackThrive/streetlamp>.
 
     @Manual{,
@@ -25,6 +25,6 @@ Global. R package version 0.1.0,
       author = {Mustapha Wasseja and Souci Frissa and Sarah Hamed},
       organization = {Black Thrive Global},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.2.0.9000},
       url = {https://github.com/BlackThrive/streetlamp},
     }

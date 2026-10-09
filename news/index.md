@@ -1,5 +1,60 @@
 # Changelog
 
+## streetlamp 0.2.0.9000
+
+- [`lamp_map()`](https://blackthrive.github.io/streetlamp/reference/lamp_map.md)
+  draws the geography the package has carried since the start and never
+  showed: a choropleth of any panel column, of the per-area slopes of a
+  mean group elasticity, or of the donor weights behind a synthetic
+  control. The rule that governs the rest of the package governs the map
+  too. An area with no usable data is filled in a neutral grey and
+  counted in the caption, never shaded as though it were quiet, and an
+  area the panel never covered is counted separately from one whose
+  files were missing, because they are not the same thing. Fills are
+  sequential, or diverging and centred on zero where the values cross
+  it, from the same palette as every other figure.
+
+- [`lamp_elasticity()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity.md)
+  defaults to clustered Poisson pseudo-likelihood for the fixed-effects
+  method. This estimates the conditional count mean and avoids treating
+  log-one-plus observed counts as log expected counts. Use
+  `family = "ols_log"` for the former response scale; CCE still uses
+  that scale. Calendar lags now preserve missing-month gaps. Lag-sum
+  intervals use joint covariance and the backend’s reference
+  distribution.
+
+- [`lamp_simulate()`](https://blackthrive.github.io/streetlamp/reference/lamp_simulate.md)
+  supports cohort-specific effects, dynamic effect paths, overdispersed
+  counts, selective missing submissions, and deliberate trend
+  violations. An additive count design supports count-level parallel
+  trends.
+  [`lamp_simulation_truth()`](https://blackthrive.github.io/streetlamp/reference/lamp_simulation_truth.md)
+  exposes exact area-month counterfactual means on either the
+  count-difference or log-mean scale.
+
+- [`lamp_effect_summary()`](https://blackthrive.github.io/streetlamp/reference/lamp_effect_summary.md)
+  uses joint covariance for effect combinations and each staggered
+  backend’s own overall ATT.
+  [`lamp_trend_sensitivity()`](https://blackthrive.github.io/streetlamp/reference/lamp_trend_sensitivity.md)
+  reports conditional sensitivity to specified differential linear
+  trends.
+
+- [`lamp_design_audit()`](https://blackthrive.github.io/streetlamp/reference/lamp_design_audit.md)
+  records data support and identification questions.
+  [`lamp_elasticity_robustness()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity_robustness.md)
+  retains complete specification grids, failures, and optional
+  leave-one-area-out results.
+
+- Crimes-prevented conversions account for log-one-plus stops, use the
+  fitted sample, preserve covariance in event averages, distinguish
+  count-level effects, and transform intervals directly. IHS effects
+  require predictions and are rejected by the simple conversion.
+
+- New research validation and a hash-verified London association study
+  are separate from historical 0.1.0 results. London is explicitly
+  observational; its comparison-outcome and future-exposure diagnostics
+  are retained.
+
 ## streetlamp 0.1.0
 
 - One visual system for every figure and table.

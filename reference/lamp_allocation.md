@@ -60,8 +60,8 @@ pushes the coefficient down, the allocation response pushes it up, and
 the estimate is the net of them. A positive coefficient here is the size
 of the channel that has to be argued away before a stop-crime elasticity
 or a difference-in-differences estimate can be called causal. A
-coefficient near zero is the case in which the other estimates are
-easier to defend.
+coefficient near zero does not establish exogeneity or rule out other
+allocation channels.
 
 ## See also
 
@@ -94,6 +94,6 @@ lamp_allocation(sim, crime_lags = 1:2)
 #>   .log_crime_lag1   −0.0637      0.0507  [−0.163, 0.0356]  0.208
 #>   .log_crime_lag2    0.0566       0.056   [−0.053, 0.166]  0.312
 #> Sum over lags: -0.0071 [-0.145, 0.131]
-#> No clear allocation response: searching does not track recent crime in this
-#> panel, which makes the other estimates easier to read as effects.
+#> No clear allocation response was detected in this panel. This does not
+#> establish exogeneity or rule out reverse allocation and confounding.
 ```

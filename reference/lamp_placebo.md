@@ -69,7 +69,11 @@ test of a specific null, and with few areas it is coarse.
 ## See also
 
 Other diagnostics:
-[`lamp_pretrends()`](https://blackthrive.github.io/streetlamp/reference/lamp_pretrends.md)
+[`lamp_design_audit()`](https://blackthrive.github.io/streetlamp/reference/lamp_design_audit.md),
+[`lamp_effect_summary()`](https://blackthrive.github.io/streetlamp/reference/lamp_effect_summary.md),
+[`lamp_elasticity_robustness()`](https://blackthrive.github.io/streetlamp/reference/lamp_elasticity_robustness.md),
+[`lamp_pretrends()`](https://blackthrive.github.io/streetlamp/reference/lamp_pretrends.md),
+[`lamp_trend_sensitivity()`](https://blackthrive.github.io/streetlamp/reference/lamp_trend_sensitivity.md)
 
 ## Examples
 

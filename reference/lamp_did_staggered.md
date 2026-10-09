@@ -51,7 +51,11 @@ lamp_did_staggered(
 
 - cluster:
 
-  `"area"` (default) or `"force"`.
+  `"area"` or `"force"`. Callaway–Sant'Anna uses the multiplier
+  bootstrap for force clustering (the backend default of 1000 draws);
+  set the R random seed for reproduction. Sun–Abraham uses clustered
+  regression covariance. Force clustering is not implemented for the
+  imputation wrapper and is rejected.
 
 - family:
 

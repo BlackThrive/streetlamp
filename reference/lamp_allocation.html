@@ -13,7 +13,7 @@ here because without it the other estimators cannot be read honestly."></head><b
 
     <a class="navbar-brand me-2" href="../index.html">streetlamp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,8 +26,9 @@ here because without it the other estimators cannot be read honestly."></head><b
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/archive-to-panel.html">From archive to audited crime panel</a></li>
     <li><a class="dropdown-item" href="../articles/displacement-and-spillovers.html">Displacement and spillovers</a></li>
-    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime elasticities under cross-sectional dependence</a></li>
+    <li><a class="dropdown-item" href="../articles/elasticities.html">Stop-crime slopes and cross-sectional dependence</a></li>
     <li><a class="dropdown-item" href="../articles/evaluating-a-surge.html">Evaluating a stop and search surge</a></li>
+    <li><a class="dropdown-item" href="../articles/research-validation.html">Research validation: estimands, heterogeneity and empirical credibility</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-evidence.html">Simulation evidence: what each estimator recovers and when it fails</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -111,7 +112,7 @@ coefficient down, the allocation response pushes it up, and the estimate is
 the net of them. A positive coefficient here is the size of the channel
 that has to be argued away before a stop-crime elasticity or a
 difference-in-differences estimate can be called causal. A coefficient near
-zero is the case in which the other estimates are easier to defend.</p>
+zero does not establish exogeneity or rule out other allocation channels.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -144,8 +145,8 @@ zero is the case in which the other estimates are easier to defend.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .log_crime_lag1   −0.0637      0.0507  [−0.163, 0.0356]  0.208</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   .log_crime_lag2    0.0566       0.056   [−0.053, 0.166]  0.312</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Sum over lags: -0.0071 [-0.145, 0.131]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No clear allocation response: searching does not track recent crime in this</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> panel, which makes the other estimates easier to read as effects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No clear allocation response was detected in this panel. This does not</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> establish exogeneity or rule out reverse allocation and confounding.</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
