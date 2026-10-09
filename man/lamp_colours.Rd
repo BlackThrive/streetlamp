@@ -27,6 +27,7 @@ lamp_colours()[c("series", "contrast", "accent")]
 }
 \seealso{
 Other presentation: 
+\code{\link{lamp_map}()},
 \code{\link{lamp_table}()},
 \code{\link{lamp_theme}()}
 }

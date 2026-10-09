@@ -1,5 +1,15 @@
 # streetlamp 0.2.0.9000
 
+* `lamp_map()` draws the geography the package has carried since the start and
+  never showed: a choropleth of any panel column, of the per-area slopes of a
+  mean group elasticity, or of the donor weights behind a synthetic control.
+  The rule that governs the rest of the package governs the map too. An area
+  with no usable data is filled in a neutral grey and counted in the caption,
+  never shaded as though it were quiet, and an area the panel never covered is
+  counted separately from one whose files were missing, because they are not
+  the same thing. Fills are sequential, or diverging and centred on zero where
+  the values cross it, from the same palette as every other figure.
+
 * `lamp_elasticity()` defaults to clustered Poisson pseudo-likelihood for the
   fixed-effects method. This estimates the conditional count mean and avoids
   treating log-one-plus observed counts as log expected counts. Use
