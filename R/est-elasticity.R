@@ -15,19 +15,15 @@ lamp_elasticity_methods <- function() c("fe", "cce_mg", "cce_pooled")
 lamp_lag_matrix <- function(d, var, lags) {
   out <- matrix(NA_real_, nrow = nrow(d), ncol = length(lags))
   colnames(out) <- paste0(var, "_lag", lags)
-  ord <- order(d$area, d$month)
-  x <- d[[var]][ord]
-  a <- d$area[ord]
+  # Match calendar months, not neighbouring rows: an absent February must
+  # never turn January into March's one-month lag.
+  months <- unique(d$month)
+  month_index <- as.integer(format(months, "%Y")) * 12L + as.integer(format(months, "%m"))
+  m <- month_index[match(unclass(d$month), unclass(months))]
+  key <- paste(d$area, m, sep = "\r")
   for (k in seq_along(lags)) {
-    lag <- lags[k]
-    if (lag == 0L) {
-      out[ord, k] <- x
-    } else {
-      v <- c(rep(NA_real_, lag), utils::head(x, -lag))
-      same <- c(rep(FALSE, lag), utils::head(a, -lag) == utils::tail(a, -lag))
-      v[!same] <- NA_real_
-      out[ord, k] <- v
-    }
+    idx <- match(paste(d$area, m - lags[k], sep = "\r"), key)
+    out[, k] <- d[[var]][idx]
   }
   out
 }
@@ -126,13 +122,17 @@ lamp_cd_test <- function(resid, area, month, max_areas = 2000L, seed = 20260101L
 #' Elasticity of crime with respect to stop and search
 #'
 #' Estimates how recorded crime responds to the intensity of searching, as a
-#' distributed lag of log crime on log stops with area and month fixed
+#' distributed lag of log-one-plus stops with area and month fixed
 #' effects. Three methods are offered, differing in how they handle the fact
 #' that areas move together.
 #'
 #' @section What an elasticity here is and is not:
-#' The coefficient is the percentage change in recorded crime associated with
-#' a one percent change in searches, not the effect of a decision to search
+#' With `family = "poisson"`, a coefficient describes the log conditional
+#' mean of the count per unit of `log(1 + stops)`. Its elasticity with respect
+#' to stops at intensity S is `coefficient * S / (1 + S)`. With
+#' `family = "ols_log"`, it describes `log(1 + observed crime)` instead;
+#' this is a different estimand, particularly when counts are small. Neither
+#' is automatically the effect of a decision to search
 #' more. Police send officers where crime is rising, so the association runs
 #' in both directions; `lamp_allocation()` measures that reverse channel and
 #' should be reported alongside. Read the elasticity as a description of the
@@ -149,11 +149,12 @@ lamp_cd_test <- function(resid, area, month, max_areas = 2000L, seed = 20260101L
 #' * `cce_pooled`: one pooled regression with the same averages added, which
 #'   is more precise if the slope really is common.
 #'
-#' Pesaran's CD test is reported in every case. It is computed on the
-#' residuals of a regression with area effects only, because month dummies
+#' Pesaran's CD test is an auxiliary descriptive diagnostic in every case.
+#' It uses OLS residuals of log-one-plus counts with area effects only,
+#' including when the primary estimator is Poisson, because month dummies
 #' would remove the common factor by construction and make the statistic
-#' negative whatever the data looked like. A large statistic says the areas
-#' move together, and that the `fe` standard errors are too small.
+#' negative whatever the data looked like. A large statistic flags shared
+#' movements; it does not by itself prove that clustered intervals are invalid.
 #'
 #' @inheritParams lamp_twfe
 #' @param stops The stop intensity column, default `"stops"`.
@@ -161,6 +162,10 @@ lamp_cd_test <- function(resid, area, month, max_areas = 2000L, seed = 20260101L
 #' @param method `"fe"`, `"cce_mg"` or `"cce_pooled"`.
 #' @param min_months Months an area needs before it enters a mean-group
 #'   regression.
+#' @param family `NULL` selects `"poisson"` for `fe` and `"ols_log"` for
+#'   the CCE methods. Poisson pseudo-likelihood models the conditional count
+#'   mean, including zeros, with clustered inference. CCE currently supports
+#'   only `"ols_log"`. Specify `"ols_log"` to reproduce the former FE scale.
 #'
 #' @return A `lamp_estimate` of class `lamp_elasticity`. Coefficients are the
 #'   lag-by-lag elasticities; `diagnostics$long_run` is their sum with a
@@ -186,9 +191,20 @@ lamp_cd_test <- function(resid, area, month, max_areas = 2000L, seed = 20260101L
 #' fit$diagnostics$cd_test$statistic
 lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lags = 0:3,
                             method = c("fe", "cce_mg", "cce_pooled"),
-                            cluster = c("area", "force"), min_months = 12L) {
+                            cluster = c("area", "force"), min_months = 12L,
+                            family = NULL) {
   method <- rlang::arg_match(method)
   cluster <- rlang::arg_match(cluster)
+  if (is.null(family)) family <- if (method == "fe") "poisson" else "ols_log"
+  family <- rlang::arg_match(family, c("poisson", "ols_log"))
+  if (method == "cce_mg" && cluster == "force") {
+    lamp_abort(
+      "CCE mean-group inference uses area slopes; force clustering is not implemented.", "input"
+    )
+  }
+  if (method != "fe" && family != "ols_log") {
+    lamp_abort("CCE methods currently require {.code family = \"ols_log\"}.", "input")
+  }
   lamp_check_panel(panel)
   check_string(outcome)
   check_string(stops)
@@ -197,13 +213,24 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
       lamp_abort("{.field {nm}} is not a panel column.", "input")
     }
   }
-  if (!is.numeric(lags) || any(lags < 0) || any(lags != round(lags))) {
+  if (!is.numeric(lags) || !length(lags) || any(!is.finite(lags)) ||
+        any(lags < 0) || any(lags != round(lags)) || any(lags > .Machine$integer.max)) {
     lamp_abort("{.arg lags} must be whole numbers of months, zero or more.", "input")
   }
   lags <- as.integer(sort(unique(lags)))
+  if (!is.numeric(min_months) || length(min_months) != 1L || !is.finite(min_months) ||
+        min_months < 1 || min_months != round(min_months)) {
+    lamp_abort("{.arg min_months} must be a positive whole number.", "input")
+  }
 
   mf <- lamp_model_frame(panel, outcome, stops, NULL, cluster)
   d <- mf$data
+  for (nm in c(outcome, stops)) {
+    if (!is.numeric(d[[nm]]) || any(!is.finite(d[[nm]])) || any(d[[nm]] < 0)) {
+      lamp_abort("{.field {nm}} must contain finite, non-negative numeric values.", "input")
+    }
+  }
+  d$.y <- d[[outcome]]
   d$.log_y <- log1p(d[[outcome]])
   d$.log_s <- log1p(d[[stops]])
   lagm <- lamp_lag_matrix(d, ".log_s", lags)
@@ -227,17 +254,32 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
   }
 
   res <- switch(method,
-    fe = lamp_elasticity_fe(d, lag_terms, cluster),
+    fe = lamp_elasticity_fe(d, lag_terms, cluster, family),
     cce_pooled = lamp_elasticity_cce_pooled(d, lag_terms, cs_terms, cluster),
     cce_mg = lamp_elasticity_cce_mg(d, lag_terms, cs_terms, min_months)
   )
   cd <- lamp_cd_test_for(d, lag_terms, cluster)
+  used_data <- if (is.null(res$model)) {
+    d[d$area %in% res$area_coefficients$area, ]
+  } else {
+    d[fixest::obs(res$model), ]
+  }
+  mf$sample <- dplyr::bind_rows(mf$sample, tibble::tibble(
+    step = "observations retained by the estimator", n_rows = nrow(used_data),
+    n_areas = length(unique(used_data$area))
+  ))
+  res$n_areas_used <- length(unique(used_data$area))
 
   long_run <- list(
     estimate = sum(res$coefficients$estimate),
     std_error = res$long_run_se
   )
-  z <- stats::qnorm(0.975)
+  df <- if (is.null(res$model)) {
+    res$n_areas_used - 1L
+  } else {
+    lamp_inference_df(res$model)
+  }
+  z <- stats::qt(0.975, df)
   long_run$conf_low <- long_run$estimate - z * long_run$std_error
   long_run$conf_high <- long_run$estimate + z * long_run$std_error
 
@@ -245,6 +287,18 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
     n_dropped_coverage = mf$n_dropped_coverage,
     cd_test = cd,
     long_run = long_run,
+    covariance = res$covariance,
+    df = df,
+    estimand = if (family == "poisson") {
+      "log conditional count mean per log(1 + stops)"
+    } else {
+      "log(1 + observed outcome) per log(1 + stops)"
+    },
+    n_clusters = length(unique(used_data$.cluster)),
+    inference_note = paste(
+      "Clustered inference needs enough independent clusters.",
+      "Shared local shocks may require a different design."
+    ),
     method = method,
     lags = lags,
     area_coefficients = res$area_coefficients,
@@ -262,24 +316,28 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
     ),
     sample = mf$sample, diagnostics = diagnostics,
     meta = list(
-      outcome = outcome, family = "ols_log", cluster = cluster,
+      outcome = outcome, family = family, cluster = cluster,
       treatment_type = "continuous", stops = stops, method = method
     ),
-    model = res$model, contract = contract, data = d
+    model = res$model, contract = contract, data = used_data
   )
 }
 
-lamp_elasticity_fe <- function(d, lag_terms, cluster) {
+lamp_elasticity_fe <- function(d, lag_terms, cluster, family) {
   rhs <- paste(lag_terms, collapse = " + ")
-  fml <- stats::as.formula(paste(".log_y ~", rhs, "| .area + .month"))
-  fit <- lamp_fit(fml, d, "ols_log", cluster)
+  response <- if (family == "poisson") ".y" else ".log_y"
+  fml <- stats::as.formula(paste(response, "~", rhs, "| .area + .month"))
+  fit <- lamp_fit(fml, d, family, cluster)
   co <- lamp_coefficients(fit)
   v <- stats::vcov(fit)
+  if (!all(lag_terms %in% rownames(v))) {
+    lamp_abort("Some requested lags are unidentified after fixed effects; use fewer lags.", "input")
+  }
   w <- rep(1, length(lag_terms))
   se <- sqrt(as.numeric(t(w) %*% v[lag_terms, lag_terms, drop = FALSE] %*% w))
   list(
     coefficients = co, model = fit, residuals = stats::resid(fit),
-    long_run_se = se, area_coefficients = NULL,
+    long_run_se = se, covariance = v[lag_terms, lag_terms, drop = FALSE], area_coefficients = NULL,
     n_areas_used = length(unique(d$area))
   )
 }
@@ -295,11 +353,14 @@ lamp_elasticity_cce_pooled <- function(d, lag_terms, cs_terms, cluster) {
   co <- co[co$term %in% lag_terms, ]
   v <- stats::vcov(fit)
   have <- intersect(lag_terms, rownames(v))
+  if (length(have) != length(lag_terms)) {
+    lamp_abort("Some requested lags are unidentified in the CCE model; use fewer lags.", "input")
+  }
   w <- rep(1, length(have))
   se <- sqrt(as.numeric(t(w) %*% v[have, have, drop = FALSE] %*% w))
   list(
     coefficients = co, model = fit, residuals = stats::resid(fit),
-    long_run_se = se, area_coefficients = NULL,
+    long_run_se = se, covariance = v[have, have, drop = FALSE], area_coefficients = NULL,
     n_areas_used = length(unique(d$area))
   )
 }
@@ -336,16 +397,17 @@ lamp_elasticity_cce_mg <- function(d, lag_terms, cs_terms, min_months) {
   est <- colMeans(mat)
   # the mean group standard error is the spread of the area coefficients
   se <- apply(mat, 2, function(x) stats::sd(x) / sqrt(n))
-  z <- stats::qnorm(0.975)
+  z <- stats::qt(0.975, n - 1L)
   co <- tibble::tibble(
     term = lag_terms, estimate = unname(est), std_error = unname(se),
-    statistic = unname(est / se), p_value = 2 * stats::pnorm(-abs(unname(est / se))),
+    statistic = unname(est / se), p_value = 2 * stats::pt(-abs(unname(est / se)), n - 1L),
     conf_low = unname(est - z * se), conf_high = unname(est + z * se)
   )
   total <- rowSums(mat)
   list(
     coefficients = co, model = NULL, residuals = resid,
     long_run_se = stats::sd(total) / sqrt(n),
+    covariance = stats::cov(mat) / n,
     area_coefficients = tibble::as_tibble(mat, rownames = "area"),
     n_areas_used = n
   )

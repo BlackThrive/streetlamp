@@ -144,24 +144,46 @@ range.
 
 ## 7. Elasticity and allocation, `lamp_elasticity()`, `lamp_allocation()`
 
-    log(1 + Y_it) = sum_{l} b_l * log(1 + S_{i,t-l}) + a_i + g_t + e_it
+The fixed-effects default targets the conditional expected count:
 
-`sum_l b_l` is the cumulative elasticity. Three methods:
+    E[Y_it | S, a_i, g_t] = exp(sum_l b_l * log(1 + S_{i,t-l}) + a_i + g_t)
 
-* `fe`: as written.
+Poisson pseudo-likelihood includes observed zeros and uses clustered
+covariance. The sum of lag coefficients is the response of the log count
+mean to a sustained change in log-one-plus searches. At search intensity
+`S`, its conventional search elasticity is `sum_l b_l * S / (1 + S)`.
+Lag keys refer to calendar months; an absent month does not shorten a lag.
+
+The explicit legacy response is different:
+
+    log(1 + Y_it) = sum_l b_l * log(1 + S_{i,t-l}) + a_i + g_t + e_it
+
+The expectation of this transformed observation is not the log of the
+expected count. Its slope cannot be validated against a log-mean target
+without acknowledging that mismatch. Three methods are available:
+
+* `fe`: count mean by default; `family = "ols_log"` selects the legacy scale.
 * `cce_pooled`: add the cross-sectional averages of the outcome and
   regressors, with area effects only. The averages proxy for unobserved
   common factors (Pesaran 2006), and month dummies as well would be collinear
-  with them.
+  with them. This method retains the legacy response scale.
 * `cce_mg`: one regression per area with the same averages, then average the
   slopes. The standard error is the spread of the area slopes, so no common
-  slope is assumed.
+  slope is assumed. Intervals use an area-level t reference; force clustering
+  is unsupported and rejected.
+
+Lag-sum intervals use the full joint covariance. Regression coefficient
+intervals match the backend's reference distribution. The model sample
+includes any backend exclusions, such as all-zero count fixed-effect
+groups. Clustered inference still requires sufficiently many independent
+clusters; this validation does not cover arbitrary shared local shocks.
 
 **Pesaran's CD test.** The scaled mean pairwise correlation of residuals
 across areas, standard normal under cross-sectional independence. It is
 computed on residuals from an area-effects-only regression, because month
-dummies remove the common factor by construction and would force the
-statistic negative whatever the data looked like.
+dummies absorb shared calendar movements. This is an auxiliary diagnostic
+on log-one-plus observations, not a Poisson residual test, a test of
+exogeneity or a direct certification of any reported interval.
 
 **The allocation problem.** Police deploy where crime has risen, so `S`
 responds to `Y` as well as possibly causing it. `lamp_allocation()` estimates
@@ -170,19 +192,35 @@ responds to `Y` as well as possibly causing it. `lamp_allocation()` estimates
 
 and is labelled descriptive. A positive `sum_l c_l` is the size of the
 reverse channel that must be argued away before any elasticity is called
-causal. A regression of crime on searches nets the deterrent effect against
-this allocation response and reports the sum of the two.
+causal. The crime-search association can combine deterrence, reverse
+allocation and other confounding. These components are not separately
+identified by that regression. A non-significant allocation coefficient
+does not establish exogeneity.
 
 ## 8. Crimes prevented, `lamp_crimes_prevented()`
 
-From an elasticity `e`, at mean crime `C` and mean searches `S`:
+For a conventional elasticity `e`, the marginal arithmetic would be
+`-e * C * N / S`. For the package's count-model slope sum `b`, whose
+regressor is log-one-plus searches, the implemented calculation is:
 
-    crimes prevented per N searches = -e * C * N / S
+    crimes prevented per N searches = -b * C * N / (S + 1)
+
+The legacy log-one-plus outcome calculation substitutes `C + 1` and is
+an approximation, not an identified expected-count effect. Means use the
+observations retained by the estimator.
 
 From a treatment effect `b` in log points, with `A` searches added by the
 intervention:
 
     crimes prevented per N searches = -C * (exp(b) - 1) * N / A
+
+For a log-one-plus outcome treatment effect, use `C + 1` as an explicitly
+approximate retransformation. For an identity-scale count effect the
+conversion is `-b * N / A`; a simple IHS conversion is rejected. Event
+averages use joint covariance and staggered effects use the backend's
+overall ATT and weighting. Interval limits are transformed directly,
+conditional on the sample means and supplied intervention searches;
+simulation draws do not supply extra information about these quantities.
 
 **Limits, all reported with the number.** Recorded crime only, so unreported
 crime is invisible and a recording change counts as a change in crime; the

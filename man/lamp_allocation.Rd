@@ -46,7 +46,7 @@ coefficient down, the allocation response pushes it up, and the estimate is
 the net of them. A positive coefficient here is the size of the channel
 that has to be argued away before a stop-crime elasticity or a
 difference-in-differences estimate can be called causal. A coefficient near
-zero is the case in which the other estimates are easier to defend.
+zero does not establish exogeneity or rule out other allocation channels.
 }
 
 \examples{

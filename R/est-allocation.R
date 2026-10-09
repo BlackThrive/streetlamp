@@ -15,7 +15,7 @@
 #' the net of them. A positive coefficient here is the size of the channel
 #' that has to be argued away before a stop-crime elasticity or a
 #' difference-in-differences estimate can be called causal. A coefficient near
-#' zero is the case in which the other estimates are easier to defend.
+#' zero does not establish exogeneity or rule out other allocation channels.
 #'
 #' @param panel A `lamp_panel`.
 #' @param stops The activity column, default `"stops"`.
@@ -45,7 +45,9 @@ lamp_allocation <- function(panel, stops = "stops", crime = "crime_total", crime
       lamp_abort("{.field {nm}} is not a panel column.", "input")
     }
   }
-  if (!is.numeric(crime_lags) || any(crime_lags < 1) || any(crime_lags != round(crime_lags))) {
+  if (!is.numeric(crime_lags) || !length(crime_lags) || any(!is.finite(crime_lags)) ||
+        any(crime_lags < 1) || any(crime_lags != round(crime_lags)) ||
+        any(crime_lags > .Machine$integer.max)) {
     lamp_abort("{.arg crime_lags} must be whole numbers of months, one or more.", "input")
   }
   crime_lags <- as.integer(sort(unique(crime_lags)))
@@ -77,18 +79,21 @@ lamp_allocation <- function(panel, stops = "stops", crime = "crime_total", crime
 
   v <- stats::vcov(fit)
   have <- intersect(lag_terms, rownames(v))
+  if (length(have) != length(lag_terms)) {
+    lamp_abort("Some requested crime lags are unidentified; use fewer lags.", "input")
+  }
   w <- rep(1, length(have))
   total_est <- sum(stats::coef(fit)[have])
   total_se <- sqrt(as.numeric(t(w) %*% v[have, have, drop = FALSE] %*% w))
-  z <- stats::qnorm(0.975)
+  z <- stats::qt(0.975, lamp_inference_df(fit))
   total <- list(
     estimate = total_est, std_error = total_se,
     conf_low = total_est - z * total_se, conf_high = total_est + z * total_se
   )
   interpretation <- if (total$conf_low > 0) {
     paste0(
-      "Searching follows recorded crime: a one percent rise in recent crime ",
-      "goes with a ", signif(100 * total_est, 3), " percent rise in searches. ",
+      "Searching follows recorded crime: the summed slope with respect to ",
+      "log(1 + recent crime) is ", signif(total_est, 3), ". ",
       "Any estimate of the effect of searching on crime has to contend with ",
       "this reverse channel."
     )
@@ -99,8 +104,8 @@ lamp_allocation <- function(panel, stops = "stops", crime = "crime_total", crime
     )
   } else {
     paste(
-      "No clear allocation response: searching does not track recent crime in",
-      "this panel, which makes the other estimates easier to read as effects."
+      "No clear allocation response was detected in this panel. This does not",
+      "establish exogeneity or rule out reverse allocation and confounding."
     )
   }
 

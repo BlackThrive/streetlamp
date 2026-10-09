@@ -14,7 +14,13 @@ lamp_simulate(
   missing = 0,
   base_rate = 8,
   population = 1500,
-  seed = NULL
+  seed = NULL,
+  cohort_effects = NULL,
+  dynamic_effect = NULL,
+  trend_violation = 0,
+  dispersion = Inf,
+  missing_mechanism = c("random", "high_outcome"),
+  effect_scale = c("log", "additive")
 )
 }
 \arguments{
@@ -42,6 +48,30 @@ indices within the panel; \code{NULL} picks three evenly spaced cohorts.}
 \item{population}{Population per area, used for \code{stop_rate}.}
 
 \item{seed}{Random seed.}
+
+\item{cohort_effects}{Optional named numeric vector, with adoption month
+indices as names (e.g. \code{c("9" = -0.4, "13" = -0.1, "17" = 0.2)}).
+Replaces \code{effect} for those cohorts; requires the staggered design and
+exactly one value for every adopting cohort.}
+
+\item{dynamic_effect}{Optional finite numeric multipliers for relative
+months 0, 1, ...; the last multiplier persists thereafter. For example
+\code{c(0, 0.5, 1)} gives a delayed, growing effect. Binary designs only.}
+
+\item{trend_violation}{Differential monthly trend for ever-treated areas,
+in the same units as \code{effect}. Zero preserves the identifying assumption.}
+
+\item{dispersion}{Negative-binomial size per crime type; \code{Inf} (default)
+gives Poisson counts. Smaller positive values give more overdispersion.}
+
+\item{missing_mechanism}{\code{"random"} or \code{"high_outcome"}. The latter makes
+force-months with larger untreated expected counts more likely to be
+missing, as a stress test rather than an ignorable missingness claim.}
+
+\item{effect_scale}{\code{"log"} (default) multiplies affected count means.
+\code{"additive"} adds \code{effect} counts to the combined affected outcome and
+uses an additive area/time baseline, so count-level parallel trends
+hold when \code{trend_violation = 0}. Non-positive type means are rejected.}
 }
 \value{
 A \code{lamp_panel} with the usual columns plus \code{treat} (the treatment
@@ -87,5 +117,9 @@ sim <- lamp_simulate(n_areas = 36, n_months = 24, design = "event", effect = -0.
 sim
 attr(sim, "truth")$effect
 table(sim$coverage_status)
+}
+\seealso{
+Other simulation: 
+\code{\link{lamp_simulation_truth}()}
 }
 \concept{simulation}

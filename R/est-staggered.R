@@ -85,6 +85,11 @@ lamp_check_count_outcome <- function(d, outcome, family, call = rlang::caller_en
 #' @param family Scale for the outcome: `"ols_log"` (default, log of one plus
 #'   the outcome), `"ols_ihs"` or `"identity"`.
 #' @param window Relative months to report in the dynamic aggregation.
+#' @param cluster `"area"` or `"force"`. Callaway--Sant'Anna uses the
+#'   multiplier bootstrap for force clustering (the backend default of 1000
+#'   draws); set the R random seed for reproduction. Sun--Abraham uses
+#'   clustered regression covariance. Force clustering is not implemented for
+#'   the imputation wrapper and is rejected.
 #'
 #' @return A `lamp_estimate` of class `lamp_did_staggered`. `coefficients`
 #'   holds the dynamic (event-study) aggregation with a `rel_time` column;
@@ -123,6 +128,9 @@ lamp_did_staggered <- function(panel, outcome = "crime_total", treatment,
   control_group <- rlang::arg_match(control_group)
   cluster <- rlang::arg_match(cluster)
   family <- rlang::arg_match(family)
+  if (estimator == "imputation" && cluster == "force") {
+    lamp_abort("Force clustering is not implemented for the imputation wrapper.", "input")
+  }
   mf <- lamp_model_frame(panel, outcome, treatment, NULL, cluster)
   d <- mf$data
   if (all(is.na(d$.cohort))) {
@@ -194,7 +202,7 @@ lamp_did_cs <- function(d, control_group, cluster, window) {
   att <- rlang::try_fetch(
     did::att_gt(
       yname = ".y", tname = ".t", idname = ".id", gname = ".g",
-      data = as.data.frame(d), control_group = cg, bstrap = FALSE, cband = FALSE,
+      data = as.data.frame(d), control_group = cg, bstrap = cluster == "force", cband = FALSE,
       clustervars = if (cluster == "force") "force_id" else NULL,
       allow_unbalanced_panel = TRUE, base_period = "universal"
     ),

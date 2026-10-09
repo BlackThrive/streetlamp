@@ -1,4 +1,8 @@
 <!--
+Historical submission notes for 0.1.0. The current development version is
+0.2.0.9000 and has not been submitted. See
+inst/validation/research-upgrade/README.md for its current checks and gaps.
+
 Not submitted yet. win-builder R devel is confirmed on this tree; the R
 release run of the same tree has been processed but its log has not been
 read. Read it, and delete this comment.
