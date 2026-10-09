@@ -59,6 +59,7 @@ lamp_table(lamp_coverage(sim))
 \seealso{
 Other presentation: 
 \code{\link{lamp_colours}()},
+\code{\link{lamp_map}()},
 \code{\link{lamp_theme}()}
 }
 \concept{presentation}
