@@ -1,9 +1,7 @@
 test_that("calendar lags leave gaps, including across years and unsorted rows", {
-  d <- data.frame(
-    area = c("A", "A", "B", "A"),
-    month = as.Date(c("2020-03-01", "2019-12-01", "2020-01-01", "2020-01-01")),
-    x = c(3, 12, 99, 1)
-  )
+  d <- data.frame(area = c("A", "A", "B", "A"),
+                  month = as.Date(c("2020-03-01", "2019-12-01", "2020-01-01", "2020-01-01")),
+                  x = c(3, 12, 99, 1))
   m <- streetlamp:::lamp_lag_matrix(d, "x", c(1, 2, 100))
   expect_true(is.na(m[1, 1]))
   expect_equal(unname(m[1, 2]), 1)
@@ -30,11 +28,9 @@ test_that("PPML matches the independent backend and uses its reference distribut
 })
 
 test_that("heterogeneous and dynamic simulation truth uses the requested effect scale", {
-  sim <- lamp_simulate(
-    n_areas = 24, n_months = 24, adoption = c(8, 12, 16),
+  sim <- lamp_simulate(n_areas = 24, n_months = 24, adoption = c(8, 12, 16),
     cohort_effects = c("8" = -6, "12" = 3, "16" = 9), dynamic_effect = c(0, 0.5, 1),
-    effect_scale = "additive", base_rate = 50, seed = 41
-  )
+    effect_scale = "additive", base_rate = 50, seed = 41)
   truth <- lamp_simulation_truth(sim)
   expect_equal(truth$effect[which(truth$cohort == 8 & truth$rel_time == 0)], rep(0, 6))
   expect_equal(truth$effect[which(truth$cohort == 8 & truth$rel_time == 1)], rep(-3, 6), tolerance = 1e-10)
@@ -82,20 +78,16 @@ test_that("design auditing exposes weak support and grids retain all specificati
   expect_equal(nrow(grid), 4L)
   expect_equal(sum(grid$status == "failed"), 2L)
   continuous <- lamp_simulate(n_areas = 8, n_months = 12, design = "continuous", seed = 4)
-  loo <- lamp_elasticity_robustness(continuous,
-    lags = list(current = 0),
-    families = "poisson", leave_one_out = TRUE
-  )
+  loo <- lamp_elasticity_robustness(continuous, lags = list(current = 0),
+                                  families = "poisson", leave_one_out = TRUE)
   expect_equal(nrow(loo), 9L)
   expect_equal(sum(is.na(loo$omitted_area)), 1L)
 })
 
 test_that("both staggered overall ATT weights recover noiseless heterogeneous count effects", {
-  sim <- lamp_simulate(
-    n_areas = 48, n_months = 24, adoption = c(8, 12, 16),
+  sim <- lamp_simulate(n_areas = 48, n_months = 24, adoption = c(8, 12, 16),
     cohort_effects = c("8" = -10, "12" = -4, "16" = 5), dynamic_effect = c(0, 0.5, 1),
-    effect_scale = "additive", base_rate = 50, seed = 73
-  )
+    effect_scale = "additive", base_rate = 50, seed = 73)
   truth <- lamp_simulation_truth(sim)
   sim$affected_crime <- truth$mean_treated
   adoption <- attr(sim, "truth")$adoption
@@ -103,8 +95,7 @@ test_that("both staggered overall ATT weights recover noiseless heterogeneous co
   target <- mean(truth$effect[truth$treated == 1])
   for (backend in c("callaway_santanna", "sun_abraham")) {
     fit <- suppressMessages(suppressWarnings(lamp_did_staggered(sim, "affected_crime", tr,
-      estimator = backend, family = "identity"
-    )))
+      estimator = backend, family = "identity")))
     expect_equal(lamp_effect_summary(fit)$estimate, target, tolerance = 1e-8)
   }
 })
@@ -119,18 +110,14 @@ test_that("separated zero-count areas are visible in the sample audit", {
 })
 
 test_that("force-clustered Callaway-Sant'Anna inference enables the required bootstrap", {
-  sim <- lamp_simulate(
-    n_areas = 48, n_months = 12, effect_scale = "additive",
-    effect = -3, base_rate = 100, seed = 52
-  )
+  sim <- lamp_simulate(n_areas = 48, n_months = 12, effect_scale = "additive",
+                       effect = -3, base_rate = 100, seed = 52)
   sim$force_id <- paste0("force", (as.integer(factor(sim$area)) - 1L) %/% 6L)
   tr <- lamp_contract(sim)$treatment
   fit <- withr::with_seed(15, suppressMessages(lamp_did_staggered(sim, "affected_crime", tr,
-    family = "identity", cluster = "force"
-  )))
+                             family = "identity", cluster = "force")))
   expect_true(fit$model$DIDparams$bstrap)
   expect_true("force_id" %in% fit$model$DIDparams$clustervars)
   expect_error(lamp_did_staggered(sim, "affected_crime", tr, estimator = "imputation", cluster = "force"),
-    class = "streetlamp_error_input"
-  )
+               class = "streetlamp_error_input")
 })

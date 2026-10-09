@@ -139,8 +139,8 @@ lamp_simulate <- function(n_areas = 36L, n_months = 24L,
     lamp_abort("{.arg missing} must be at least 0 and below 1.", "input")
   }
   if (!finite_scalar(effect) || !finite_scalar(spillover_effect) ||
-    !finite_scalar(trend_violation) || !finite_scalar(base_rate) || base_rate <= 0 ||
-    !finite_scalar(population) || population <= 0) {
+        !finite_scalar(trend_violation) || !finite_scalar(base_rate) || base_rate <= 0 ||
+        !finite_scalar(population) || population <= 0) {
     lamp_abort("Effects must be finite; base rate and population must be positive.", "input")
   }
   if (!is.numeric(dispersion) || length(dispersion) != 1L || is.na(dispersion) || dispersion <= 0) {
@@ -188,7 +188,7 @@ lamp_simulate <- function(n_areas = 36L, n_months = 24L,
       adoption <- round(stats::quantile(t_index, c(0.35, 0.5, 0.65), names = FALSE))
     }
     if (!is.numeric(adoption) || !length(adoption) || any(!is.finite(adoption)) ||
-      any(adoption != round(adoption)) || any(adoption < 2 | adoption > n_months)) {
+          any(adoption != round(adoption)) || any(adoption < 2 | adoption > n_months)) {
       lamp_abort("{.arg adoption} must contain whole month indices from 2 to n_months.", "input")
     }
     adoption <- sort(unique(as.integer(adoption)))
@@ -224,8 +224,8 @@ lamp_simulate <- function(n_areas = 36L, n_months = 24L,
   row_effect <- rep(effect, nrow(grid))
   if (!is.null(cohort_effects)) {
     if (design != "staggered" || !is.numeric(cohort_effects) ||
-      any(!is.finite(cohort_effects)) || anyDuplicated(names(cohort_effects)) ||
-      !setequal(names(cohort_effects), as.character(adoption))) {
+          any(!is.finite(cohort_effects)) || anyDuplicated(names(cohort_effects)) ||
+          !setequal(names(cohort_effects), as.character(adoption))) {
       lamp_abort("{.arg cohort_effects} must name every adoption month exactly once.", "input")
     }
     has_cohort <- !is.na(grid$cohort)
@@ -358,7 +358,7 @@ lamp_simulate <- function(n_areas = 36L, n_months = 24L,
   n_affected <- length(affected)
   effect_crime_total <- log((n_affected * exp(effect) + n_types - n_affected) / n_types)
   if (design == "continuous" || !is.null(cohort_effects) || !is.null(dynamic_effect) ||
-    effect_scale != "log") {
+        effect_scale != "log") {
     effect_crime_total <- NA_real_
   }
   event_date <- if (design %in% c("event", "spillover")) {
