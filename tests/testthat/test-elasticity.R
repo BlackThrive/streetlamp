@@ -185,6 +185,7 @@ test_that("the allocation model finds a planted response and calls itself descri
   # with no allocation response the interpretation says so
   plain <- lamp_allocation(sim, crime_lags = 1:2)
   expect_match(plain$diagnostics$interpretation, "No clear allocation response")
+  expect_match(plain$diagnostics$interpretation, "does not.*establish exogeneity")
 
   expect_error(lamp_allocation(sim, crime_lags = 0), class = "streetlamp_error_input")
   expect_error(lamp_allocation(sim, stops = "nope"), class = "streetlamp_error_input")
@@ -199,10 +200,10 @@ test_that("crimes prevented converts an elasticity and carries the assumption ch
   cp <- lamp_crimes_prevented(el, sim, per_stops = 1000, seed = 1)
 
   expect_s3_class(cp, "lamp_crimes_prevented")
-  # the arithmetic: -elasticity * mean crime * per_stops / mean stops
-  usable <- sim[sim$coverage_status == "submitted", ]
+  # The PPML response is a count mean, but the stop covariate is log(S + 1).
+  usable <- el$data
   expected <- -el$diagnostics$long_run$estimate *
-    mean(usable$crime_total, na.rm = TRUE) * 1000 / mean(usable$stops, na.rm = TRUE)
+    mean(usable$crime_total, na.rm = TRUE) * 1000 / (mean(usable$stops, na.rm = TRUE) + 1)
   expect_equal(cp$crimes_prevented, expected, tolerance = 1e-8)
   expect_lt(cp$conf_low, cp$crimes_prevented)
   expect_gt(cp$conf_high, cp$crimes_prevented)

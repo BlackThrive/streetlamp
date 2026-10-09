@@ -232,6 +232,12 @@ lamp_report_markdown <- function(panel, estimates, title, diagnostics, figure_di
       out <- c(out, sprintf("![%s](%s)", nm, rel), "")
     }
     out <- c(out, lamp_md_table(lamp_table(e)), "")
+    if (inherits(e, "lamp_elasticity")) {
+      out <- c(
+        out, sprintf("**Estimand.** %s. Calendar months define the lags.", e$diagnostics$estimand),
+        "", lamp_md_table(lamp_effect_summary(e)), ""
+      )
+    }
     ov <- e$diagnostics$overall
     if (!is.null(ov)) {
       out <- c(out, sprintf(

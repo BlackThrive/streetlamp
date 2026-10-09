@@ -58,6 +58,10 @@ after testing for parallel trends. American Economic Review: Insights
 }
 \seealso{
 Other diagnostics: 
-\code{\link{lamp_placebo}()}
+\code{\link{lamp_design_audit}()},
+\code{\link{lamp_effect_summary}()},
+\code{\link{lamp_elasticity_robustness}()},
+\code{\link{lamp_placebo}()},
+\code{\link{lamp_trend_sensitivity}()}
 }
 \concept{diagnostics}

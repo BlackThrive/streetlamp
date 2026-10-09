@@ -63,6 +63,10 @@ lamp_placebo(fit, type = "space", n = 20, seed = 1)
 }
 \seealso{
 Other diagnostics: 
-\code{\link{lamp_pretrends}()}
+\code{\link{lamp_design_audit}()},
+\code{\link{lamp_effect_summary}()},
+\code{\link{lamp_elasticity_robustness}()},
+\code{\link{lamp_pretrends}()},
+\code{\link{lamp_trend_sensitivity}()}
 }
 \concept{diagnostics}

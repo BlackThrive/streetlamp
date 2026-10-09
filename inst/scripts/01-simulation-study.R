@@ -1,4 +1,7 @@
 # Validation 1: simulation study
+# Historical 0.1.0 procedure, including the transformed-outcome target
+# mismatch and original event aggregation. Use 05-research-validation.R and
+# 05b-elasticity-original-design.R for current research evidence.
 #
 # Across the four designs, with and without force-month missingness, measure
 # each estimator's bias, root mean squared error and interval coverage against
@@ -135,7 +138,9 @@ one_rep <- function(rep, design, missing) {
   if (design == "continuous") {
     elasticity_target <- continuous_target(sim, truth)
     for (m in c("fe", "cce_pooled", "cce_mg")) {
-      fit <- try(lamp_elasticity(sim, "crime_total", lags = 0, method = m), silent = TRUE)
+      fit_args <- list(panel = sim, outcome = "crime_total", lags = 0, method = m)
+      if ("family" %in% names(formals(lamp_elasticity))) fit_args$family <- "ols_log"
+      fit <- try(do.call(lamp_elasticity, fit_args), silent = TRUE)
       if (!inherits(fit, "try-error")) {
         lr <- fit$diagnostics$long_run
         rows[[length(rows) + 1L]] <- record(

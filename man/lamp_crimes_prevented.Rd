@@ -28,9 +28,10 @@ added per area-month. Required unless the estimate is an elasticity.}
 \item{outcome_column}{The crime column to take the mean of; defaults to the
 estimate's outcome.}
 
-\item{n_boot}{Bootstrap replications for the interval, default 2000.}
+\item{n_boot}{Retained for compatibility. Intervals now transform the
+coefficient interval directly and require no simulation.}
 
-\item{seed}{Random seed.}
+\item{seed}{Retained for compatibility; the conversion is deterministic.}
 }
 \value{
 A list of class \code{lamp_crimes_prevented} with \code{crimes_prevented},
@@ -49,7 +50,10 @@ printed with it.
 For an elasticity \code{e}, a proportional change in searches \code{dS/S} changes
 crime by \code{e * dS/S}, so at mean monthly crime \code{C} and mean searches \code{S} the
 crimes prevented by an extra \code{per_stops} searches are
-\code{-e * C * per_stops / S}. For a treatment effect in log points \code{b}, the
+\code{-e * C * per_stops / S}. The elasticity estimators use \code{log(1 + stops)},
+so their derivative has denominator \code{S + 1}. The count-mean model uses
+\code{C} in the numerator; the legacy log-one-plus outcome approximation uses
+\code{C + 1}. For a treatment effect in log points \code{b}, the
 effect on crime is \code{C * (exp(b) - 1)}, and it is divided by the searches
 the intervention actually added, which you must supply as \code{stops_added}
 because a binary treatment does not say how much searching it involved.

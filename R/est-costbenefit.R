@@ -13,7 +13,10 @@
 #' For an elasticity `e`, a proportional change in searches `dS/S` changes
 #' crime by `e * dS/S`, so at mean monthly crime `C` and mean searches `S` the
 #' crimes prevented by an extra `per_stops` searches are
-#' `-e * C * per_stops / S`. For a treatment effect in log points `b`, the
+#' `-e * C * per_stops / S`. The elasticity estimators use `log(1 + stops)`,
+#' so their derivative has denominator `S + 1`. The count-mean model uses
+#' `C` in the numerator; the legacy log-one-plus outcome approximation uses
+#' `C + 1`. For a treatment effect in log points `b`, the
 #' effect on crime is `C * (exp(b) - 1)`, and it is divided by the searches
 #' the intervention actually added, which you must supply as `stops_added`
 #' because a binary treatment does not say how much searching it involved.
@@ -34,8 +37,9 @@
 #'   added per area-month. Required unless the estimate is an elasticity.
 #' @param outcome_column The crime column to take the mean of; defaults to the
 #'   estimate's outcome.
-#' @param n_boot Bootstrap replications for the interval, default 2000.
-#' @param seed Random seed.
+#' @param n_boot Retained for compatibility. Intervals now transform the
+#'   coefficient interval directly and require no simulation.
+#' @param seed Retained for compatibility; the conversion is deterministic.
 #'
 #' @return A list of class `lamp_crimes_prevented` with `crimes_prevented`,
 #'   `conf_low`, `conf_high`, the inputs used, and `assumptions`, a character
@@ -52,11 +56,9 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
     lamp_abort("{.arg estimate} must come from a streetlamp estimator.", "input")
   }
   lamp_check_panel(panel)
-  if (!is.numeric(per_stops) || per_stops <= 0) {
+  if (!is.numeric(per_stops) || length(per_stops) != 1L ||
+        !is.finite(per_stops) || per_stops <= 0) {
     lamp_abort("{.arg per_stops} must be a positive number.", "input")
-  }
-  if (!is.null(seed)) {
-    withr::local_seed(seed)
   }
   outcome <- outcome_column %||% estimate$meta$outcome
   if (!outcome %in% names(panel)) {
@@ -67,6 +69,10 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
     lamp_abort("{.field {stops_col}} is not a panel column.", "input")
   }
   usable <- panel
+  if (!is.null(estimate$data)) {
+    fit_key <- paste(estimate$data$area, lamp_month_id(estimate$data$month))
+    usable <- usable[paste(usable$area, lamp_month_id(usable$month)) %in% fit_key, ]
+  }
   if ("coverage_status" %in% names(usable)) {
     usable <- usable[usable$coverage_status %in% lamp_filled_statuses(), ]
   }
@@ -77,14 +83,16 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
   }
 
   is_elasticity <- inherits(estimate, "lamp_elasticity")
+  summary <- lamp_effect_summary(estimate)
+  b <- summary$estimate
+  se <- summary$std_error
   if (is_elasticity) {
-    lr <- estimate$diagnostics$long_run
-    b <- lr$estimate
-    se <- lr$std_error
-    convert <- function(x) -x * mean_crime * per_stops / mean_stops
+    crime_scale <- if (estimate$meta$family == "poisson") mean_crime else mean_crime + 1
+    convert <- function(x) -x * crime_scale * per_stops / (mean_stops + 1)
     lag_label <- paste(estimate$diagnostics$lags, collapse = ", ")
     assumptions <- c(
-      sprintf("The elasticity is %s, summed over lags %s.", signif(b, 3), lag_label),
+      sprintf("The log-one-plus stops slope is %s, summed over lags %s.", signif(b, 3), lag_label),
+      "The denominator is mean stops plus one; legacy OLS also uses mean crime plus one.",
       "The effect is proportional, so it scales with the mean level of crime.",
       sprintf(
         "At the sample mean of %s crimes and %s searches per area-month.",
@@ -95,7 +103,8 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
       "The average effect is applied at the margin, which ignores diminishing returns."
     )
   } else {
-    if (is.null(stops_added) || !is.numeric(stops_added) || stops_added <= 0) {
+    if (!is.numeric(stops_added) || length(stops_added) != 1L ||
+          !is.finite(stops_added) || stops_added <= 0) {
       lamp_abort(
         c(
           "A treatment effect needs {.arg stops_added}: the searches it added per area-month.",
@@ -104,17 +113,21 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
         "input"
       )
     }
-    if (inherits(estimate, c("lamp_did_staggered", "lamp_event_study"))) {
-      post <- estimate$coefficients[estimate$coefficients$rel_time >= 0, ]
-      b <- mean(post$estimate)
-      se <- sqrt(sum(post$std_error^2)) / nrow(post)
-    } else {
-      b <- estimate$coefficients$estimate[1]
-      se <- estimate$coefficients$std_error[1]
+    if (estimate$meta$family == "ols_ihs") {
+      lamp_abort("An IHS effect needs baseline-specific predictions for this conversion.", "input")
     }
-    convert <- function(x) -mean_crime * (exp(x) - 1) * per_stops / stops_added
+    count_scale <- identical(estimate$meta$family, "identity")
+    scale <- if (identical(estimate$meta$family, "ols_log")) mean_crime + 1 else mean_crime
+    convert <- if (count_scale) {
+      function(x) -x * per_stops / stops_added
+    } else {
+      function(x) -scale * expm1(x) * per_stops / stops_added
+    }
     assumptions <- c(
-      sprintf("The treatment effect is %s log points.", signif(b, 3)),
+      sprintf("The treatment effect is %s on the %s scale.", signif(b, 3), estimate$meta$family),
+      if (identical(estimate$meta$family, "ols_log")) {
+        "Retransformation at mean crime plus one is an approximation, not an expected-count effect."
+      },
       sprintf("The intervention added %s searches per area-month.", signif(stops_added, 3)),
       sprintf("At the sample mean of %s crimes per area-month.", signif(mean_crime, 3)),
       estimate$assumption,
@@ -124,8 +137,7 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
   }
 
   point <- convert(b)
-  draws <- convert(stats::rnorm(n_boot, b, se))
-  ci <- stats::quantile(draws, c(0.025, 0.975), names = FALSE, na.rm = TRUE)
+  ci <- sort(convert(c(summary$conf_low, summary$conf_high)))
 
   structure(
     list(

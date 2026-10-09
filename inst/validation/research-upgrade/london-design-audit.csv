@@ -1,0 +1,6 @@
+"check","status","detail"
+"observed outcomes and submissions","supported","0 of 792 area-months unavailable; missing submissions are not zeros."
+"intervention assignment","requires_argument","Document independent intervention dates, comparison areas, concurrent policies and possible spillovers."
+"observed stop intensity","concern","32 area-month stop counts unavailable; outcome coverage alone does not establish exposure coverage."
+"force-month source files","concern","1 crime/search force-month files unavailable in the panel source contract."
+"detection-sensitive outcomes","concern","Searching can change detection or recording for crime_total, possession_of_weapons, drugs without changing underlying offending."

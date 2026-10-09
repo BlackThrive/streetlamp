@@ -29,7 +29,11 @@ type key from \code{\link[=lamp_crime_types]{lamp_crime_types()}}.}
 
 \item{control_group}{\code{"never_treated"} (default) or \code{"not_yet_treated"}.}
 
-\item{cluster}{\code{"area"} (default) or \code{"force"}.}
+\item{cluster}{\code{"area"} or \code{"force"}. Callaway--Sant'Anna uses the
+multiplier bootstrap for force clustering (the backend default of 1000
+draws); set the R random seed for reproduction. Sun--Abraham uses
+clustered regression covariance. Force clustering is not implemented for
+the imputation wrapper and is rejected.}
 
 \item{family}{Scale for the outcome: \code{"ols_log"} (default, log of one plus
 the outcome), \code{"ols_ihs"} or \code{"identity"}.}

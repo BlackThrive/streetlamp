@@ -1,3 +1,30 @@
+# streetlamp 0.2.0.9000
+
+* `lamp_elasticity()` defaults to clustered Poisson pseudo-likelihood for the
+  fixed-effects method. This estimates the conditional count mean and avoids
+  treating log-one-plus observed counts as log expected counts. Use
+  `family = "ols_log"` for the former response scale; CCE still uses that scale.
+  Calendar lags now preserve missing-month gaps. Lag-sum intervals use joint
+  covariance and the backend's reference distribution.
+* `lamp_simulate()` supports cohort-specific effects, dynamic effect paths,
+  overdispersed counts, selective missing submissions, and deliberate trend
+  violations. An additive count design supports count-level parallel trends.
+  `lamp_simulation_truth()` exposes exact area-month counterfactual means on
+  either the count-difference or log-mean scale.
+* `lamp_effect_summary()` uses joint covariance for effect combinations and
+  each staggered backend's own overall ATT. `lamp_trend_sensitivity()` reports
+  conditional sensitivity to specified differential linear trends.
+* `lamp_design_audit()` records data support and identification questions.
+  `lamp_elasticity_robustness()` retains complete specification grids,
+  failures, and optional leave-one-area-out results.
+* Crimes-prevented conversions account for log-one-plus stops, use the fitted
+  sample, preserve covariance in event averages, distinguish count-level
+  effects, and transform intervals directly. IHS effects require predictions
+  and are rejected by the simple conversion.
+* New research validation and a hash-verified London association study are
+  separate from historical 0.1.0 results. London is explicitly observational;
+  its comparison-outcome and future-exposure diagnostics are retained.
+
 # streetlamp 0.1.0
 
 * One visual system for every figure and table. `lamp_theme()` and

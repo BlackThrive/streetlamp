@@ -14,7 +14,8 @@ lamp_family_label <- function(family) {
     poisson = "Poisson pseudo-likelihood on counts",
     negbin = "negative binomial on counts",
     ols_log = "least squares on log(1 + outcome)",
-    ols_ihs = "least squares on the inverse hyperbolic sine of the outcome"
+    ols_ihs = "least squares on the inverse hyperbolic sine of the outcome",
+    identity = "least squares on the outcome level"
   )
 }
 
@@ -175,7 +176,13 @@ lamp_fit <- function(formula, data, family, cluster, call = rlang::caller_env())
   fit
 }
 
-# Coefficients with clustered standard errors and normal intervals.
+# Use the backend's reference distribution, matching its clustered p-values.
+lamp_inference_df <- function(fit) {
+  # fixest uses a t reference for feols and an asymptotic normal reference
+  # for GLM coefficients, even when both use a clustered covariance.
+  if (identical(fit$method, "feols")) fixest::degrees_freedom(fit, type = "t") else Inf
+}
+
 lamp_coefficients <- function(fit, level = 0.95, keep = NULL) {
   ct <- as.data.frame(fixest::coeftable(fit))
   out <- tibble::tibble(
@@ -185,9 +192,9 @@ lamp_coefficients <- function(fit, level = 0.95, keep = NULL) {
     statistic = ct[[3]],
     p_value = ct[[4]]
   )
-  z <- stats::qnorm(1 - (1 - level) / 2)
-  out$conf_low <- out$estimate - z * out$std_error
-  out$conf_high <- out$estimate + z * out$std_error
+  ci <- stats::confint(fit, level = level)
+  out$conf_low <- ci[match(out$term, rownames(ci)), 1]
+  out$conf_high <- ci[match(out$term, rownames(ci)), 2]
   if (!is.null(keep)) {
     out <- out[grepl(keep, out$term), ]
   }

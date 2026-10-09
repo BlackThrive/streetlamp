@@ -1,7 +1,7 @@
 Package: streetlamp
 Title: Panel Econometrics for the Effect of Police Stop and Search on
     Recorded Crime
-Version: 0.1.0
+Version: 0.2.0.9000
 Authors@R: c(
     person("Mustapha", "Wasseja", , "muswaseja@gmail.com", role = c("aut", "cre")),
     person("Souci", "Frissa", role = "aut"),

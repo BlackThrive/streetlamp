@@ -11,7 +11,8 @@ lamp_elasticity(
   lags = 0:3,
   method = c("fe", "cce_mg", "cce_pooled"),
   cluster = c("area", "force"),
-  min_months = 12L
+  min_months = 12L,
+  family = NULL
 )
 }
 \arguments{
@@ -30,6 +31,11 @@ type key from \code{\link[=lamp_crime_types]{lamp_crime_types()}}.}
 
 \item{min_months}{Months an area needs before it enters a mean-group
 regression.}
+
+\item{family}{\code{NULL} selects \code{"poisson"} for \code{fe} and \code{"ols_log"} for
+the CCE methods. Poisson pseudo-likelihood models the conditional count
+mean, including zeros, with clustered inference. CCE currently supports
+only \code{"ols_log"}. Specify \code{"ols_log"} to reproduce the former FE scale.}
 }
 \value{
 A \code{lamp_estimate} of class \code{lamp_elasticity}. Coefficients are the
@@ -43,14 +49,18 @@ fixed seed: \code{cd_test$sampled} says whether that happened and
 }
 \description{
 Estimates how recorded crime responds to the intensity of searching, as a
-distributed lag of log crime on log stops with area and month fixed
+distributed lag of log-one-plus stops with area and month fixed
 effects. Three methods are offered, differing in how they handle the fact
 that areas move together.
 }
 \section{What an elasticity here is and is not}{
 
-The coefficient is the percentage change in recorded crime associated with
-a one percent change in searches, not the effect of a decision to search
+With \code{family = "poisson"}, a coefficient describes the log conditional
+mean of the count per unit of \code{log(1 + stops)}. Its elasticity with respect
+to stops at intensity S is \code{coefficient * S / (1 + S)}. With
+\code{family = "ols_log"}, it describes \verb{log(1 + observed crime)} instead;
+this is a different estimand, particularly when counts are small. Neither
+is automatically the effect of a decision to search
 more. Police send officers where crime is rising, so the association runs
 in both directions; \code{lamp_allocation()} measures that reverse channel and
 should be reported alongside. Read the elasticity as a description of the
@@ -71,11 +81,12 @@ makes no assumption that areas share a slope.
 is more precise if the slope really is common.
 }
 
-Pesaran's CD test is reported in every case. It is computed on the
-residuals of a regression with area effects only, because month dummies
+Pesaran's CD test is an auxiliary descriptive diagnostic in every case.
+It uses OLS residuals of log-one-plus counts with area effects only,
+including when the primary estimator is Poisson, because month dummies
 would remove the common factor by construction and make the statistic
-negative whatever the data looked like. A large statistic says the areas
-move together, and that the \code{fe} standard errors are too small.
+negative whatever the data looked like. A large statistic flags shared
+movements; it does not by itself prove that clustered intervals are invalid.
 }
 
 \examples{

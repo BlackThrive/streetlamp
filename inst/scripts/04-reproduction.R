@@ -58,10 +58,10 @@ print(table(cov$file_type, cov$status))
 
 rows <- list()
 for (outcome in spec$outcomes) {
-  fit <- lamp_elasticity(
-    panel, outcome,
-    lags = spec$lags, method = spec$method, cluster = spec$cluster
-  )
+  fit_args <- list(panel = panel, outcome = outcome, lags = spec$lags,
+                   method = spec$method, cluster = spec$cluster)
+  if ("family" %in% names(formals(lamp_elasticity))) fit_args$family <- "ols_log"
+  fit <- do.call(lamp_elasticity, fit_args)
   lr <- fit$diagnostics$long_run
   cd <- fit$diagnostics$cd_test
   rows[[length(rows) + 1L]] <- tibble::tibble(

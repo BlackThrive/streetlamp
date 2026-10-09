@@ -1,5 +1,10 @@
 # Release readiness: streetlamp 0.1.0
 
+This is the historical 0.1.0 release record. The current research upgrade is
+0.2.0.9000; its evidence and outstanding publication/release requirements
+are recorded in `inst/validation/research-upgrade/README.md`. The checks
+below do not certify that later development tree.
+
 Evidence that the package meets the acceptance criteria in the build
 specification. Written at the end of milestone M5; see
 `inst/NOTES/progress.md` for the session-by-session record and

@@ -167,7 +167,8 @@ lamp_pretty_term <- function(term) {
 lamp_effect_label <- function(x) {
   outcome <- lamp_pretty_name(x$meta$outcome)
   if (identical(x$meta$treatment_type, "continuous")) {
-    return(sprintf("Elasticity of %s to stops", tolower(outcome)))
+    scale <- if (identical(x$meta$family, "poisson")) "log count mean" else "log(1 + outcome)"
+    return(sprintf("%s slope per log(1 + stops)", scale))
   }
   family <- x$meta$family %||% "poisson"
   if (identical(family, "identity")) {
