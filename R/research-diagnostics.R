@@ -83,7 +83,7 @@ lamp_effect_summary <- function(estimate, terms = NULL, weights = NULL, level = 
       }
     }
     if (!is.character(terms) || !length(terms) || anyNA(terms) || anyDuplicated(terms) ||
-          !all(terms %in% co$term)) {
+      !all(terms %in% co$term)) {
       lamp_abort("Select distinct, available coefficient terms.", "input")
     }
     if (is.null(weights)) {
@@ -156,7 +156,7 @@ lamp_trend_sensitivity <- function(estimate, slopes, periods = NULL,
   co <- estimate$coefficients
   if (is.null(periods)) periods <- co$rel_time[co$rel_time >= 0]
   if (!is.numeric(periods) || !length(periods) || anyNA(periods) || anyDuplicated(periods) ||
-        any(periods < 0) || !all(periods %in% co$rel_time)) {
+    any(periods < 0) || !all(periods %in% co$rel_time)) {
     lamp_abort("Select distinct, available post-event periods.", "input")
   }
   terms <- co$term[match(periods, co$rel_time)]
@@ -192,7 +192,7 @@ lamp_design_audit <- function(panel, treatment = NULL, outcomes = "crime_total",
                               min_pre = 6L, min_post = 6L) {
   contract <- lamp_check_panel(panel)
   if (!is.character(outcomes) || !length(outcomes) || anyNA(outcomes) ||
-        !all(outcomes %in% names(panel))) {
+    !all(outcomes %in% names(panel))) {
     lamp_abort("Name available outcome columns.", "input")
   }
   for (x in list(min_pre, min_post)) {
@@ -231,7 +231,7 @@ lamp_design_audit <- function(panel, treatment = NULL, outcomes = "crime_total",
   cov <- contract$coverage
   if (!is.null(cov) && all(c("file_type", "status") %in% names(cov))) {
     missing_files <- sum(cov$file_type %in% c("street", "stop-and-search") &
-                           !cov$status %in% lamp_filled_statuses())
+      !cov$status %in% lamp_filled_statuses())
     issues[[length(issues) + 1L]] <- tibble::tibble(
       check = "force-month source files",
       status = if (missing_files) "concern" else "supported",

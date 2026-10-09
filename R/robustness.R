@@ -28,11 +28,11 @@ lamp_elasticity_robustness <- function(panel, outcomes = "crime_total",
   cluster <- rlang::arg_match(cluster)
   check_bool(leave_one_out)
   if (!is.character(outcomes) || !length(outcomes) || anyNA(outcomes) || anyDuplicated(outcomes) ||
-        !all(outcomes %in% names(panel))) {
+    !all(outcomes %in% names(panel))) {
     lamp_abort("Name distinct available outcomes.", "input")
   }
   if (!is.list(lags) || !length(lags) || is.null(names(lags)) ||
-        anyNA(names(lags)) || any(!nzchar(names(lags))) || anyDuplicated(names(lags))) {
+    anyNA(names(lags)) || any(!nzchar(names(lags))) || anyDuplicated(names(lags))) {
     lamp_abort("{.arg lags} must be a distinctly named list of lag vectors.", "input")
   }
   valid_lag <- function(x) {
@@ -41,7 +41,7 @@ lamp_elasticity_robustness <- function(panel, outcomes = "crime_total",
   }
   if (!all(vapply(lags, valid_lag, logical(1)))) lamp_abort("Invalid lag vectors.", "input")
   if (!is.character(families) || !length(families) || anyNA(families) || anyDuplicated(families) ||
-        !all(families %in% c("poisson", "ols_log"))) {
+    !all(families %in% c("poisson", "ols_log"))) {
     lamp_abort("Choose distinct supported families.", "input")
   }
   omitted <- c(NA_character_, if (leave_one_out) sort(unique(panel$area)))
@@ -52,9 +52,9 @@ lamp_elasticity_robustness <- function(panel, outcomes = "crime_total",
         for (area in omitted) {
           d <- if (is.na(area)) panel else panel[panel$area != area, ]
           fit <- tryCatch(lamp_elasticity(d, outcome,
-                            lags = lags[[lag_name]], family = family,
-                            cluster = cluster
-                          ), error = function(e) e)
+            lags = lags[[lag_name]], family = family,
+            cluster = cluster
+          ), error = function(e) e)
           failed <- inherits(fit, "error")
           s <- if (failed) NULL else lamp_effect_summary(fit)
           rows[[length(rows) + 1L]] <- tibble::tibble(

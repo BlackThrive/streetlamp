@@ -57,7 +57,7 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
   }
   lamp_check_panel(panel)
   if (!is.numeric(per_stops) || length(per_stops) != 1L ||
-        !is.finite(per_stops) || per_stops <= 0) {
+    !is.finite(per_stops) || per_stops <= 0) {
     lamp_abort("{.arg per_stops} must be a positive number.", "input")
   }
   outcome <- outcome_column %||% estimate$meta$outcome
@@ -104,7 +104,7 @@ lamp_crimes_prevented <- function(estimate, panel, per_stops = 1000, stops_added
     )
   } else {
     if (!is.numeric(stops_added) || length(stops_added) != 1L ||
-          !is.finite(stops_added) || stops_added <= 0) {
+      !is.finite(stops_added) || stops_added <= 0) {
       lamp_abort(
         c(
           "A treatment effect needs {.arg stops_added}: the searches it added per area-month.",

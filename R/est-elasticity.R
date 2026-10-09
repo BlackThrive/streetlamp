@@ -214,12 +214,12 @@ lamp_elasticity <- function(panel, outcome = "crime_total", stops = "stops", lag
     }
   }
   if (!is.numeric(lags) || !length(lags) || any(!is.finite(lags)) ||
-        any(lags < 0) || any(lags != round(lags)) || any(lags > .Machine$integer.max)) {
+    any(lags < 0) || any(lags != round(lags)) || any(lags > .Machine$integer.max)) {
     lamp_abort("{.arg lags} must be whole numbers of months, zero or more.", "input")
   }
   lags <- as.integer(sort(unique(lags)))
   if (!is.numeric(min_months) || length(min_months) != 1L || !is.finite(min_months) ||
-        min_months < 1 || min_months != round(min_months)) {
+    min_months < 1 || min_months != round(min_months)) {
     lamp_abort("{.arg min_months} must be a positive whole number.", "input")
   }
 
