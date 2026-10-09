@@ -36,10 +36,20 @@ than by accident.
     what ships is the summaries and the prose that interpret them. Measured
     by installing the built tarball: `install.packages(".")` does not apply
     `.Rbuildignore` and reports a size no user would ever see.
-72. **The CI quality job does not run styler.** It runs lintr, spelling and
-    urlchecker, so tidyverse style has never been enforced anywhere but by
-    hand, and the 0.2.0 sources had drifted. They are restyled now. Adding
-    styler to that job would stop it recurring and has not been done.
+72. **styler and lintr disagree, and lintr wins.** The CI quality job runs
+    lintr, spelling and urlchecker, never styler, so the specification's
+    "styler tidyverse style" has only ever been checked by hand. Running
+    `styler::style_dir("R")` on the 0.2.0 sources did change them, and the
+    change broke the build: styler reformats continuation lines inside `if()`
+    conditions and nested calls to four spaces, `lintr`'s
+    `indentation_linter` wants eight, and the quality job failed with
+    seventeen of them. `R/robustness.R` had zero lints before styling and
+    four after. The styling was reverted. The conflict is real and
+    unresolved: either the two tools are reconciled, or
+    `indentation_linter` is dropped from `.lintr`, or the specification's
+    styler requirement is retired. That is a maintainer's decision, not a
+    side effect of adding a map, and until it is made lintr is the only gate
+    that runs and the sources satisfy it.
 
 ## 2026-09-24, the presentation layer
 
