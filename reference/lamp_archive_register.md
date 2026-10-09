@@ -58,7 +58,7 @@ lamp_archive_register(zip, dir = cache)
 lamp_archive_snapshot(cache)
 #> 
 #> ── streetlamp archive snapshot 
-#> Cache: /tmp/RtmpJEfqag/streetlamp-cache-1c697f0b73bb
+#> Cache: /tmp/RtmpiiX2qw/streetlamp-cache-1d5737d3d127
 #> 1 archive: "2026-07"
 #> 15 force-month files covering 2 forces, 2026-05 to 2026-07; 15 available
 #> locally.
