@@ -16,3 +16,7 @@
 ^\.pre-commit-config\.yaml$
 ^vignettes/.*\.Rmd\.orig$
 ^vignettes/build\.R$
+^inst/validation/simulation-study\.csv$
+^inst/validation/research-upgrade/simulation-replications\.csv$
+^inst/validation/research-upgrade/elasticity-original-design\.csv$
+^inst/validation/research-upgrade/.*\.(png|pdf)$

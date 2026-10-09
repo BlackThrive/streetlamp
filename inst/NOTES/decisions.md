@@ -4,6 +4,43 @@ Design choices that are not obvious from the code, newest first. Each entry
 says what was decided and why, so that it can be reversed deliberately rather
 than by accident.
 
+## 2026-10-09, maps, and two measurement traps
+
+69. **`lamp_map()` added.** Boundaries and adjacency have been fetched since
+    M2 and never drawn; `geom_sf` appeared nowhere. The map follows the same
+    rule as everything else: an area with no usable data is filled neutral
+    grey and counted, never shaded as a low value, and an area the panel never
+    covered is counted apart from one whose files were missing. The first
+    draft used the palette's `missing` red for absent values, which on a
+    sequential blue ramp reads as a high value; a test now pins the neutral
+    fill.
+70. **Never run `R CMD check` inside the Dropbox folder.** Every "examples
+    over 5s" note this project has produced showed CPU well under the limit
+    and elapsed far above it. The cause was not slow code. `R CMD check`
+    writes thousands of files into `streetlamp.Rcheck` beside the package,
+    Dropbox indexes and uploads them while the check is still running, and
+    every timing inflates. With `check_dir` in the system temp directory the
+    examples step fell from 180 to 56 seconds, the test suite from 484 to
+    284, and three of the four flagged examples stopped being flagged.
+    `lamp_did_staggered` remains marginal at 3.5 seconds of processor time
+    and 6.2 elapsed, almost all of it loading the `did` package, which
+    whichever example reaches it first has to pay. An example was shrunk
+    earlier on the strength of an inflated figure; that was unnecessary,
+    though harmless.
+71. **Bulky validation artefacts are built out, not deleted.** With the
+    0.2.0 evidence added, the installed size reached 5.6 MB against the
+    specification's 5 MB. `.Rbuildignore` now excludes the per-replication
+    CSVs and the figures under `inst/validation`, which brings the installed
+    size to 3.97 MB and the tarball to 3.15 MB. They stay in git, which is
+    what "validation outputs committed under `inst/validation/`" asks for;
+    what ships is the summaries and the prose that interpret them. Measured
+    by installing the built tarball: `install.packages(".")` does not apply
+    `.Rbuildignore` and reports a size no user would ever see.
+72. **The CI quality job does not run styler.** It runs lintr, spelling and
+    urlchecker, so tidyverse style has never been enforced anywhere but by
+    hand, and the 0.2.0 sources had drifted. They are restyled now. Adding
+    styler to that job would stop it recurring and has not been done.
+
 ## 2026-09-24, the presentation layer
 
 66. **One visual system, exported.** `lamp_theme()`, `lamp_colours()` and
