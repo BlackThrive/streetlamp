@@ -1,4 +1,4 @@
-# streetlamp 0.2.0.9000
+# streetlamp 0.2.0
 
 * `lamp_map()` draws the geography the package has carried since the start and
   never showed: a choropleth of any panel column, of the per-area slopes of a
