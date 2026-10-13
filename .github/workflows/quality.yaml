@@ -37,12 +37,15 @@ jobs:
             styler::style_dir("R", filetype = "R", dry = "on"),
             styler::style_dir("tests", filetype = "R", recursive = TRUE, dry = "on")
           )
-          if (any(res$changed)) {
+          # `changed` is NA for a file styler could not assess, which is not
+          # the same as a file it would rewrite; which() drops those.
+          dirty <- res$file[which(res$changed)]
+          if (length(dirty) > 0) {
             message("styler would change:")
-            for (f in res$file[res$changed]) message("  ", f)
+            for (f in dirty) message("  ", f)
             stop("run styler::style_dir() on R/ and tests/, then commit")
           }
-          message("styler clean")
+          message("styler clean: ", nrow(res), " files")
         shell: Rscript {0}
 
       - name: Lint
