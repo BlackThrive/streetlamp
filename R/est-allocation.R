@@ -46,8 +46,8 @@ lamp_allocation <- function(panel, stops = "stops", crime = "crime_total", crime
     }
   }
   if (!is.numeric(crime_lags) || !length(crime_lags) || any(!is.finite(crime_lags)) ||
-        any(crime_lags < 1) || any(crime_lags != round(crime_lags)) ||
-        any(crime_lags > .Machine$integer.max)) {
+    any(crime_lags < 1) || any(crime_lags != round(crime_lags)) ||
+    any(crime_lags > .Machine$integer.max)) {
     lamp_abort("{.arg crime_lags} must be whole numbers of months, one or more.", "input")
   }
   crime_lags <- as.integer(sort(unique(crime_lags)))

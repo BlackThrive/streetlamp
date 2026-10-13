@@ -23,8 +23,27 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::lintr, any::spelling, any::urlchecker, local::.
+          extra-packages: any::lintr, any::spelling, any::urlchecker, any::styler, local::.
           needs: lint
+
+      - name: Style
+        # styler is the formatter of record and lintr's indentation_linter is
+        # switched off in .lintr, because the two disagree about continuation
+        # indentation and only one of them can be right. R/ and tests/ only:
+        # vignettes/*.Rmd are knitted from *.Rmd.orig, so styling the output
+        # would be undone by the next rebuild.
+        run: |
+          res <- rbind(
+            styler::style_dir("R", filetype = "R", dry = "on"),
+            styler::style_dir("tests", filetype = "R", recursive = TRUE, dry = "on")
+          )
+          if (any(res$changed)) {
+            message("styler would change:")
+            for (f in res$file[res$changed]) message("  ", f)
+            stop("run styler::style_dir() on R/ and tests/, then commit")
+          }
+          message("styler clean")
+        shell: Rscript {0}
 
       - name: Lint
         run: lintr::lint_package()
