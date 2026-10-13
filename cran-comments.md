@@ -40,9 +40,16 @@ Earlier win-builder runs reported two possibly misspelled words in
 
 ## Test environments
 
-* local: Windows 11, R 4.5.2.
+* local: Windows 11, R 4.5.2. 0 errors, 0 warnings, 2 notes.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest on R release
   and R oldrel-1, and R devel on ubuntu-latest and windows-latest. All pass.
+* R-hub v2: `linux` and `windows` on R devel, and the `donttest`, `atlas` and
+  `mkl` containers. All clean. `atlas` and `mkl` were included although the
+  package has no compiled code, because it sums through BLAS in Pesaran's CD
+  test and a reference implementation and an optimised one reassociate
+  differently.
+* win-builder, devel and release: submitted against this tree; results
+  pending.
 
 macOS on R devel is the one configuration that does not run, and it fails
 before reaching this package. CRAN publishes no macOS binaries for R devel, so
@@ -58,7 +65,12 @@ checking for it first. The vignettes are `.Rmd` with `knitr::rmarkdown` as
 their engine, so rebuilding them without `rmarkdown` installed cannot work,
 for this package or any other built the same way.
 
-Still to run on this tree: win-builder (devel and release) and R-hub.
+The second note is `lamp_did_staggered`, at 3.9 seconds of processor time and
+6.1 elapsed. Almost all of it is loading the `did` package, which whichever
+example reaches it first has to pay; the fit itself is under half a second and
+a second call in the same session takes 0.4.
+
+Still to record on this tree: the two win-builder results.
 
 ## Notes for the reviewer
 
