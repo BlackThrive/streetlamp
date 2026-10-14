@@ -3,6 +3,7 @@ template:
   bootstrap: 5
   bslib:
     primary: "#1f2a44"
+llm-docs: false
 
 reference:
 - title: Ingest
