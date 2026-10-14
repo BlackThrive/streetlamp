@@ -23,8 +23,8 @@ Possibly misspelled words in DESCRIPTION:
 
 ## Test environments
 
-* win-builder: R devel (2026-10-10 r90659) and R 4.6.1. The note above on
-  each, identical, and nothing else. Examples 22 to 23 s, tests 47 to 49 s.
+* win-builder: R devel (2026-10-13 r90668) and R 4.6.1. The note above on
+  each, identical, and nothing else. Examples 27 to 29 s, tests 69 to 71 s.
 * local: Windows 11, R 4.5.2, with `_R_CHECK_CRAN_INCOMING_` and
   `_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
   checks ran. Every URL in the package resolves.
