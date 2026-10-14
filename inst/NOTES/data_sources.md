@@ -1,9 +1,9 @@
 # Data sources: verification record
 
 Every external source streetlamp relies on, what was checked, how, and when.
-Update this file whenever a source is re-verified or a discrepancy with the
-specification is found (specification section 12.2). Items marked
-`TODO(source)` are still to be verified at the milestone named.
+Update this file whenever a source is re-verified or a discrepancy with what
+the package expects is found. Items marked `TODO(source)` are still to be
+verified.
 
 ## 1. data.police.uk (Open Government Licence v3.0)
 
@@ -156,7 +156,7 @@ which honours `Range` requests with 206 responses):
   per month before, 45 after).
 - Street columns: Crime ID, Month, Reported by, Falls within, Longitude,
   Latitude, Location, LSOA code, LSOA name, Crime type, Last outcome category,
-  Context (as the specification expected). Outcomes columns: Crime ID, Month,
+  Context (as expected). Outcomes columns: Crime ID, Month,
   Reported by, Falls within, Longitude, Latitude, Location, LSOA code, LSOA
   name, Outcome type.
 - Sizes: the 2026-07 archive is 1.73 GB with 4,485 members; a West Yorkshire
@@ -194,7 +194,7 @@ streetlamp reads only Date, Latitude, Longitude and Legislation.
 
 ### 1.7 Force attribution: British Transport Police (discrepancy)
 
-The specification says BTP records fall within territorial force areas. In
+The working assumption was that BTP records fall within territorial force areas. In
 the archive (BTP street file for January 2025, 3,304 rows) every row has
 `British Transport Police` in both `Reported by` and `Falls within`, so
 counting by `Falls within` attributes BTP records to BTP, not to territorial
@@ -279,11 +279,11 @@ Government Licence v.3.0".
 | Lower layer Super Output Areas (December 2021) Names and Codes in EW (V3) | `0f80c523f3cd4d0fab5111572f84a2fb` | 35,672 | E01 33,755; W01 1,917. Equal to the exact-fit LSOA21CD set. |
 | Lower layer Super Output Areas (December 2011) Names and Codes in EW | `a5b7042782fe4ee99b8477ddf7bfe585` | 34,753 | E01 32,844; W01 1,909. Equal to the exact-fit LSOA11CD set. |
 
-Discrepancy with the specification: the specification calls the required
-table the "best-fit lookup" and expects a change indicator. The ONS product
+Discrepancy with the original design, which called the required table the
+"best-fit lookup" and expected a change indicator. The ONS product
 literally named "Best Fit" has no indicator; the "Exact Fit" product has it.
 The package bundles the exact-fit table with a `best_fit` flag marking the
-best-fit choice, which serves both purposes (decision 3 in `decisions.md`).
+best-fit choice, which serves both purposes.
 
 ### 3.1 Boundaries (verified 2026-09-16)
 
@@ -482,19 +482,13 @@ context only): HMIC interim report "Crime recording: A matter of fact" (May
 2014); BUSS "all 43 forces signed up" claim; the Metropolitan Police Stop and
 Search Charter (February 2025, day unverified); Crime and Policing Act 2026
 (Royal Assent 29 April 2026; no change to territorial-force stop and search
-powers identified). Candidates for later verification are listed in the
-research record kept with the M0 session.
+powers identified).
 
-## 5. Not yet verified (later milestones)
+## 5. Not yet verified
 
-- `TODO(source)` (M2): NOMIS API for Census 2021 usual resident population by
-  LSOA and MSOA (<https://www.nomisweb.co.uk/api/v01/>): dataset id, geography
-  type codes, rate limits.
-- `TODO(source)` (M2): English Indices of Deprivation 2025 file layout and the
-  Welsh Index of Multiple Deprivation 2019 layout.
-- `TODO(source)` (M2): whether the `Falls within` and `Reported by` strings of
+- `TODO(source)`: whether the `Falls within` and `Reported by` strings of
   every force equal the police.uk API names in `lamp_forces()` (verified for
   Dyfed-Powys, West Yorkshire and British Transport Police only).
-- `TODO(source)` (M3): UK daylight saving transition dates (statutory rule:
+- `TODO(source)`: UK daylight saving transition dates (statutory rule:
   last Sunday in March and October, 1am GMT; confirmed on the archived
   Directgov page for 2010 and 2011).

@@ -1,5 +1,5 @@
-# Maps. The package has carried boundaries and adjacency since M2 and never
-# drew either, so the one thing a reader of a crime panel most expects to see
+# Maps. The package fetches boundaries and computes adjacency, and until this
+# file it drew neither, so the one thing a reader of a crime panel most expects to see
 # has been missing. These draw it, in the projection the geography arrives in
 # and with the same palette as every other figure.
 #

@@ -6,8 +6,8 @@
 #
 #   Rscript inst/scripts/03-benchmark.R [n_months] [n_forces]
 #
-# Defaults to 36 months and every force, which is the national panel the
-# specification asks about. Pass smaller numbers for a quick check.
+# Defaults to 36 months and every force: a full national panel. Pass smaller
+# numbers for a quick check.
 
 suppressMessages(library(streetlamp))
 source(file.path("inst", "scripts", "_cache.R"))

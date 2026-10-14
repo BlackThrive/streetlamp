@@ -37,16 +37,16 @@ zips <- list.files(
 )
 for (z in zips) lamp_archive_register(z, dir = cache)
 #> Registered archive "2026-06" from
-#> 'C:/Users/musta/Dropbox/stop and search/streetlamp/inst/extdata/archive/2026-06.zip'.
+#> '.../2026-06.zip'.
 #> Registered archive "2026-07" from
-#> 'C:/Users/musta/Dropbox/stop and search/streetlamp/inst/extdata/archive/2026-07.zip'.
+#> '.../2026-07.zip'.
 
 snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\RtmpkXgih3\streetlamp-cache-3d5031ad59f8'
+#> '.../streetlamp-cache-477c1a0b52c'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.

@@ -1,9 +1,8 @@
 # Validation evidence
 
 Output of the scripts in `inst/scripts/`, run once with network access. None
-of this runs at check time. Each file records what the package does, at the
-scale the build specification asks for, including the places where it does
-badly.
+of this runs at check time. Each file records what the package does, at full
+scale, including the places where it does badly.
 
 Run on 2026-09-20 and 2026-09-21, Windows 11, R 4.5.2, 12 cores, 32 GB.
 
@@ -35,8 +34,8 @@ What it shows:
   are biased by +0.104 on a true -0.228 and their intervals never cover it:
   coverage 0.000. `lamp_spillover()` recovers both the own effect (bias
   -0.002, coverage 0.98) and the net effect (bias -0.002, coverage 0.94).
-  That is the specification's "TWFE omitting the spillover term is biased in
-  the expected direction", and the size of it is worth seeing: ignoring
+  That is the bias a two-way fixed effects model incurs when it omits the
+  spillover term, and the size of it is worth seeing: ignoring
   displacement turns nearly half the effect into nothing.
 * **Continuous design.** `lamp_elasticity()` is biased towards zero by about
   0.005 on a target near -0.22, the same for all three methods, and its

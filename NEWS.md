@@ -65,11 +65,11 @@
   Every panel carries a contract recording provenance and coverage; every
   estimator names its identifying assumption and reports the force-months it
   excluded.
-* M5: the report builder (`lamp_report()`), the methods note in
+* The report builder (`lamp_report()`), the methods note in
   `inst/NOTES/methods.md`, validation scripts in `inst/scripts/` for the
   simulation study, placebo battery, benchmark and fixed-specification
   reproduction, and five precomputed vignettes.
-* M4: difference-in-differences with staggered adoption over three backends
+* Difference-in-differences with staggered adoption over three backends
   (`lamp_did_staggered()`); synthetic control with permutation inference and
   a dependency-free solver (`lamp_synth()`); joint own-area and neighbour
   effects (`lamp_spillover()`) and the weighted displacement quotient
@@ -78,7 +78,7 @@
   allocation model that measures how searching follows crime
   (`lamp_allocation()`); and the conversion to crimes prevented per thousand
   searches with its assumption chain (`lamp_crimes_prevented()`).
-* M3: treatment definitions for continuous intensity, binary interventions,
+* Treatment definitions for continuous intensity, binary interventions,
   staggered adoption and dated shocks (`lamp_treatment()`), with surge
   detection (`lamp_detect_surges()`) documented as endogenous; two-way fixed
   effects (`lamp_twfe()`) and event studies (`lamp_event_study()`) over four
@@ -87,7 +87,7 @@
   the bias it would leave (`lamp_pretrends()`); placebo tests in time, space
   and outcome (`lamp_placebo()`); and a simulator with known effects,
   spillovers on a lattice and force-month missingness (`lamp_simulate()`).
-* M2: ONS boundaries by paged FeatureServer requests (`lamp_boundaries()`),
+* ONS boundaries by paged FeatureServer requests (`lamp_boundaries()`),
   spatial adjacency (`lamp_adjacency()`), Census 2021 population from NOMIS
   (`lamp_population()`), LSOA re-vintaging (`lamp_revintage()`), the area
   hierarchy (`lamp_area_lookup()`) and deprivation deciles
@@ -97,7 +97,7 @@
   partial, refreshed and mismatched-file-type flags and a heat map; and the
   bundled sample panel and boundaries (`lamp_sample_panel()`,
   `lamp_sample_boundaries()`).
-* M1: selective download from the data.police.uk archive by HTTP byte range
+* Selective download from the data.police.uk archive by HTTP byte range
   (`lamp_archive_index()`, `lamp_archive_download()`,
   `lamp_archive_register()`, `lamp_archive_snapshot()`); one archive version
   per force-month file with alternatives recorded (`lamp_list_versions()`,
@@ -106,7 +106,7 @@
   `lamp_read_stop_counts()`, `lamp_contract()`); LSOA vintage detection
   (`lamp_lsoa_vintage()`); the forces table (`lamp_forces()`); and two
   bundled miniature archive snapshots for offline examples and tests.
-* M0: package skeleton, MIT licence, continuous integration, testthat,
+* Package skeleton, MIT licence, continuous integration, testthat,
   pkgdown, lintr; bundled crime and outcome classifications, national policy
   shocks table, bank holidays table, and ONS LSOA 2011 and 2021 code lists
   with the 2011 to 2021 best-fit lookup.

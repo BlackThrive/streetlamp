@@ -19,7 +19,13 @@ only to count stops by area and month.
 
 ## Installation
 
-The package is under development and not yet on CRAN.
+Install the released version from CRAN:
+
+``` r
+install.packages("streetlamp")
+```
+
+or the development version from GitHub:
 
 ``` r
 # install.packages("pak")
@@ -28,14 +34,13 @@ pak::pak("BlackThrive/streetlamp")
 
 ## Status
 
-The 0.2.0 development series adds count-mean elasticities, calendar-aware
-lags, heterogeneous simulation designs, covariance-aware effect summaries,
-design audits and complete robustness grids. Source and continuous
-integration are available on GitHub. Historical 0.1.0 validation is retained;
-new research evidence is in `inst/validation/research-upgrade`. A causal
-empirical case still needs independently documented intervention assignment.
-This development version has not been submitted to CRAN.
-Cross-platform release checks for the expanded development version are pending.
+Version 0.2.0 adds count-mean elasticities, calendar-aware lags,
+heterogeneous simulation designs, covariance-aware effect summaries,
+design audits, complete robustness grids and maps. The validation
+evidence for 0.1.0 is retained in `inst/validation`, and the evidence
+for 0.2.0 is in `inst/validation/research-upgrade`. A causal empirical
+case still needs independently documented intervention assignment: the
+package audits and estimates associations, and labels them as such.
 
 ## What it estimates
 
@@ -54,11 +59,12 @@ Cross-platform release checks for the expanded development version are pending.
 | How would an assumed differential trend change an event estimate? | `lamp_trend_sensitivity()` |
 | Is the estimate worth anything? | `lamp_pretrends()`, `lamp_placebo()` |
 
-`lamp_elasticity(method = "fe")` now defaults to Poisson pseudo-likelihood
-for the conditional count mean. Use `family = "ols_log"` for the former
-response scale, which CCE methods retain. The covariate is `log(1 + stops)`:
-its slope is not automatically a conventional stops elasticity. At stop
-intensity S, a count-mean slope becomes `slope * S / (1 + S)`. Observational
+`lamp_elasticity(method = "fe")` now defaults to Poisson
+pseudo-likelihood for the conditional count mean. Use
+`family = "ols_log"` for the former response scale, which CCE methods
+retain. The covariate is `log(1 + stops)`: its slope is not
+automatically a conventional stops elasticity. At stop intensity S, a
+count-mean slope becomes `slope * S / (1 + S)`. Observational
 associations do not identify the effect of deciding to search more.
 
 ## Quick start on the bundled panel
@@ -204,15 +210,15 @@ zips <- list.files(
 )
 for (z in zips) lamp_archive_register(z, dir = cache)
 #> Registered archive "2026-06" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmpy87S3Y/temp_libpath295c318b155a/streetlamp/extdata/archive/2026-06.zip'.
+#> '.../2026-06.zip'.
 #> Registered archive "2026-07" from
-#> 'C:/Users/musta/AppData/Local/Temp/Rtmpy87S3Y/temp_libpath295c318b155a/streetlamp/extdata/archive/2026-07.zip'.
+#> '.../2026-07.zip'.
 snap <- lamp_archive_snapshot(cache)
 snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> 'C:\Users\musta\AppData\Local\Temp\Rtmpms2tIT\streetlamp-cache-8ba86d5c2eb2'
+#> '.../streetlamp-cache-7c741d3f28c5'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.

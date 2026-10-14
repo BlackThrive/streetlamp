@@ -9,6 +9,20 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.path = "figures/panel-", fig.width = 7, fig.height = 4.5)
+# The package reports where archives and caches live, which helps someone
+# running the code but would freeze the build machine's paths into the
+# precomputed vignette. Shorten any absolute path to its last component.
+local({
+  redact <- function(x) {
+    gsub("'(?:[A-Za-z]:)?[/\\\\][^'\\n]*[/\\\\]([^/\\\\'\\n]+)'", "'.../\\1'", x, perl = TRUE)
+  }
+  msg <- knitr::knit_hooks$get("message")
+  out <- knitr::knit_hooks$get("output")
+  knitr::knit_hooks$set(
+    message = function(x, options) msg(redact(x), options),
+    output = function(x, options) out(redact(x), options)
+  )
+})
 ```
 
 This vignette follows a crime panel from the published archive to a table you

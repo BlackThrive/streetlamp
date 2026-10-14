@@ -28,7 +28,7 @@ test_that("shocks table loads with the documented schema", {
   expect_false(anyNA(s$notes))
 })
 
-test_that("shocks table contains the events named in the specification", {
+test_that("shocks table contains the core national policy events", {
   s <- lamp_shocks()
   expect_true(all(c(
     "buss_launch", "s60_pilot_seven_forces", "s60_relaxation_all_forces",

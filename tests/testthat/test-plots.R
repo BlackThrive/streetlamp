@@ -6,7 +6,7 @@
 # whose reference period drifts all return a perfectly good ggplot. These
 # compare the rendered SVG against a stored baseline.
 #
-# Skipped on CRAN, as the specification requires, and skipped when vdiffr is
+# Skipped on CRAN, as visual baselines usually are, and skipped when vdiffr is
 # not installed. Baselines are written by the graphics engine and a ggplot2
 # release can change them legitimately; when that happens, look at the diff
 # `testthat::snapshot_review()` shows before accepting it.

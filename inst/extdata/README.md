@@ -21,6 +21,6 @@ v3.0: <https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3
 
 The miniature archives are the only records bundled; they exist so that the
 examples and tests run offline and are not a sample for analysis. The
-aggregated sample panel and boundaries added at milestone M2 also derive from
+aggregated sample panel and boundaries also derive from
 data.police.uk and the Office for National Statistics under the Open
 Government Licence v3.0.

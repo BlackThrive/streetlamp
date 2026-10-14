@@ -19,3 +19,4 @@
 ^inst/validation/research-upgrade/simulation-replications\.csv$
 ^inst/validation/research-upgrade/elasticity-original-design\.csv$
 ^inst/validation/research-upgrade/.*\.(png|pdf)$
+^inst/validation/research-upgrade/package-check\.log$
