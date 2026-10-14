@@ -1,76 +1,52 @@
-<!--
-Not submitted yet. Two things to do first, both tracked in RELEASE_READY.md:
-
-  1. Run win-builder on devel and release, and R-hub, against this tree, and
-     replace the entries below. The recorded runs are from before the research
-     upgrade, lamp_map() and the build-size change, so they describe a
-     different package.
-  2. Settle the repository history question: the pre-rewrite commits are
-     still fetchable by SHA.
-
-Delete this comment when both hold.
--->
-
 ## R CMD check results
 
-0 errors, 0 warnings, 1 note:
+0 errors | 0 warnings | 1 note
 
 ```
 * checking CRAN incoming feasibility ... NOTE
 Maintainer: 'Mustapha Wasseja <muswaseja@gmail.com>'
 
 New submission
+
+Possibly misspelled words in DESCRIPTION:
+  elasticities (17:16)
+  pre (20:23)
 ```
 
-This is a first submission: no version of the package has been on CRAN. The
-check ran with `_R_CHECK_CRAN_INCOMING_` and
-`_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
-checks ran, and every URL in the package resolves.
-
-Earlier win-builder runs reported two possibly misspelled words in
-`DESCRIPTION`. Both are spelled as intended:
-
-* **elasticities** is the standard term for what the package estimates: the
-  proportional response of recorded crime to a proportional change in
-  searches.
-* **pre** is the first half of **pre-trend**, which the spell checker splits
-  at the hyphen. A pre-trend is the movement in the outcome before an
-  intervention, and testing for one is a standard part of a
-  difference-in-differences design.
+* This is a first submission: no version of the package has been on CRAN.
+* Both flagged words are spelled as intended. **elasticities** is the
+  standard term for what the package estimates, the proportional response of
+  recorded crime to a proportional change in searches. **pre** is the first
+  half of **pre-trend**, which the spell checker splits at the hyphen: the
+  movement in an outcome before an intervention, which a
+  difference-in-differences design tests for.
 
 ## Test environments
 
-* local: Windows 11, R 4.5.2. 0 errors, 0 warnings, 2 notes.
+* win-builder: R devel (2026-10-10 r90659) and R 4.6.1. The note above on
+  each, identical, and nothing else. Examples 22 to 23 s, tests 47 to 49 s.
+* local: Windows 11, R 4.5.2, with `_R_CHECK_CRAN_INCOMING_` and
+  `_R_CHECK_CRAN_INCOMING_REMOTE_` both set to `true`, so the URL and DOI
+  checks ran. Every URL in the package resolves.
 * GitHub Actions: ubuntu-latest, macOS-latest and windows-latest on R release
   and R oldrel-1, and R devel on ubuntu-latest and windows-latest. All pass.
-* R-hub v2: `linux` and `windows` on R devel, and the `donttest`, `atlas` and
-  `mkl` containers. All clean. `atlas` and `mkl` were included although the
-  package has no compiled code, because it sums through BLAS in Pesaran's CD
-  test and a reference implementation and an optimised one reassociate
-  differently.
-* win-builder, devel and release: submitted against this tree; results
-  pending.
+* R-hub v2: `linux`, `windows` and `macos` on R devel, and the `donttest`,
+  `atlas` and `mkl` containers. All pass. `atlas` and `mkl` were included
+  although the package has no compiled code, because it sums through BLAS in
+  Pesaran's CD test, where a reference and an optimised implementation
+  reassociate differently.
 
-macOS on R devel is the one configuration that does not run, and it fails
-before reaching this package. CRAN publishes no macOS binaries for R devel, so
-`sf`'s compiled dependency chain must build from source, and the runner has
-neither the system libraries nor, on R-hub, time enough to compile
-abseil-cpp. macOS release and oldrel-1 both pass, and those are the versions
-CRAN's own macOS builders use.
+Two configurations do not pass, neither for a reason in this package:
 
-R-hub's `nosuggests` container reports one ERROR, in re-building the
-vignettes: `there is no package called 'rmarkdown'`. Examples and tests both
-pass there, so no code in the package reaches for a suggested package without
-checking for it first. The vignettes are `.Rmd` with `knitr::rmarkdown` as
-their engine, so rebuilding them without `rmarkdown` installed cannot work,
-for this package or any other built the same way.
-
-The second note is `lamp_did_staggered`, at 3.9 seconds of processor time and
-6.1 elapsed. Almost all of it is loading the `did` package, which whichever
-example reaches it first has to pay; the fit itself is under half a second and
-a second call in the same session takes 0.4.
-
-Still to record on this tree: the two win-builder results.
+* GitHub Actions on macOS with R devel fails while installing dependencies.
+  There are no CRAN macOS binaries for R devel, so `sf`'s compiled dependency
+  chain has to build from source and the runner lacks GDAL, GEOS and PROJ.
+  R-hub's macOS R devel image passes, as do macOS release and oldrel-1.
+* R-hub's `nosuggests` container fails in re-building the vignettes, with
+  `there is no package called 'rmarkdown'`. Examples and tests both pass
+  there, so no code in the package reaches for a suggested package without
+  checking first. The vignettes use `knitr::rmarkdown` as their engine and
+  cannot be rebuilt without it.
 
 ## Notes for the reviewer
 
@@ -92,6 +68,10 @@ Still to record on this tree: the two win-builder results.
   correlated effects mean group estimator) are exercised on tiny simulated
   panels in the routine tests. The full recovery and coverage studies, and
   the visual regression tests, are behind `skip_on_cran()`.
+* The `lamp_did_staggered()` example has occasionally exceeded five seconds
+  of elapsed time on a loaded machine, though never on win-builder. Nearly
+  all of it is the first load of the `did` package; the fit itself takes
+  under half a second.
 * `inst/validation/` holds the output of the validation scripts in
   `inst/scripts/`, described in `inst/validation/README.md` and
   `inst/validation/research-upgrade/README.md`. Those scripts need the network
