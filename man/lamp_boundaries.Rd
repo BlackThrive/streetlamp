@@ -43,12 +43,18 @@ Source: Office for National Statistics licensed under the Open Government
 Licence v3.0; contains OS data, Crown copyright and database right 2024.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-# Requires network access on first use
-pfa <- lamp_boundaries("pfa")
-plot(sf::st_geometry(pfa))
-adj <- lamp_adjacency(pfa)
-\dontshow{\}) # examplesIf}
+\donttest{
+# Needs network access. The boundaries are cached in a temporary directory,
+# and the example prints a message instead of failing when offline.
+pfa <- tryCatch(
+  lamp_boundaries("pfa", dir = tempfile("streetlamp-")),
+  streetlamp_error_network = function(e) message(conditionMessage(e))
+)
+if (!is.null(pfa)) {
+  plot(sf::st_geometry(pfa))
+  lamp_adjacency(pfa)
+}
+}
 }
 \seealso{
 Other panel: 

@@ -34,6 +34,11 @@
 * New research validation and a hash-verified London association study are
   separate from historical 0.1.0 results. London is explicitly observational;
   its comparison-outcome and future-exposure diagnostics are retained.
+* The download cache now defaults to a directory inside the session's
+  temporary directory, so nothing is written to the user's file space unless
+  they ask for it. Set the `streetlamp.cache_dir` option or the
+  `STREETLAMP_CACHE_DIR` environment variable to keep downloads between
+  sessions; `lamp_cache_dir()` explains how.
 
 # streetlamp 0.1.0
 

@@ -50,14 +50,22 @@ its content and the time of download, which is what the panel contract
 reports as provenance.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-# Requires network access; fetches about 20 MB
-snap <- lamp_archive_download(
-  archives = "latest", months = c("2026-05", "2026-06", "2026-07"),
-  forces = c("west-yorkshire", "dyfed-powys")
+\donttest{
+# Needs network access. Fetches the latest month for one force into a
+# temporary directory, and prints a message instead of failing when offline.
+cache <- tempfile("streetlamp-")
+snap <- tryCatch(
+  {
+    idx <- lamp_archive_index(dir = cache)
+    lamp_archive_download(
+      months = format(max(idx$to), "\%Y-\%m"), forces = "dyfed-powys",
+      dir = cache, index = idx
+    )
+  },
+  streetlamp_error_network = function(e) message(conditionMessage(e))
 )
 snap
-\dontshow{\}) # examplesIf}
+}
 }
 \seealso{
 Other ingest: 

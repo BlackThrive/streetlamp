@@ -24,13 +24,15 @@ test_that("cache directory honours the environment variable", {
   expect_false(dir.exists(target))
 })
 
-test_that("default cache directory is the R user cache directory", {
-  withr::local_options(streetlamp.cache_dir = NULL)
+test_that("default cache directory is inside the session's temporary directory", {
+  withr::local_options(streetlamp.cache_dir = NULL, rlib_message_verbosity = "verbose")
   withr::local_envvar(STREETLAMP_CACHE_DIR = NA)
-  expect_equal(
-    lamp_cache_dir(create = FALSE),
-    tools::R_user_dir("streetlamp", which = "cache")
+  expect_message(
+    dir <- lamp_cache_dir(create = FALSE),
+    "this session only",
+    class = "streetlamp_message_cache"
   )
+  expect_equal(dir, file.path(tempdir(), "streetlamp-cache"))
 })
 
 test_that("a sub-directory of the cache can be cleared on its own", {

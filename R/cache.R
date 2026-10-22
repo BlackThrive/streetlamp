@@ -1,10 +1,21 @@
 #' Location of the streetlamp cache
 #'
-#' Downloaded archive snapshots, boundaries and lookups are cached on disk so
-#' that they are fetched at most once. The cache lives under
-#' `tools::R_user_dir("streetlamp", "cache")` unless overridden by the option
-#' `streetlamp.cache_dir` or the environment variable `STREETLAMP_CACHE_DIR`
-#' (the option wins). Tests and examples never write to the default location.
+#' Downloaded archive files, boundaries and lookups are cached on disk so that
+#' each is fetched once. By default the cache is a directory inside the
+#' session's temporary directory: it is deleted when R closes, and nothing is
+#' written to your file space.
+#'
+#' To keep downloads between sessions, which is worth doing before building a
+#' national panel of several gigabytes, choose a directory and set it with the
+#' option `streetlamp.cache_dir` or the environment variable
+#' `STREETLAMP_CACHE_DIR` (the option wins). The conventional place is the
+#' user cache directory, for example in `.Rprofile`:
+#'
+#' ```
+#' options(streetlamp.cache_dir = tools::R_user_dir("streetlamp", "cache"))
+#' ```
+#'
+#' `lamp_cache_clear()` deletes the cache, or one sub-directory of it.
 #'
 #' @param create Create the directory if it does not exist? Default `TRUE`.
 #'
@@ -24,7 +35,21 @@ lamp_cache_dir <- function(create = TRUE) {
     dir <- Sys.getenv("STREETLAMP_CACHE_DIR", unset = "")
   }
   if (!nzchar(dir)) {
-    dir <- tools::R_user_dir("streetlamp", which = "cache")
+    # CRAN policy: nothing is written outside the session's temporary
+    # directory unless the user has chosen a location
+    dir <- file.path(tempdir(), "streetlamp-cache")
+    lamp_inform(
+      c(
+        "Caching downloads for this session only.",
+        "i" = paste(
+          "To keep them between sessions, set the {.code streetlamp.cache_dir}",
+          "option or {.envvar STREETLAMP_CACHE_DIR}; see {.fun lamp_cache_dir}."
+        )
+      ),
+      class = "cache",
+      .frequency = "once",
+      .frequency_id = "streetlamp_session_cache"
+    )
   }
   check_string(dir, arg = "streetlamp.cache_dir")
   if (create && !dir.exists(dir)) {

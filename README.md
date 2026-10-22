@@ -218,7 +218,7 @@ snap
 #> 
 #> ── streetlamp archive snapshot 
 #> Cache:
-#> '.../streetlamp-cache-7c741d3f28c5'
+#> '.../streetlamp-cache-d10422fb2d35'
 #> 2 archives: "2026-06" and "2026-07"
 #> 25 force-month files covering 2 forces, 2026-05 to 2026-07; 25 available
 #> locally.
@@ -289,8 +289,9 @@ stops
 
 With network access, `lamp_archive_download()` fetches force-month files
 from the live archive into the cache, `lamp_boundaries()` and
-`lamp_population()` fetch ONS boundaries and Census 2021 population
-once, and `lamp_panel()` builds the balanced panel:
+`lamp_population()` fetch ONS boundaries and Census 2021 population, and
+`lamp_panel()` builds the balanced panel. The cache lasts for the R
+session unless you give it a permanent home; see `?lamp_cache_dir`.
 
 ``` r
 snap <- lamp_archive_download(

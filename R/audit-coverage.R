@@ -270,10 +270,16 @@ lamp_changelog_url <- function() "https://data.police.uk/changelog/"
 #'   `action = NA`.
 #' @family panel
 #' @export
-#' @examplesIf FALSE
-#' # Requires network access
-#' cl <- lamp_changelog()
-#' cl[cl$force_id == "west-yorkshire", ]
+#' @examples
+#' \donttest{
+#' # Needs network access. The page is cached in a temporary directory, and
+#' # the example prints a message instead of failing when offline.
+#' cl <- tryCatch(
+#'   lamp_changelog(dir = tempfile("streetlamp-")),
+#'   streetlamp_error_network = function(e) message(conditionMessage(e))
+#' )
+#' if (!is.null(cl)) cl[cl$force_id == "west-yorkshire", ]
+#' }
 lamp_changelog <- function(refresh = FALSE, dir = lamp_cache_dir()) {
   check_bool(refresh)
   adir <- lamp_archive_dir(dir)

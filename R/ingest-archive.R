@@ -113,10 +113,16 @@ lamp_parse_members <- function(member) {
 #'   attribute `fetched_at` records when the page was read.
 #' @family ingest
 #' @export
-#' @examplesIf FALSE
-#' # Requires network access
-#' idx <- lamp_archive_index()
-#' idx[idx$archive >= "2026-01", ]
+#' @examples
+#' \donttest{
+#' # Needs network access. The index is cached in a temporary directory, and
+#' # the example prints a message instead of failing when offline.
+#' idx <- tryCatch(
+#'   lamp_archive_index(dir = tempfile("streetlamp-")),
+#'   streetlamp_error_network = function(e) message(conditionMessage(e))
+#' )
+#' if (!is.null(idx)) tail(idx)
+#' }
 lamp_archive_index <- function(refresh = FALSE, dir = lamp_cache_dir()) {
   check_bool(refresh)
   adir <- lamp_archive_dir(dir)
@@ -318,13 +324,23 @@ lamp_archive_register <- function(path, dir = lamp_cache_dir(), md5 = NA_charact
 #'   invisibly.
 #' @family ingest
 #' @export
-#' @examplesIf FALSE
-#' # Requires network access; fetches about 20 MB
-#' snap <- lamp_archive_download(
-#'   archives = "latest", months = c("2026-05", "2026-06", "2026-07"),
-#'   forces = c("west-yorkshire", "dyfed-powys")
+#' @examples
+#' \donttest{
+#' # Needs network access. Fetches the latest month for one force into a
+#' # temporary directory, and prints a message instead of failing when offline.
+#' cache <- tempfile("streetlamp-")
+#' snap <- tryCatch(
+#'   {
+#'     idx <- lamp_archive_index(dir = cache)
+#'     lamp_archive_download(
+#'       months = format(max(idx$to), "%Y-%m"), forces = "dyfed-powys",
+#'       dir = cache, index = idx
+#'     )
+#'   },
+#'   streetlamp_error_network = function(e) message(conditionMessage(e))
 #' )
 #' snap
+#' }
 lamp_archive_download <- function(archives = "latest", months = NULL, forces = NULL,
                                   file_types = c("street", "outcomes", "stop-and-search"),
                                   dir = lamp_cache_dir(), index = NULL, relist = FALSE) {

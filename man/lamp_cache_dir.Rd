@@ -19,11 +19,22 @@ for example \code{"archive"}.}
 The cache directory path, invisibly for \code{lamp_cache_clear()}.
 }
 \description{
-Downloaded archive snapshots, boundaries and lookups are cached on disk so
-that they are fetched at most once. The cache lives under
-\code{tools::R_user_dir("streetlamp", "cache")} unless overridden by the option
-\code{streetlamp.cache_dir} or the environment variable \code{STREETLAMP_CACHE_DIR}
-(the option wins). Tests and examples never write to the default location.
+Downloaded archive files, boundaries and lookups are cached on disk so that
+each is fetched once. By default the cache is a directory inside the
+session's temporary directory: it is deleted when R closes, and nothing is
+written to your file space.
+}
+\details{
+To keep downloads between sessions, which is worth doing before building a
+national panel of several gigabytes, choose a directory and set it with the
+option \code{streetlamp.cache_dir} or the environment variable
+\code{STREETLAMP_CACHE_DIR} (the option wins). The conventional place is the
+user cache directory, for example in \code{.Rprofile}:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{options(streetlamp.cache_dir = tools::R_user_dir("streetlamp", "cache"))
+}\if{html}{\out{</div>}}
+
+\code{lamp_cache_clear()} deletes the cache, or one sub-directory of it.
 }
 \examples{
 # Point the cache at a temporary directory for the duration of the example

@@ -29,11 +29,15 @@ access a cached index is returned with a warning, and an error of class
 \code{streetlamp_error_network} is raised if there is no cache.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-# Requires network access
-idx <- lamp_archive_index()
-idx[idx$archive >= "2026-01", ]
-\dontshow{\}) # examplesIf}
+\donttest{
+# Needs network access. The index is cached in a temporary directory, and
+# the example prints a message instead of failing when offline.
+idx <- tryCatch(
+  lamp_archive_index(dir = tempfile("streetlamp-")),
+  streetlamp_error_network = function(e) message(conditionMessage(e))
+)
+if (!is.null(idx)) tail(idx)
+}
 }
 \seealso{
 Other ingest: 

@@ -99,11 +99,16 @@ lamp_population_cache <- function(dir) file.path(dir, "population", "nomis_ts001
 #'   the contract.
 #' @family panel
 #' @export
-#' @examplesIf FALSE
-#' # Requires network access on first use
-#' pop <- lamp_population("lsoa21")
-#' head(pop)
-#' pfa <- lamp_population("pfa")
+#' @examples
+#' \donttest{
+#' # Needs network access. The download is cached in a temporary directory,
+#' # and the example prints a message instead of failing when offline.
+#' pop <- tryCatch(
+#'   lamp_population("pfa", dir = tempfile("streetlamp-")),
+#'   streetlamp_error_network = function(e) message(conditionMessage(e))
+#' )
+#' if (!is.null(pop)) head(pop)
+#' }
 lamp_population <- function(area = c("lsoa21", "msoa21", "lad", "pfa", "lsoa11"),
                             dir = lamp_cache_dir(), refresh = FALSE) {
   area <- rlang::arg_match(area)

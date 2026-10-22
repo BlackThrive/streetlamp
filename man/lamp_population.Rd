@@ -42,12 +42,15 @@ Without network access a cached download is returned, and an error of
 class \code{streetlamp_error_network} is raised if there is none.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-# Requires network access on first use
-pop <- lamp_population("lsoa21")
-head(pop)
-pfa <- lamp_population("pfa")
-\dontshow{\}) # examplesIf}
+\donttest{
+# Needs network access. The download is cached in a temporary directory,
+# and the example prints a message instead of failing when offline.
+pop <- tryCatch(
+  lamp_population("pfa", dir = tempfile("streetlamp-")),
+  streetlamp_error_network = function(e) message(conditionMessage(e))
+)
+if (!is.null(pop)) head(pop)
+}
 }
 \seealso{
 Other panel: 

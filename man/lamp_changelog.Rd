@@ -28,11 +28,15 @@ force-months as \code{refreshed} and to annotate gaps. The page is fetched once
 and cached; pass \code{refresh = TRUE} to fetch it again.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-# Requires network access
-cl <- lamp_changelog()
-cl[cl$force_id == "west-yorkshire", ]
-\dontshow{\}) # examplesIf}
+\donttest{
+# Needs network access. The page is cached in a temporary directory, and
+# the example prints a message instead of failing when offline.
+cl <- tryCatch(
+  lamp_changelog(dir = tempfile("streetlamp-")),
+  streetlamp_error_network = function(e) message(conditionMessage(e))
+)
+if (!is.null(cl)) cl[cl$force_id == "west-yorkshire", ]
+}
 }
 \seealso{
 Other panel: 

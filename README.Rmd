@@ -197,8 +197,9 @@ stops
 
 With network access, `lamp_archive_download()` fetches force-month files from
 the live archive into the cache, `lamp_boundaries()` and `lamp_population()`
-fetch ONS boundaries and Census 2021 population once, and `lamp_panel()`
-builds the balanced panel:
+fetch ONS boundaries and Census 2021 population, and `lamp_panel()` builds the
+balanced panel. The cache lasts for the R session unless you give it a
+permanent home; see `?lamp_cache_dir`.
 
 ``` r
 snap <- lamp_archive_download(

@@ -160,11 +160,19 @@ lamp_boundaries_cache <- function(dir, type) file.path(dir, "boundaries", paste0
 #'   identifier) and `retrieved`.
 #' @family panel
 #' @export
-#' @examplesIf FALSE
-#' # Requires network access on first use
-#' pfa <- lamp_boundaries("pfa")
-#' plot(sf::st_geometry(pfa))
-#' adj <- lamp_adjacency(pfa)
+#' @examples
+#' \donttest{
+#' # Needs network access. The boundaries are cached in a temporary directory,
+#' # and the example prints a message instead of failing when offline.
+#' pfa <- tryCatch(
+#'   lamp_boundaries("pfa", dir = tempfile("streetlamp-")),
+#'   streetlamp_error_network = function(e) message(conditionMessage(e))
+#' )
+#' if (!is.null(pfa)) {
+#'   plot(sf::st_geometry(pfa))
+#'   lamp_adjacency(pfa)
+#' }
+#' }
 lamp_boundaries <- function(type = c("lsoa21", "lsoa11", "msoa21", "lad", "pfa"),
                             dir = lamp_cache_dir(), refresh = FALSE) {
   type <- rlang::arg_match(type)
