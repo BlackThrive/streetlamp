@@ -55,8 +55,10 @@ Possibly misspelled words in DESCRIPTION:
 * GitHub Actions, this version: ubuntu-latest, macOS-latest and
   windows-latest on R release and R oldrel-1, and R devel on ubuntu-latest
   and windows-latest. All pass.
+* win-builder, this version: R devel (2026-10-21 r90733). The note above,
+  and nothing else.
 * win-builder, first submission: R devel (2026-10-13 r90668) and R 4.6.1.
-  The note above on each, identical, and nothing else.
+  The same note on each, and nothing else.
 * R-hub v2, first submission: `linux`, `windows` and `macos` on R devel,
   and the `donttest`, `atlas` and `mkl` containers. All pass. `atlas` and
   `mkl` were included although the package has no compiled code, because it
