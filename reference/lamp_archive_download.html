@@ -141,14 +141,25 @@ invisibly.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires network access; fetches about 20 MB</span></span></span>
-<span class="r-in"><span><span class="va">snap</span> <span class="op">&lt;-</span> <span class="fu">lamp_archive_download</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  archives <span class="op">=</span> <span class="st">"latest"</span>, months <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026-05"</span>, <span class="st">"2026-06"</span>, <span class="st">"2026-07"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  forces <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"west-yorkshire"</span>, <span class="st">"dyfed-powys"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Needs network access. Fetches the latest month for one force into a</span></span></span>
+<span class="r-in"><span><span class="co"># temporary directory, and prints a message instead of failing when offline.</span></span></span>
+<span class="r-in"><span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"streetlamp-"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">snap</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="lamp_archive_index.html">lamp_archive_index</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="va">cache</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu">lamp_archive_download</span><span class="op">(</span></span></span>
+<span class="r-in"><span>      months <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">idx</span><span class="op">$</span><span class="va">to</span><span class="op">)</span>, <span class="st">"%Y-%m"</span><span class="op">)</span>, forces <span class="op">=</span> <span class="st">"dyfed-powys"</span>,</span></span>
+<span class="r-in"><span>      dir <span class="op">=</span> <span class="va">cache</span>, index <span class="op">=</span> <span class="va">idx</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span>,</span></span>
+<span class="r-in"><span>  streetlamp_error_network <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Network access is disabled by `STREETLAMP_OFFLINE`.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Could not fetch https://data.police.uk/data/archive/.</span>
 <span class="r-in"><span><span class="va">snap</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
